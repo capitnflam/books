@@ -7,7 +7,7 @@
     "start": "",
     "test": "jest",
     "test:watch": "jest --watch",
-    "type:check": "tsc"
+    "type-check": "tsc"
   },
   "dependencies": {
     "react": "16.13.1"

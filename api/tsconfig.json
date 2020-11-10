@@ -10,5 +10,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true
-  }
+  },
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

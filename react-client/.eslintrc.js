@@ -1,14 +1,16 @@
 module.exports = {
+  root: true,
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: 'tsconfig.json',
-    sourceType: 'module',
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname,
   },
   plugins: ['@typescript-eslint/eslint-plugin', 'prettier', 'sonarjs'],
   extends: [
     'plugin:@typescript-eslint/recommended',
-    'prettier/prettier',
+    'prettier',
     'prettier/@typescript-eslint',
+    'prettier/react',
     'plugin:prettier/recommended',
     'plugin:sonarjs/recommended',
   ],
@@ -20,4 +22,5 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
   },
+  ignorePatterns: ['.eslintrc.js'],
 }

@@ -15,7 +15,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "type:check": "tsc"
+    "type-check": "tsc"
   },
   "dependencies": {
     "@nestjs/common": "7.4.4",
@@ -46,6 +46,7 @@
     "@typescript-eslint/parser": "4.2.0",
     "eslint": "7.10.0",
     "eslint-config-prettier": "6.12.0",
+    "eslint-plugin-nestjs": "^1.2.3",
     "eslint-plugin-prettier": "3.1.4",
     "eslint-plugin-sonarjs": "0.5.0",
     "jest": "26.4.2",
