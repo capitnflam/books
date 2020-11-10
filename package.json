@@ -2,6 +2,11 @@
   "private": true,
   "workspaces": [
     "api",
-    "client"
-  ]
+    "react-client"
+  ],
+  "scripts": {
+    "start:api": "yarn workspace api start",
+    "start:dev:api": "yarn workspace api start:dev",
+    "start:debug:api": "yarn workspace api start:debug"
+  }
 }
