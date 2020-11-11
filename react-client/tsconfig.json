@@ -1,13 +1,20 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2020",
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "lib": ["ES2015", "DOM", "DOM.Iterable", "ES2020"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "removeComments": true,
+    "skipLibCheck": true,
     "sourceMap": true,
-    "outDir": "./dist"
+    "strict": true,
+    "target": "ES6"
   }
 }

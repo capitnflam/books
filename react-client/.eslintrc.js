@@ -22,5 +22,5 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.js', 'webpack.config.js'],
 }
