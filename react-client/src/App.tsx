@@ -1,16 +1,37 @@
-import React, { useState } from 'react'
+import { Container, Drawer, Tooltip } from '@material-ui/core'
+
+import React from 'react'
+import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom'
+
+import routes from './routes'
 
 export default function App(): JSX.Element {
-  const [foo, setFoo] = useState<number>(0)
-
-  const incFoo = () => {
-    setFoo(foo + 1)
-  }
-
   return (
-    <div>
-      <p>foo count: {foo}</p>
-      <input type="button" onClick={incFoo} value="+1" />
-    </div>
+    <Router>
+      <Container maxWidth={false}>
+        <Drawer anchor="left" variant="permanent">
+          {routes.map((route, index) => {
+            const RouteIcon = route.icon
+            return (
+              <Link key={index} to={route.path}>
+                <Tooltip title={route.name}>
+                  <RouteIcon />
+                </Tooltip>
+              </Link>
+            )
+          })}
+        </Drawer>
+        <Switch>
+          {routes.map((route, index) => {
+            const RouteComponent = route.component
+            return (
+              <Route key={index} exact={!!route.exact} path={route.path}>
+                <RouteComponent />
+              </Route>
+            )
+          })}
+        </Switch>
+      </Container>
+    </Router>
   )
 }
