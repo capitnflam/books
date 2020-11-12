@@ -1,30 +1,9 @@
-import { Button } from '@material-ui/core'
 import HomeIcon from '@material-ui/icons/Home'
 import LibraryBooksIcon from '@material-ui/icons/LibraryBooks'
-import PlusOne from '@material-ui/icons/PlusOne'
-
-import React, { useState } from 'react'
 
 import Collection from './containers/Collection'
 import Home from './containers/Home'
 import { AppRoute } from './types'
-
-const Foo = (): JSX.Element => {
-  const [foo, setFoo] = useState<number>(0)
-
-  const incFoo = () => {
-    setFoo(foo + 1)
-  }
-
-  return (
-    <div>
-      <p>foo count: {foo}</p>
-      <Button color="primary" onClick={incFoo} variant="contained">
-        <PlusOne />
-      </Button>
-    </div>
-  )
-}
 
 const routes: AppRoute[] = [
   {
@@ -39,12 +18,6 @@ const routes: AppRoute[] = [
     icon: LibraryBooksIcon,
     name: 'Collection',
     path: '/collection',
-  },
-  {
-    component: Foo,
-    icon: PlusOne,
-    name: 'Foo',
-    path: '/foo',
   },
 ]
 
