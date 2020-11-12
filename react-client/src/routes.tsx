@@ -1,9 +1,11 @@
 import { Button } from '@material-ui/core'
 import HomeIcon from '@material-ui/icons/Home'
+import LibraryBooksIcon from '@material-ui/icons/LibraryBooks'
 import PlusOne from '@material-ui/icons/PlusOne'
 
 import React, { useState } from 'react'
 
+import Collection from './containers/Collection'
 import Home from './containers/Home'
 import { AppRoute } from './types'
 
@@ -31,6 +33,12 @@ const routes: AppRoute[] = [
     icon: HomeIcon,
     name: 'Home',
     path: '/',
+  },
+  {
+    component: Collection,
+    icon: LibraryBooksIcon,
+    name: 'Collection',
+    path: '/collection',
   },
   {
     component: Foo,

@@ -1,9 +1,10 @@
 import { Container } from '@material-ui/core'
 
 import React from 'react'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router } from 'react-router-dom'
 
 import MainMenu from './components/MainMenu'
+import MainPage from './components/MainPage'
 import routes from './routes'
 
 export default function App(): JSX.Element {
@@ -11,16 +12,7 @@ export default function App(): JSX.Element {
     <Router>
       <Container maxWidth={false}>
         <MainMenu routes={routes} />
-        <Switch>
-          {routes.map((route, index) => {
-            const RouteComponent = route.component
-            return (
-              <Route key={index} exact={!!route.exact} path={route.path}>
-                <RouteComponent />
-              </Route>
-            )
-          })}
-        </Switch>
+        <MainPage routes={routes} />
       </Container>
     </Router>
   )
