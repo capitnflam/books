@@ -1,8 +1,8 @@
 import HomeIcon from '@material-ui/icons/Home'
 import LibraryBooksIcon from '@material-ui/icons/LibraryBooks'
 
-import Collection from './containers/Collection'
 import Home from './containers/Home'
+import Library from './containers/Library'
 import { AppRoute } from './types'
 
 const routes: AppRoute[] = [
@@ -14,10 +14,10 @@ const routes: AppRoute[] = [
     path: '/',
   },
   {
-    component: Collection,
+    component: Library,
     icon: LibraryBooksIcon,
-    name: 'Collection',
-    path: '/collection',
+    name: 'Library',
+    path: '/library',
   },
 ]
 
