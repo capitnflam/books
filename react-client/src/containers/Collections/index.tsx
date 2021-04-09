@@ -1,19 +1,26 @@
-import { ListItem } from '@material-ui/core'
-import React from 'react'
-import { FixedSizeList, ListChildComponentProps } from 'react-window'
+import { List, Typography } from 'antd'
+import React, { useCallback, useRef } from 'react'
+import { useVirtual, VirtualItem } from 'react-virtual'
 
-const renderRow = ({ index, style }: ListChildComponentProps) => {
+const renderRow = (item: VirtualItem) => {
   return (
-    <ListItem key={index} style={style}>
-      foo
-    </ListItem>
+    <List.Item key={item.index}>
+      <Typography.Text>{`foo ${JSON.stringify(item)}`}</Typography.Text>
+    </List.Item>
   )
 }
 
 export default function Collections(): JSX.Element {
+  const parentRef = useRef()
+  const rowVirtualizer = useVirtual({
+    size: 1000,
+    parentRef,
+    estimateSize: useCallback(() => 42, []),
+  })
+
   return (
-    <FixedSizeList height={42} itemCount={42} itemSize={42} width={42}>
-      {renderRow}
-    </FixedSizeList>
+    <div style={{ height: `${rowVirtualizer.totalSize}px` }}>
+      {rowVirtualizer.virtualItems.map(renderRow)}
+    </div>
   )
 }

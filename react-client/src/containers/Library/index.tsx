@@ -1,4 +1,4 @@
-import { Grid } from '@material-ui/core'
+import { Col, Row } from 'antd'
 import React from 'react'
 
 import Card from '../../components/Book/Card'
@@ -8,11 +8,11 @@ export default function Collection(): JSX.Element {
     <>
       <p>Library</p>
       <div style={{ flexGrow: 1 }}>
-        <Grid container spacing={3}>
-          <Grid item>
+        <Col>
+          <Row>
             <Card />
-          </Grid>
-        </Grid>
+          </Row>
+        </Col>
       </div>
     </>
   )

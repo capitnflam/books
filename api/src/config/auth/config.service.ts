@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config'
 export class AuthConfigService {
   constructor(private readonly configService: ConfigService) {}
 
-  get jwtSecret(): string {
+  get jwtSecret(): string | undefined {
     return this.configService.get('auth.jwtSecret')
   }
 }

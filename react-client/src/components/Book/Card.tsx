@@ -1,9 +1,5 @@
-import {
-  Card as MaterialCard,
-  CardContent,
-  CardMedia,
-  CardHeader,
-} from '@material-ui/core'
+import { Card as AntCard } from 'antd'
+
 import React from 'react'
 
 import unavailable from './unavailable-cover.png'
@@ -14,13 +10,8 @@ interface Props {
 
 export default function Card({ cover }: Props): JSX.Element {
   return (
-    <MaterialCard>
-      <CardHeader title="foobar">barfoo</CardHeader>
-      <CardMedia
-        style={{ height: 140 }}
-        image={cover || unavailable}
-      ></CardMedia>
-      <CardContent>woot</CardContent>
-    </MaterialCard>
+    <AntCard title="foobar">
+      <img src={cover || unavailable} style={{ height: 140 }} />
+    </AntCard>
   )
 }

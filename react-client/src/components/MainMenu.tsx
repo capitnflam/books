@@ -1,4 +1,5 @@
-import { Grid, Drawer, Tooltip, Typography } from '@material-ui/core'
+import { Col, Drawer, Row, Tooltip, Typography } from 'antd'
+
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -10,30 +11,32 @@ interface Props {
   visible: boolean
 }
 
+const drawerWidth = 180
+
 export default function MainMenu({
   routes,
   showLabel,
   visible,
 }: Props): JSX.Element {
   return (
-    <Drawer anchor="left" open={visible} variant="persistent">
-      <Grid container direction="column" style={{ padding: 8 }}>
+    <Drawer visible={visible}>
+      <Col>
         {routes.map((route, index) => {
           const RouteIcon = route.icon
           return (
             <Link key={index} to={route.path}>
               <Tooltip title={route.name}>
-                <Grid item>
-                  <Typography noWrap>
+                <Row>
+                  <Typography>
                     <RouteIcon />
                     {showLabel && route.name}
                   </Typography>
-                </Grid>
+                </Row>
               </Tooltip>
             </Link>
           )
         })}
-      </Grid>
+      </Col>
     </Drawer>
   )
 }

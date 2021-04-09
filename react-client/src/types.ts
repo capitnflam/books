@@ -1,9 +1,7 @@
-import { SvgIconComponent } from '@material-ui/icons'
-
 export type AppMenuCommon = { path: string }
 
 export type AppMenuInfo = AppMenuCommon & {
-  icon: SvgIconComponent
+  icon: any
   name: string
 }
 

@@ -1,4 +1,3 @@
-import { Container, CssBaseline } from '@material-ui/core'
 import React, { useState } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 
@@ -6,6 +5,7 @@ import MainHeader from './components/MainHeader'
 import MainMenu from './components/MainMenu'
 import MainPage from './components/MainPage'
 import routes from './routes'
+// import themeData from './theme.json'
 
 import 'fontsource-roboto'
 
@@ -17,12 +17,11 @@ export default function App(): JSX.Element {
 
   return (
     <Router>
-      <CssBaseline />
       <MainHeader toggleMenuVisibility={toggleMenuVisibility} />
-      <Container maxWidth={false}>
+      <div>
         <MainMenu routes={routes} showLabel visible={menuVisibility} />
         <MainPage routes={routes} />
-      </Container>
+      </div>
     </Router>
   )
 }
