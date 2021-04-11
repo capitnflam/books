@@ -1,42 +1,32 @@
-import { Col, Drawer, Row, Tooltip, Typography } from 'antd'
+import { Menu } from 'antd'
 
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import { AppMenuInfo } from '../types'
 
 interface Props {
   routes: AppMenuInfo[]
   showLabel: boolean
-  visible: boolean
 }
 
-const drawerWidth = 180
+export default function MainMenu({ routes, showLabel }: Props): JSX.Element {
+  const history = useHistory()
 
-export default function MainMenu({
-  routes,
-  showLabel,
-  visible,
-}: Props): JSX.Element {
   return (
-    <Drawer visible={visible}>
-      <Col>
-        {routes.map((route, index) => {
-          const RouteIcon = route.icon
-          return (
-            <Link key={index} to={route.path}>
-              <Tooltip title={route.name}>
-                <Row>
-                  <Typography>
-                    <RouteIcon />
-                    {showLabel && route.name}
-                  </Typography>
-                </Row>
-              </Tooltip>
-            </Link>
-          )
-        })}
-      </Col>
-    </Drawer>
+    <Menu>
+      {routes.map((route, index) => {
+        const RouteIcon = route.icon
+        return (
+          <Menu.Item
+            key={index}
+            icon={<RouteIcon />}
+            onClick={() => history.push(route.path)}
+          >
+            {showLabel && route.name}
+          </Menu.Item>
+        )
+      })}
+    </Menu>
   )
 }

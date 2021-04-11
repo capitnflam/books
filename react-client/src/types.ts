@@ -1,7 +1,9 @@
+import { IconType } from './icons'
+
 export type AppMenuCommon = { path: string }
 
 export type AppMenuInfo = AppMenuCommon & {
-  icon: any
+  icon: IconType
   name: string
 }
 
