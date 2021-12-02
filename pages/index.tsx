@@ -3,6 +3,10 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
+import { Steps } from 'antd'
+
+const { Step } = Steps
+
 const Home: NextPage = () => {
   return (
     <div className={styles.container}>
@@ -13,6 +17,12 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
+        <Steps direction="vertical" current={2}>
+          <Step title="test 1" description="description 1" />
+          <Step title="test 2" description="description 2" />
+          <Step title="test 3" description="description 3" />
+        </Steps>
+
         <h1 className={styles.title}>
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
