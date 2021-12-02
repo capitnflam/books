@@ -1,0 +1,7 @@
+{
+  "workspaces": [
+    "api",
+    "react-client"
+  ],
+  "packageManager": "yarn@3.1.1"
+}
