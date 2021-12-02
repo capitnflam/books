@@ -302,11 +302,11 @@ $RECYCLE.BIN/
 
 .pnp.*
 .yarn/*
-!.yarn/cache
+# !.yarn/cache
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
-!.yarn/sdks
+!.yarn/sdks/*/package.json
 !.yarn/versions
 
 # End of https://www.toptal.com/developers/gitignore/api/node,visualstudiocode,emacs,vim,react,yarn,linux,windows,osx
