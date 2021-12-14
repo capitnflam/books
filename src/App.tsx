@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import logo from './logo.svg'
 import './App.css'
 
+import { Book } from './components/Book'
+
 export const App = () => {
   const [count, setCount] = useState(0)
 
@@ -21,6 +23,8 @@ export const App = () => {
         <p>
           Edit <code>App.tsx</code> and save to test HMR updates.
         </p>
+        <Book variant="elevation" content="foobar elevation" />
+        <Book variant="outlined" content="foobar outlined" />
         <p>
           <a
             className="App-link"
