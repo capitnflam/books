@@ -23,8 +23,14 @@ export const App = () => {
         <p>
           Edit <code>App.tsx</code> and save to test HMR updates.
         </p>
-        <Book variant="elevation" content="foobar elevation" />
-        <Book variant="outlined" content="foobar outlined" />
+        <Book
+          authors={['Isaac Asimov', 'Dan Brown']}
+          cover={logo}
+          isbn="9780345317988"
+          synopsis="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut imperdiet, enim in tempus sollicitudin, lectus eros blandit erat, ac venenatis nibh diam at nunc. Maecenas gravida fringilla ligula id molestie. Suspendisse posuere vitae lacus in auctor. Curabitur vel urna massa. Sed sit amet turpis vel elit imperdiet pellentesque. In hac habitasse platea dictumst. Vivamus pellentesque enim eu ultrices venenatis. Fusce ante odio, varius vitae fermentum non, interdum ac purus. Nullam aliquet diam et massa elementum euismod. Maecenas ut augue vitae purus maximus fringilla. Nam efficitur urna ut nisl fermentum pharetra. Vivamus hendrerit elit efficitur finibus euismod. "
+          title="foobar"
+        />
+        {/* <Book variant="outlined" content="foobar outlined" /> */}
         <p>
           <a
             className="App-link"
