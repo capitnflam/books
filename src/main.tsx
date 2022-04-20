@@ -1,13 +1,13 @@
-import { CssBaseline } from '@mui/material'
+import { MantineProvider } from '@mantine/core'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
 import { App } from './App'
 
 ReactDOM.render(
   <React.StrictMode>
-    <CssBaseline enableColorScheme />
-    <App />
+    <MantineProvider>
+      <App />
+    </MantineProvider>
   </React.StrictMode>,
   document.querySelector('#root'),
 )
