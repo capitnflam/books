@@ -1,21 +1,42 @@
-import { AppShell, Navbar, Header } from '@mantine/core'
+import {
+  AppShell,
+  Button,
+  MantineProvider,
+  Navbar,
+  Header,
+} from '@mantine/core'
+import { useState } from 'react'
 
 export const App = () => {
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light')
   return (
-    <AppShell
-      padding="md"
-      navbar={
-        <Navbar width={{ base: 300 }} height={500} padding="xs">
-          <span>navbar</span>
-        </Navbar>
-      }
-      header={
-        <Header height={60} padding="xs">
-          <span>header</span>
-        </Header>
-      }
+    <MantineProvider
+      theme={{
+        colorScheme,
+      }}
     >
-      <span>foo</span>
-    </AppShell>
+      <AppShell
+        padding="md"
+        navbar={
+          <Navbar width={{ base: 300 }} height={500}>
+            <span>navbar</span>
+            <Button
+              onClick={() => {
+                setColorScheme(colorScheme === 'dark' ? 'light' : 'dark')
+              }}
+            >
+              Toggle theme
+            </Button>
+          </Navbar>
+        }
+        header={
+          <Header height={60}>
+            <span>header</span>
+          </Header>
+        }
+      >
+        <span>foo</span>
+      </AppShell>
+    </MantineProvider>
   )
 }
