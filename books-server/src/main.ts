@@ -8,6 +8,7 @@ import {
   WinstonModule,
 } from 'nest-winston'
 import * as winston from 'winston'
+import helmet from '@fastify/helmet'
 
 import { AppModule } from './app.module'
 
@@ -29,6 +30,7 @@ async function bootstrap() {
       }),
     },
   )
+  app.register(helmet)
   await app.listen(3000)
 }
 bootstrap()
