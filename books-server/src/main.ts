@@ -3,12 +3,31 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
+import {
+  utilities as nestWinstonModuleUtilities,
+  WinstonModule,
+} from 'nest-winston'
+import * as winston from 'winston'
+
 import { AppModule } from './app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
+    {
+      logger: WinstonModule.createLogger({
+        level: 'info',
+        transports: [
+          new winston.transports.Console({
+            format: winston.format.combine(
+              winston.format.timestamp(),
+              nestWinstonModuleUtilities.format.nestLike(),
+            ),
+          }),
+        ],
+      }),
+    },
   )
   await app.listen(3000)
 }
