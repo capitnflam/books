@@ -1,5 +1,5 @@
 {
-  "devDependencies": {
-    "nx": "^14.7.5"
-  }
+  "workspaces": [
+    "books-server"
+  ]
 }
