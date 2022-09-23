@@ -1,5 +1,5 @@
 import helmet from '@fastify/helmet'
-import { LoggerService } from '@nestjs/common'
+import { LoggerService, ValidationPipe, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import {
@@ -19,14 +19,21 @@ async function bootstrap() {
       bufferLogs: true,
     },
   )
+
   const configService = app.get(ConfigService)
   const serviceConfig = configService.get<ServiceConfiguration>('service')
   if (!serviceConfig) {
     throw new Error('Failed to get service configuration')
   }
+
   const logger = app.get<LoggerService>(Logger)
   app.useLogger(logger)
   app.register(helmet)
+  app.enableVersioning({
+    type: VersioningType.URI,
+  })
+  app.useGlobalPipes(new ValidationPipe())
+
   await app.listen(serviceConfig.port).then(() => {
     logger.log(`Listening on port: ${serviceConfig.port}`)
   })
