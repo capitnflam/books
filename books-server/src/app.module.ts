@@ -1,5 +1,7 @@
-import { Logger, Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { Module } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { LoggerModule } from 'nestjs-pino'
+
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import serviceConfig from './config/service.config'
@@ -10,8 +12,16 @@ import serviceConfig from './config/service.config'
       cache: true,
       load: [serviceConfig],
     }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const logLevel = config.get<string>('service.logLevel')
+        return { pinoHttp: { level: logLevel } }
+      },
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService, Logger],
+  providers: [AppService],
 })
 export class AppModule {}

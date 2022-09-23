@@ -1,6 +1,14 @@
 import { registerAs } from '@nestjs/config'
 
-const logLevels = ['debug', 'verbose', 'log', 'warn', 'error'] as const
+const logLevels = [
+  'trace',
+  'debug',
+  'info',
+  'warn',
+  'error',
+  'fatal',
+  'silent',
+] as const
 type LogLevel = typeof logLevels[number]
 
 export type ServiceConfiguration = {

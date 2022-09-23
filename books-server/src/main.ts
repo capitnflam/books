@@ -1,38 +1,22 @@
 import helmet from '@fastify/helmet'
+import { LoggerService } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
-import {
-  utilities as nestWinstonModuleUtilities,
-  WinstonModule,
-} from 'nest-winston'
-import * as winston from 'winston'
+import { Logger } from 'nestjs-pino'
 
 import { AppModule } from './app.module'
 import { ServiceConfiguration } from './config/service.config'
 
 async function bootstrap() {
-  const transports = {
-    console: new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        nestWinstonModuleUtilities.format.nestLike(),
-        winston.format.prettyPrint({ colorize: true }),
-      ),
-      level: 'error',
-    }),
-  }
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
     {
-      logger: WinstonModule.createLogger({
-        levels: winston.config.npm.levels,
-        transports: [transports.console],
-      }),
+      bufferLogs: true,
     },
   )
   const configService = app.get(ConfigService)
@@ -40,8 +24,11 @@ async function bootstrap() {
   if (!serviceConfig) {
     throw new Error('Failed to get service configuration')
   }
-  transports.console.level = serviceConfig.logLevel
+  const logger = app.get<LoggerService>(Logger)
+  app.useLogger(logger)
   app.register(helmet)
-  await app.listen(serviceConfig.port)
+  await app.listen(serviceConfig.port).then(() => {
+    logger.log(`Listening on port: ${serviceConfig.port}`)
+  })
 }
 bootstrap()
