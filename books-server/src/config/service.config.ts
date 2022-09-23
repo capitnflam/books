@@ -12,7 +12,9 @@ const logLevels = [
 type LogLevel = typeof logLevels[number]
 
 export type ServiceConfiguration = {
+  environment: string
   logLevel: LogLevel
+  name: string
   port: number
 }
 
@@ -28,7 +30,9 @@ const getLogLevel = (level?: string): LogLevel => {
 }
 
 const serviceConfigFactory = (): ServiceConfiguration => ({
+  environment: process.env.ENVIRONMENT || 'devlopment',
   logLevel: getLogLevel(process.env.LOG_LEVEL),
+  name: process.env.SERVICE_NAME || 'books-server',
   port: Number(process.env.PORT) || 3000,
 })
 

@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import serviceConfig from './config/service.config'
+import getPinoConfiguration from './pino.configure'
 
 @Module({
   imports: [
@@ -15,10 +16,7 @@ import serviceConfig from './config/service.config'
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const logLevel = config.get<string>('service.logLevel')
-        return { pinoHttp: { level: logLevel } }
-      },
+      useFactory: getPinoConfiguration,
     }),
   ],
   controllers: [AppController],
