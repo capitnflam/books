@@ -21,7 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@fastify/csrf-protection": "5.1.0",
     "@fastify/helmet": "10.0.0",
+    "@fastify/secure-session": "5.2.0",
     "@nestjs/common": "9.1.1",
     "@nestjs/config": "2.2.0",
     "@nestjs/core": "9.1.1",
