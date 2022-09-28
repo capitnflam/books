@@ -11,15 +11,10 @@ const logLevels = [
 ] as const
 type LogLevel = typeof logLevels[number]
 
-export type ServiceConfiguration = {
+export type LoggerConfiguration = {
   environment: string
   logLevel: LogLevel
   name: string
-  port: number
-  session: {
-    salt: string
-    secret: string
-  }
 }
 
 const isLogLevel = (level: string): level is LogLevel =>
@@ -33,15 +28,10 @@ const getLogLevel = (level?: string): LogLevel => {
   return level
 }
 
-const serviceConfigFactory = (): ServiceConfiguration => ({
+const loggerConfigFactory = (): LoggerConfiguration => ({
   environment: process.env.ENVIRONMENT || 'devlopment',
   logLevel: getLogLevel(process.env.LOG_LEVEL),
   name: process.env.SERVICE_NAME || 'books-server',
-  port: Number(process.env.PORT) || 3000,
-  session: {
-    salt: process.env.SESSION_SALT || '',
-    secret: process.env.SESSION_SECRET || '',
-  },
 })
 
-export default registerAs('service', serviceConfigFactory)
+export const loggerConfig = registerAs('logger', loggerConfigFactory)

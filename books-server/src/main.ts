@@ -11,12 +11,11 @@ import {
 
 import { Logger } from 'nestjs-pino'
 
-import { AppModule } from './app.module'
-import { ServiceConfiguration } from './config/service.config'
+import { ApplicationConfiguration, ApplicationModule } from './application'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
+    ApplicationModule,
     new FastifyAdapter(),
     {
       bufferLogs: true,
@@ -25,8 +24,9 @@ async function bootstrap() {
   )
 
   const configService = app.get(ConfigService)
-  const serviceConfig = configService.get<ServiceConfiguration>('service')
-  if (!serviceConfig) {
+  const applicationConfig =
+    configService.get<ApplicationConfiguration>('application')
+  if (!applicationConfig) {
     throw new Error('Failed to get service configuration')
   }
 
@@ -39,13 +39,16 @@ async function bootstrap() {
 
   await app.register(helmet)
   await app.register(secureSession, {
-    salt: serviceConfig.session.salt,
-    secret: serviceConfig.session.secret,
+    salt: applicationConfig.session.salt,
+    secret: applicationConfig.session.secret,
   })
   await app.register(csrf, { sessionPlugin: '@fastify/secure-session' })
 
-  await app.listen(serviceConfig.port).then(() => {
-    logger.log(`Listening on port: ${serviceConfig.port}`)
+  app.enableShutdownHooks()
+
+  await app.listen(applicationConfig.port).then(() => {
+    logger.log(`Listening on port: ${applicationConfig.port}`)
   })
 }
+
 bootstrap()
