@@ -17,6 +17,8 @@ export type LoggerConfiguration = {
   name: string
 }
 
+export const CONFIG_TOKEN = 'logger'
+
 const isLogLevel = (level: string): level is LogLevel =>
   (logLevels as unknown as string[]).includes(level)
 
@@ -34,4 +36,4 @@ const loggerConfigFactory = (): LoggerConfiguration => ({
   name: process.env.SERVICE_NAME || 'books-server',
 })
 
-export const loggerConfig = registerAs('logger', loggerConfigFactory)
+export const loggerConfig = registerAs(CONFIG_TOKEN, loggerConfigFactory)

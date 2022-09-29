@@ -8,6 +8,8 @@ export type ApplicationConfiguration = {
   }
 }
 
+export const CONFIG_TOKEN = 'application'
+
 const applicationConfigFactory = (): ApplicationConfiguration => ({
   port: Number(process.env.PORT) || 3000,
   session: {
@@ -17,6 +19,6 @@ const applicationConfigFactory = (): ApplicationConfiguration => ({
 })
 
 export const applicationConfig = registerAs(
-  'application',
+  CONFIG_TOKEN,
   applicationConfigFactory,
 )

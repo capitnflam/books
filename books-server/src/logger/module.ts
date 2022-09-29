@@ -2,11 +2,11 @@ import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { LoggerModule as PinoLoggerModule, Params } from 'nestjs-pino'
 
-import { loggerConfig } from './config'
+import { CONFIG_TOKEN, loggerConfig } from './config'
 
 const getPinoConfiguration = (config: ConfigService): Params => ({
   pinoHttp: {
-    level: config.get<string>('logger.logLevel'),
+    level: config.get<string>(`${CONFIG_TOKEN}.logLevel`),
     messageKey: 'message',
     timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
     formatters: {
@@ -20,14 +20,14 @@ const getPinoConfiguration = (config: ConfigService): Params => ({
       }),
     },
     base: {
-      environment: config.get<string>('logger.environment'),
-      service: config.get<string>('logger.name'),
+      environment: config.get<string>(`${CONFIG_TOKEN}.environment`),
+      service: config.get<string>(`${CONFIG_TOKEN}.name`),
     },
     redact: {
       paths: ['req.headers', 'res.headers'],
     },
   },
-  exclude: [{ method: RequestMethod.ALL, path: '/healthz' }],
+  exclude: [{ method: RequestMethod.ALL, path: '/health' }],
 })
 
 @Module({

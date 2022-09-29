@@ -11,7 +11,11 @@ import {
 
 import { Logger } from 'nestjs-pino'
 
-import { ApplicationConfiguration, ApplicationModule } from './application'
+import {
+  ApplicationConfiguration,
+  ApplicationModule,
+  CONFIG_TOKEN as APPLICATION_CONFIG_TOKEN,
+} from './application'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -24,8 +28,9 @@ async function bootstrap() {
   )
 
   const configService = app.get(ConfigService)
-  const applicationConfig =
-    configService.get<ApplicationConfiguration>('application')
+  const applicationConfig = configService.get<ApplicationConfiguration>(
+    APPLICATION_CONFIG_TOKEN,
+  )
   if (!applicationConfig) {
     throw new Error('Failed to get service configuration')
   }

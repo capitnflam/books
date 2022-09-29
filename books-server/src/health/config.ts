@@ -7,6 +7,8 @@ export type HealthConfiguration = {
   }
 }
 
+export const CONFIG_TOKEN = 'health'
+
 const healthConfigFactory = (): HealthConfiguration => ({
   memoryLimits: {
     heap: Number(process.env.MEMORY_LIMIT_HEAP) || undefined,
@@ -14,4 +16,4 @@ const healthConfigFactory = (): HealthConfiguration => ({
   },
 })
 
-export const healthConfig = registerAs('health', healthConfigFactory)
+export const healthConfig = registerAs(CONFIG_TOKEN, healthConfigFactory)

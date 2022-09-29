@@ -6,7 +6,7 @@ import {
   MemoryHealthIndicator,
 } from '@nestjs/terminus'
 
-import { HealthConfiguration } from './config'
+import { CONFIG_TOKEN, HealthConfiguration } from './config'
 
 @Controller('health')
 export class HealthController {
@@ -19,7 +19,7 @@ export class HealthController {
   @Get()
   @HealthCheck()
   health() {
-    const healthConfig = this.config.get<HealthConfiguration>('health')
+    const healthConfig = this.config.get<HealthConfiguration>(CONFIG_TOKEN)
     const healthIndicators = []
 
     if (healthConfig) {
