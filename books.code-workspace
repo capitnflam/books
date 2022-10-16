@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"name": "books",
+			"path": ".",
+			"ignore": []
+		},
+		{
+			"name": "books-front",
+			"path": "books-front"
+		},
+		{
+			"name": "books-server",
+			"path": "books-server"
+		}
+	],
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode",
+			"ZixuanChen.vitest-explorer"
+		]
+	},
+	"settings": {
+		"files.eol": "\n",
+		"files.trimFinalNewlines": true,
+		"files.insertFinalNewline": true,
+		"files.exclude": {
+			"books-front": true,
+			"books-server": true
+		}
+	}
+}
