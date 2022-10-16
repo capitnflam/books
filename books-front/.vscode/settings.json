@@ -1,0 +1,5 @@
+{
+  "vitest.commandLine": "npm run test run",
+  "vitest.enable": true,
+  "vitest.disabledWorkspaceFolders": ["books-server"]
+}
