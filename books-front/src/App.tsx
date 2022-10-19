@@ -1,36 +1,24 @@
 import { Outlet, Router, ReactLocation } from '@tanstack/react-location'
-import { useRecoilState } from 'recoil'
 
-import { darkModeState } from './atoms'
+import { Layout } from './Layout'
 
 export const App = () => {
   const location = new ReactLocation()
-  const [darkMode, setDarkMode] = useRecoilState(darkModeState)
 
   return (
     <Router
       location={location}
       routes={[
-        { path: '/', element: 'Hello World!' },
-        { path: 'foo', element: 'Hello foo!' },
         {
-          path: 'bar',
-          element: (
-            <>
-              <button
-                onClick={() => {
-                  console.log('darkMode', darkMode)
-                  setDarkMode((currentValue) => !currentValue)
-                }}
-              >
-                Toggle
-              </button>
-            </>
-          ),
+          path: '/',
+          element: 'Hellorld!',
         },
+        { path: '/foo', element: 'Hello foo!' },
       ]}
     >
-      <Outlet />
+      <Layout>
+        <Outlet />
+      </Layout>
     </Router>
   )
 }

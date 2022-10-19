@@ -1,4 +1,5 @@
 import { MantineProvider, MantineThemeOverride } from '@mantine/core'
+import { NotificationsProvider } from '@mantine/notifications'
 import { useRecoilState } from 'recoil'
 
 import { darkModeState } from './atoms'
@@ -15,7 +16,7 @@ const lightTheme: MantineThemeOverride = {
   colorScheme: 'light',
 }
 
-export const ThemeManager = ({ children }: Props) => {
+export const UIProvider = ({ children }: Props) => {
   const [darkMode] = useRecoilState(darkModeState)
 
   return (
@@ -24,7 +25,7 @@ export const ThemeManager = ({ children }: Props) => {
       withGlobalStyles
       withNormalizeCSS
     >
-      {children}
+      <NotificationsProvider>{children}</NotificationsProvider>
     </MantineProvider>
   )
 }
