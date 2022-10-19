@@ -7,7 +7,13 @@ module.exports = {
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
+    'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:import/recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/react',
+    'plugin:import/typescript',
     'plugin:prettier/recommended',
   ],
   root: true,
