@@ -1,5 +1,6 @@
 import { Outlet, Router, ReactLocation } from '@tanstack/react-location'
 
+import { NotFound } from './NotFound'
 import { Layout } from './Layout'
 
 export const App = () => {
@@ -14,6 +15,7 @@ export const App = () => {
           element: 'Hellorld!',
         },
         { path: '/foo', element: 'Hello foo!' },
+        { path: '/*', element: <NotFound /> },
       ]}
     >
       <Layout>
