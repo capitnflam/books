@@ -1,31 +1,36 @@
-import { MantineProvider, MantineThemeOverride } from '@mantine/core'
+import {
+  MantineProvider,
+  ColorSchemeProvider,
+  ColorScheme,
+} from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
-import { useRecoilState } from 'recoil'
-
-import { darkModeState } from './atoms'
+import { useCallback, useState } from 'react'
 
 interface Props {
   children: React.ReactNode
 }
 
-const darkTheme: MantineThemeOverride = {
-  colorScheme: 'dark',
-}
-
-const lightTheme: MantineThemeOverride = {
-  colorScheme: 'light',
-}
-
 export const UIProvider = ({ children }: Props) => {
-  const [darkMode] = useRecoilState(darkModeState)
+  const [colorScheme, setColorScheme] = useState<ColorScheme>('dark')
+
+  const toggleColorScheme = useCallback(
+    (value?: ColorScheme) =>
+      setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark')),
+    [colorScheme],
+  )
 
   return (
-    <MantineProvider
-      theme={darkMode ? darkTheme : lightTheme}
-      withGlobalStyles
-      withNormalizeCSS
+    <ColorSchemeProvider
+      colorScheme={colorScheme}
+      toggleColorScheme={toggleColorScheme}
     >
-      <NotificationsProvider>{children}</NotificationsProvider>
-    </MantineProvider>
+      <MantineProvider
+        theme={{ colorScheme }}
+        withGlobalStyles
+        withNormalizeCSS
+      >
+        <NotificationsProvider>{children}</NotificationsProvider>
+      </MantineProvider>
+    </ColorSchemeProvider>
   )
 }

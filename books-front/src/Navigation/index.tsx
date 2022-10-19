@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navbar, Center, Image, Stack } from '@mantine/core'
+import { Navbar, Stack } from '@mantine/core'
 import {
   IconHome2,
   IconGauge,
@@ -25,7 +25,7 @@ const mockdata = [
 ]
 
 export const Navigation = () => {
-  const [active, setActive] = useState(2)
+  const [active, setActive] = useState(0)
 
   const links = mockdata.map((link, index) => (
     <NavigationLink
@@ -38,16 +38,7 @@ export const Navigation = () => {
 
   return (
     <Navbar width={{ base: 80 }} p="xs">
-      <Center>
-        <Image
-          alt="Books logo"
-          src="https://via.placeholder.com/400"
-          height={30}
-          width={30}
-          fit="fill"
-        />
-      </Center>
-      <Navbar.Section grow mt={50}>
+      <Navbar.Section grow>
         <Stack justify="center" spacing={0}>
           {links}
         </Stack>
