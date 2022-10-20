@@ -1,6 +1,6 @@
 import { Outlet, Router, ReactLocation } from '@tanstack/react-location'
 
-import { NotFound } from './NotFound'
+import { NotFound } from './Components/NotFound'
 import { Layout } from './Layout'
 
 export const App = () => {

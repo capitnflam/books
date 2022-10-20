@@ -30,7 +30,7 @@ export const Layout = ({ children }: Props) => {
             <Group>
               <Image
                 alt="Books logo"
-                src="https://via.placeholder.com/400"
+                src="https://via.placeholder.com/30"
                 height={30}
                 width={30}
                 fit="fill"
