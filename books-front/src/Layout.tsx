@@ -9,7 +9,7 @@ import {
 import { IconMoon, IconSun } from '@tabler/icons'
 import { ReactNode, useCallback } from 'react'
 
-import { Navigation } from './Navigation'
+import { Navigation } from './Components/Navigation'
 
 interface Props {
   children: ReactNode

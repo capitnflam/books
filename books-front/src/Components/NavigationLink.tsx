@@ -1,5 +1,6 @@
 import { Tooltip, UnstyledButton, createStyles } from '@mantine/core'
 import { TablerIcon } from '@tabler/icons'
+import { useLocation, useNavigate } from '@tanstack/react-location'
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -37,22 +38,26 @@ const useStyles = createStyles((theme) => ({
 interface NavigationLinkProps {
   icon: TablerIcon
   label: string
-  active?: boolean
-  onClick?(): void
+  path: string
 }
 
 export const NavigationLink = ({
   icon: Icon,
   label,
-  active,
-  onClick,
+  path,
 }: NavigationLinkProps) => {
+  const {
+    current: { pathname },
+  } = useLocation()
+  const navigate = useNavigate()
   const { classes, cx } = useStyles()
   return (
     <Tooltip label={label} position="right" transitionDuration={0}>
       <UnstyledButton
-        onClick={onClick}
-        className={cx(classes.link, { [classes.active]: active })}
+        onClick={() => {
+          navigate({ to: path })
+        }}
+        className={cx(classes.link, { [classes.active]: path === pathname })}
       >
         <Icon stroke={1.5} />
       </UnstyledButton>
