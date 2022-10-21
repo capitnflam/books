@@ -2,6 +2,7 @@ import { Outlet, Router, ReactLocation } from '@tanstack/react-location'
 
 import { NotFound } from './Components/NotFound'
 import { Layout } from './Layout'
+import { Home } from './Pages/Home'
 
 export const App = () => {
   const location = new ReactLocation()
@@ -12,9 +13,9 @@ export const App = () => {
       routes={[
         {
           path: '/',
-          element: 'Hellorld!',
+          element: <Home />,
         },
-        { path: '/foo', element: 'Hello foo!' },
+        { path: '/settings', element: 'settings' },
         { path: '/*', element: <NotFound /> },
       ]}
     >

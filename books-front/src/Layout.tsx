@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   AppShell,
+  Container,
   Group,
   Header,
   Image,
@@ -47,7 +48,16 @@ export const Layout = ({ children }: Props) => {
         </Header>
       }
     >
-      {children}
+      <Container
+        sx={{
+          height: '100%',
+          width: '100%',
+          overflow: 'auto',
+          maxWidth: '100%',
+        }}
+      >
+        {children}
+      </Container>
     </AppShell>
   )
 }
