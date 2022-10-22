@@ -1,9 +1,5 @@
 import { Outlet, Router, ReactLocation } from '@tanstack/react-location'
 
-import { NotFound } from './Components/NotFound'
-import { Layout } from './Layout'
-import { Home } from './Pages/Home'
-
 export const App = () => {
   const location = new ReactLocation()
 
@@ -13,15 +9,17 @@ export const App = () => {
       routes={[
         {
           path: '/',
-          element: <Home />,
+          element: (
+            <div>
+              <h1 className="text-3xl font-bold underline">Hellorld!</h1>
+            </div>
+          ),
         },
         { path: '/settings', element: 'settings' },
-        { path: '/*', element: <NotFound /> },
+        { path: '/*', element: 'not found' },
       ]}
     >
-      <Layout>
-        <Outlet />
-      </Layout>
+      <Outlet />
     </Router>
   )
 }

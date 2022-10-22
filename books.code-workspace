@@ -18,7 +18,8 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"esbenp.prettier-vscode",
-			"ZixuanChen.vitest-explorer"
+			"zixuanchen.vitest-explorer",
+			"bradlc.vscode-tailwindcss"
 		]
 	},
 	"settings": {
@@ -50,6 +51,9 @@
 					}
 				}
 			]
+		},
+		"tailwindCSS.experimental.configFile": {
+			"books-front/tailwind.config.js": "books-front/**/*.[jt]sx?"
 		}
 	}
 }
