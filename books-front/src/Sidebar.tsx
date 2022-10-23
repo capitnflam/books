@@ -66,10 +66,10 @@ export const Sidebar = () => {
               </div>
             )}
           >
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center">
               <button
                 type="button"
-                className="flex items-center rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                className="flex items-center gap-3 rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
               >
                 {user.profilePicture ? (
                   <img
@@ -86,7 +86,7 @@ export const Sidebar = () => {
                   </div>
                 )}
 
-                <div className="font-medium dark:text-white">
+                <div className="flex flex-col items-start font-medium dark:text-white">
                   <div>
                     {user.firstName} {user.lastName}
                   </div>
