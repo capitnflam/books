@@ -14,7 +14,7 @@ export const Layout = ({ children }: Props) => {
       <Header />
       <div className="flex h-full flex-row bg-gray-50 dark:bg-gray-800">
         <Sidebar />
-        <main className="flex h-full w-full flex-col overflow-auto rounded-tl-lg bg-green-200 p-3 dark:bg-red-200">
+        <main className="flex h-full w-full flex-col overflow-auto rounded-tl-lg bg-white p-3 text-black dark:bg-gray-600 dark:text-white">
           {children}
         </main>
       </div>
