@@ -2,6 +2,7 @@ import { Outlet, ReactLocation, Router } from '@tanstack/react-location'
 
 import { Home } from './Home'
 import { Layout } from './Layout'
+import { NotFound } from './NotFound'
 import { ThemeProvider } from './ThemeContext'
 
 export const Root = () => {
@@ -16,7 +17,7 @@ export const Root = () => {
           element: <Home />,
         },
         { path: '/settings', element: 'settings' },
-        { path: '/*', element: 'not found' },
+        { path: '/*', element: <NotFound /> },
       ]}
     >
       <ThemeProvider>

@@ -26,6 +26,15 @@ export const Sidebar = () => {
               <span className="ml-3">Settings</span>
             </Link>
           </li>
+          <li>
+            <Link
+              to="/nonexistent"
+              className="flex items-center rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            >
+              <IconSettings />
+              <span className="ml-3">non existent</span>
+            </Link>
+          </li>
         </ul>
         <div className="mt-auto border-t pt-2">
           <UserBadge />
