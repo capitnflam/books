@@ -1,8 +1,9 @@
+import { BookCard } from './BookCard'
 import { Link } from './Link'
 
 export const Home = () => {
   return (
-    <div>
+    <div className="space-x-3 space-y-3">
       <h1 className="text-3xl font-bold underline dark:text-green-200">
         Hellorld!
       </h1>
@@ -12,30 +13,88 @@ export const Home = () => {
       <Link to="http://www.google.com" className="bg-yellow-500">
         bar
       </Link>
-      <p>
-        1sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf1
-      </p>
-      <p>
-        2sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf2
-      </p>
-      <p>
-        3sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf3
-      </p>
-      <p>
-        4sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf4
-      </p>
-      <p>
-        5sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf5
-      </p>
-      <p>
-        6sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf6
-      </p>
-      <p>
-        7sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf7
-      </p>
-      <p>
-        8sqskljhlksqdhflksjdhflskjhfslkdhfklshfsldkjfhsldfhslkhfslkdhfskljdfhskjdhfslkdhfslkjdhfsldkhflskdjhfslkjdhflksdjhflksjhlfshldfkhslkdfhslkjhdflskhdflkjsdhfskjhfslkjdhfskjlhdfslkjdhfslkdjfhslkdhfslkjdhgflksjhflskdfhdkjhqsdqmsdlkhsdkjfhskjfljhqlkhlqskjhdqlshkljdhlkfhgsdhgghfhhfjjfjqsjjmljqmlkjdqmljqmljmqjmlkdjmlsqkjsdmlkjqmldkjfmlqsjdfmlksqjdmlksqjfdmlkqjsdmlkjfsqmlkdjqmlkjdmlkjfqsmlkjdfmlkjf8
-      </p>
+      <div className="flex flex-col gap-3">
+        <div className="columns-4">
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+            summary="Lorem, ipsum dolor sit amet consectetur adipisicing elit. In sint, quidem facilis quaerat hic porro, ullam, illum magnam autem inventore at pariatur. Dolor eveniet rem accusamus veniam quidem ipsum quae?"
+          />
+          <BookCard
+            isbn="978-2-7654-0912-0"
+            title="Manuel de bibliographie générale"
+            cover="https://via.placeholder.com/512"
+            authors={['foo bar', 'bar foo']}
+          />
+        </div>
+      </div>
     </div>
   )
 }
