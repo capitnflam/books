@@ -58,6 +58,7 @@
     "vitest": "0.25.8"
   },
   "dependencies": {
+    "@heroicons/react": "2.0.15",
     "@nestjs/common": "9.3.8",
     "@nestjs/core": "9.3.8",
     "@nestjs/platform-express": "9.3.8",
