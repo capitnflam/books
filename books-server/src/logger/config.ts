@@ -31,7 +31,7 @@ const getLogLevel = (level?: string): LogLevel => {
 }
 
 const loggerConfigFactory = (): LoggerConfiguration => ({
-  environment: process.env.ENVIRONMENT || 'devlopment',
+  environment: process.env.ENVIRONMENT || 'development',
   logLevel: getLogLevel(process.env.LOG_LEVEL),
   name: process.env.SERVICE_NAME || 'books-server',
 })

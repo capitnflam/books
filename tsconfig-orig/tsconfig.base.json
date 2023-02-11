@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": false,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "declaration": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

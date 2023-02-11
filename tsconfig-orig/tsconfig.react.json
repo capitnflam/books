@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2017",
+    "jsx": "react",
+    "lib": ["dom", "es2020"]
+  }
+}

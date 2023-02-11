@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 
+import { AuthModule } from '../auth'
 import { HealthModule } from '../health'
 import { LoggerModule } from '../logger'
 
@@ -16,6 +17,7 @@ import { applicationConfig } from './config'
     }),
     LoggerModule,
     HealthModule,
+    AuthModule,
   ],
   controllers: [ApplicationController],
   providers: [ApplicationService],

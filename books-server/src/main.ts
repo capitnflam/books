@@ -1,6 +1,6 @@
-import csrf from '@fastify/csrf-protection'
+// import csrf from '@fastify/csrf-protection'
 import helmet from '@fastify/helmet'
-import secureSession from '@fastify/secure-session'
+// import secureSession from '@fastify/secure-session'
 import { LoggerService, ValidationPipe, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
@@ -43,11 +43,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
 
   await app.register(helmet)
-  await app.register(secureSession, {
-    salt: applicationConfig.session.salt,
-    secret: applicationConfig.session.secret,
-  })
-  await app.register(csrf, { sessionPlugin: '@fastify/secure-session' })
+  // await app.register(secureSession, {
+  //   salt: applicationConfig.session.salt,
+  //   secret: applicationConfig.session.secret,
+  // })
+  // await app.register(csrf, { sessionPlugin: '@fastify/secure-session' })
 
   app.enableShutdownHooks()
 
