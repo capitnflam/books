@@ -7,6 +7,7 @@
   "devDependencies": {
     "@nestjs/schematics": "9.0.4",
     "@nestjs/testing": "9.3.8",
+    "@nrwl/devkit": "15.6.3",
     "@nrwl/eslint-plugin-nx": "15.6.3",
     "@nrwl/jest": "15.6.3",
     "@nrwl/js": "15.6.3",
@@ -49,7 +50,7 @@
     "vite": "4.1.1",
     "vite-plugin-eslint": "1.8.1",
     "vite-tsconfig-paths": "4.0.5",
-    "vitest": "0.28.4"
+    "vitest": "0.25.8"
   },
   "dependencies": {
     "@nestjs/common": "9.3.8",
