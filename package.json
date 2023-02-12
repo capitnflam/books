@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "nx run-many --target=build",
+    "format:check": "nx format:check",
     "lint": "nx run-many --target=lint",
     "test": "nx run-many --target=test",
     "serve": "nx serve"
