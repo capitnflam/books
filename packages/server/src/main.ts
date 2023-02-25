@@ -1,22 +1,29 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
+import helmet from 'helmet'
 
-import { Logger } from '@nestjs/common'
-import { NestFactory } from '@nestjs/core'
-
-import { AppModule } from './app/app.module'
+import { ConfigService } from './config'
+import { corsMatcher } from './cors-matcher'
+import { createApp } from './create-app'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
-  const globalPrefix = 'api'
-  app.setGlobalPrefix(globalPrefix)
-  const port = process.env.PORT || 3333
-  await app.listen(port)
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-  )
+  const app = await createApp()
+  app.use(helmet())
+
+  const configService = app.get(ConfigService)
+  app.enableCors({
+    origin: (origin: string | undefined) => {
+      if (process.env.NODE_ENV === 'development') {
+        return true
+      }
+      return configService
+        .get('allow-origin')
+        .some((allowedOrigin) => corsMatcher(origin, allowedOrigin))
+    },
+  })
+
+  const port = configService.get('port')
+  const addr = configService.get('listen')
+
+  await app.listen(port, addr)
 }
 
-bootstrap()
+void bootstrap()
