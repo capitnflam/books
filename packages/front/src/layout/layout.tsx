@@ -6,9 +6,9 @@ import { Menu } from './menu'
 
 export function Layout() {
   return (
-    <div className="w-screen h-screen flex flex-col">
+    <div className="flex h-screen w-screen flex-col">
       <Header />
-      <div className="flex flex-row flex-grow">
+      <div className="flex flex-grow flex-row">
         <Menu />
         <main>
           <Outlet />
