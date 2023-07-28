@@ -1,15 +1,21 @@
+import { useCallback, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { Footer } from './footer'
 import { Header } from './header'
-import { Menu } from './menu'
+import { Sidebar } from './sidebar'
 
 export function Layout() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarOpen(prevState => !prevState)
+  }, [setIsSidebarOpen])
+
   return (
     <div className="flex h-screen w-screen flex-col">
-      <Header />
+      <Header toggleSidebar={toggleSidebar} />
       <div className="flex flex-grow flex-row">
-        <Menu />
+        <Sidebar isOpen={isSidebarOpen} />
         <main>
           <Outlet />
         </main>
@@ -18,3 +24,4 @@ export function Layout() {
     </div>
   )
 }
+ 
