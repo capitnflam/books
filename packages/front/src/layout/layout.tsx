@@ -8,7 +8,7 @@ import { Sidebar } from './sidebar'
 export function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const toggleSidebar = useCallback(() => {
-    setIsSidebarOpen(prevState => !prevState)
+    setIsSidebarOpen((prevState) => !prevState)
   }, [setIsSidebarOpen])
 
   return (
@@ -24,4 +24,3 @@ export function Layout() {
     </div>
   )
 }
- 
