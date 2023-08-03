@@ -1,3 +1,5 @@
+import { RouteObject } from 'react-router-dom'
+
 import { LoremIpsum } from './lorem-ipsum'
 
 export function App() {
@@ -7,3 +9,5 @@ export function App() {
     </div>
   )
 }
+
+export const route: RouteObject = { element: <App />, index: true }

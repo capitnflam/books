@@ -1,23 +1,33 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { StrictMode } from 'react'
 import * as ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import { App } from './app'
+import { route as appRoute } from './app'
+import { route as authorRoute } from './author'
+import { route as bookRoute } from './book'
+import { route as booksRoute } from './books'
 import { Layout } from './layout'
 
 import './index.css'
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
     element: <Layout />,
     path: '/',
-    children: [{ element: <App />, path: '/' }],
+    children: [appRoute, booksRoute, bookRoute, authorRoute],
   },
 ])
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+    </QueryClientProvider>
   </StrictMode>,
 )

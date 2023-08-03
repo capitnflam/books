@@ -16,7 +16,7 @@ export function Layout() {
       <Header toggleSidebar={toggleSidebar} />
       <div className="flex flex-grow flex-row">
         <Sidebar isOpen={isSidebarOpen} />
-        <main>
+        <main className="w-full">
           <Outlet />
         </main>
       </div>
