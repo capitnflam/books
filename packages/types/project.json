@@ -27,5 +27,5 @@
       }
     }
   },
-  "tags": ["scope:api", "scope:front"]
+  "tags": ["scope:shared"]
 }
