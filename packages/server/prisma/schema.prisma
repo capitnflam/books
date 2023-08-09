@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Author {
-  id    Int    @id @default(autoincrement())
-  name  String
-  books Book[]
+  id   Int    @id @default(autoincrement())
+  name String
+  book Book[]
 }
 
 model Book {
-  id       Int     @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   title    String
-  isbn     String  @unique
-  author   Author? @relation(fields: [authorId], references: [id])
-  authorId Int?
+  coverURL String?
+  isbn     String   @unique
+  synopsis String?
+  authors  Author[]
 }

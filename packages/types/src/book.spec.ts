@@ -5,6 +5,7 @@ const bookFixture = {
   coverURL: 'http://foo.bar/cover.jpg',
   title: 'test',
   synopsis: 'test synopsis',
+  isbn: '978-3-16-148410-0',
   authors: [
     {
       name: 'author 1',
