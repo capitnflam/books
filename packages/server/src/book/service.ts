@@ -1,5 +1,6 @@
-import { bookSchema, Book } from '@books/types'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+
+import { bookSchema, Book } from '~books/types'
 
 import { PrismaService } from '../prisma/service'
 
@@ -11,12 +12,10 @@ export class BookService {
     const bookPromise = this.prisma.book.findUnique({ where: { id } })
     const authors = await bookPromise.authors()
 
-    const book = await bookPromise
+    const book = (await bookPromise) as Partial<Book>
     if (!book) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
     }
-    console.log('AAAAA:', JSON.stringify(book))
-
     const dbResult = {
       ...book,
       authors: authors ?? [],
