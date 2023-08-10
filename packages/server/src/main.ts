@@ -5,9 +5,8 @@ import { ConfigService } from './config'
 import { corsMatcher } from './cors-matcher'
 import { createApp } from './create-app'
 
-async function bootstrap() {
-  const logger = new Logger('main')
-  const app = await createApp()
+async function prepareApp(bufferLogs = true) {
+  const app = await createApp(bufferLogs)
   app.use(helmet())
 
   const configService = app.get(ConfigService)
@@ -28,11 +27,22 @@ async function bootstrap() {
     },
   })
 
+  return app
+}
+
+async function bootstrap() {
+  const app = await prepareApp()
+
+  const configService = app.get(ConfigService)
   const port = configService.get('port')
   const addr = configService.get('listen')
 
   await app.listen(port, addr)
-  logger.debug('Application is running', { appURL: await app.getUrl() })
+  Logger.debug('Application is running', { appURL: await app.getUrl() })
 }
 
-void bootstrap()
+if (import.meta.env.PROD) {
+  void bootstrap()
+}
+
+export const viteNodeApp = prepareApp(false)
