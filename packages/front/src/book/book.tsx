@@ -76,15 +76,17 @@ export function Book() {
           </div>
         </div>
       </div>
-      <div>
-        <ReactMarkdown
-          rehypePlugins={[RehypeSanitize]}
-          remarkPlugins={[RemarkEmoji]}
-          linkTarget={linkTargetTransform}
-        >
-          {book.synopsis}
-        </ReactMarkdown>
-      </div>
+      {book.synopsis && (
+        <div>
+          <ReactMarkdown
+            rehypePlugins={[RehypeSanitize]}
+            remarkPlugins={[RemarkEmoji]}
+            linkTarget={linkTargetTransform}
+          >
+            {book.synopsis}
+          </ReactMarkdown>
+        </div>
+      )}
     </div>
   )
 }
