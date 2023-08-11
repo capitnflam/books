@@ -17,8 +17,6 @@ export class CollectionService {
       orderBy: { index: 'asc' },
     })
 
-    console.log(books)
-
     const collection = await collectionPromise
     if (!collection) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
