@@ -1,29 +1,41 @@
 import { collectionSchema } from './collection'
 
+const date = new Date()
+
 const bookFixture = {
-  uri: '/book/42',
+  id: 42,
   coverURL: 'http://foo.bar/cover.jpg',
   title: 'test',
-  synopsis: 'test synopsis',
   isbn: '978-3-16-148410-0',
-  authors: [
-    {
-      name: 'author 1',
-      uri: '/author/21',
-    },
-  ],
 }
 
 const collectionFixture = {
-  uri: '/collection/21',
+  id: 21,
   name: 'test collection',
   books: [bookFixture],
+  createdAt: date,
+  updatedAt: date,
+}
+
+const bookFixtureResult = {
+  uri: '/book/42',
+  coverURL: 'http://foo.bar/cover.jpg',
+  title: 'test',
+  isbn: '978-3-16-148410-0',
+}
+
+const collectionFixtureResult = {
+  uri: '/collection/21',
+  name: 'test collection',
+  books: [bookFixtureResult],
+  createdAt: date.toISOString(),
+  updatedAt: date.toISOString(),
 }
 
 describe('types::collection', () => {
   it('parses a valid object', () => {
     expect(collectionSchema.parse(collectionFixture)).toStrictEqual(
-      collectionFixture,
+      collectionFixtureResult,
     )
   })
 
