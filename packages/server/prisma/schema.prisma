@@ -8,16 +8,46 @@ datasource db {
 }
 
 model Author {
-  id   Int    @id @default(autoincrement())
-  name String
-  book Book[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  book      Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 }
 
 model Book {
-  id       Int      @id @default(autoincrement())
-  title    String
-  coverURL String?
-  isbn     String   @unique
-  synopsis String?
-  authors  Author[]
+  id          Int                  @id @default(autoincrement())
+  title       String
+  coverURL    String?
+  isbn        String?              @unique
+  synopsis    String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+  deletedAt   DateTime?
+  authors     Author[]
+  collections BooksInCollections[]
+}
+
+model Collection {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @default(now()) @updatedAt
+  deletedAt DateTime?
+  books     BooksInCollections[]
+}
+
+model BooksInCollections {
+  book         Book       @relation(fields: [bookId], references: [id])
+  bookId       Int
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  collectionId Int
+  index        Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+  deletedAt    DateTime?
+
+  @@id([bookId, collectionId])
+  @@unique([collectionId, index])
 }

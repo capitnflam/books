@@ -1,18 +1,42 @@
 import validator from 'validator'
 import { z } from 'zod'
 
-export const bookSchema = z.object({
-  uri: z.string().startsWith('/book/'),
-  coverURL: z.string().url().optional(),
+import { dateInfoSchema } from './sub/date-info'
+import { transformURI } from './sub/transform-uri'
+
+import { authorMinimalSchema } from './author'
+
+const bookInternalSchema = z.object({
+  id: z.number(),
+  coverURL: z
+    .string()
+    .url()
+    .nullish()
+    .transform((x) => x ?? undefined),
   title: z.string(),
-  synopsis: z.string().optional(),
-  isbn: z.string().refine(validator.isISBN),
-  authors: z.array(
-    z.object({
-      name: z.string(),
-      uri: z.string().startsWith('/author/'),
-    }),
-  ),
+  isbn: z
+    .string()
+    .refine(validator.isISBN)
+    .nullish()
+    .transform((x) => x ?? undefined),
 })
 
+export const bookMinimalSchema = bookInternalSchema.transform(
+  transformURI('/book'),
+)
+
+export const bookSchema = bookInternalSchema
+  .merge(
+    z.object({
+      synopsis: z
+        .string()
+        .nullish()
+        .transform((x) => x ?? undefined),
+      authors: z.array(authorMinimalSchema),
+    }),
+  )
+  .merge(dateInfoSchema)
+  .transform(transformURI('/book'))
+
+export type BookMinimal = z.infer<typeof bookMinimalSchema>
 export type Book = z.infer<typeof bookSchema>

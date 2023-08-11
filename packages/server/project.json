@@ -29,7 +29,8 @@
       "configurations": {
         "development": {
           "buildTarget": "server:build:development",
-          "hmr": true
+          "hmr": true,
+          "mode": "debug"
         },
         "production": {
           "buildTarget": "server:build:production",
@@ -87,6 +88,13 @@
       "executor": "@nx-tools/nx-prisma:deploy",
       "options": {
         "schema": "packages/server/prisma/schema.prisma"
+      }
+    },
+    "prisma-seed": {
+      "executor": "@nx-tools/nx-prisma:seed",
+      "options": {
+        "script": "packages/server/src/seed.ts",
+        "tsConfig": "packages/server/tsconfig.app.json"
       }
     },
     "prisma-status": {

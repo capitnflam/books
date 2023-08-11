@@ -12,7 +12,7 @@ export class BookService {
     const bookPromise = this.prisma.book.findUnique({ where: { id } })
     const authors = await bookPromise.authors()
 
-    const book = (await bookPromise) as Partial<Book>
+    const book = await bookPromise
     if (!book) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
     }
