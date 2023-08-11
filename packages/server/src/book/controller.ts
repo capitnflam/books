@@ -1,5 +1,4 @@
 import { Controller, Get, Header, Param } from '@nestjs/common'
-import { Book } from '@books/types'
 
 import { BookService } from './service'
 

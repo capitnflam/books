@@ -5,4 +5,9 @@ export {
   authorMinimalSchema,
 } from './author'
 export { Book, BookMinimal, bookSchema, bookMinimalSchema } from './book'
-export { Collection, collectionSchema } from './collection'
+export {
+  Collection,
+  CollectionMinimal,
+  collectionSchema,
+  collectionMinimalSchema,
+} from './collection'
