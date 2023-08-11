@@ -1,14 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 
-import { Book, Author, Collection } from '~books/types'
+import { BookMinimal, AuthorMinimal, CollectionMinimal } from '~books/types'
 
-const authors: Author[] = [
+const authors: AuthorMinimal[] = [
   { name: 'Isaac Asimov', uri: '/author/1' },
   { name: 'Frank Herbert', uri: '/author/2' },
   { name: 'Brian Herbert', uri: '/author/3' },
 ]
 
-const books: Book[] = [
+const books: Array<
+  BookMinimal & { synopsis: string; authors: AuthorMinimal[] }
+> = [
   {
     uri: '/book/1',
     title: 'Foundation',
@@ -52,7 +54,7 @@ const books: Book[] = [
   },
 ]
 
-const collections: Collection[] = [
+const collections: CollectionMinimal[] = [
   {
     uri: '/collection/1',
     name: 'Foundation',
