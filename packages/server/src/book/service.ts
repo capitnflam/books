@@ -4,6 +4,8 @@ import { bookSchema, Book } from '~books/types'
 
 import { PrismaService } from '../prisma/service'
 
+const newLineRegEx = /\\n/g
+
 @Injectable()
 export class BookService {
   constructor(private prisma: PrismaService) {}
@@ -22,6 +24,8 @@ export class BookService {
     }
 
     const result = bookSchema.parse(dbResult)
+
+    result.synopsis = result.synopsis?.replace(newLineRegEx, '\n')
 
     return result
   }
