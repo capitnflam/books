@@ -1,22 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import ReactMarkdown from 'react-markdown'
 import { Link, useParams } from 'react-router-dom'
-import RehypeSanitize from 'rehype-sanitize'
-import RemarkEmoji from 'remark-emoji'
 
+import { Markdown } from '../components/markdown'
 import { Spinner } from '../components/spinner'
 import { RouteParams } from '../utils/route-params'
 
 import { Book as BookType } from '~books/types'
 
 type ParamsKey = 'id'
-
-function linkTargetTransform(href: string) {
-  if (!href.startsWith('/')) {
-    return '_blank'
-  }
-}
 
 export function Book() {
   const { id } = useParams<RouteParams<ParamsKey>>()
@@ -76,17 +68,7 @@ export function Book() {
           </div>
         </div>
       </div>
-      {book.synopsis && (
-        <div>
-          <ReactMarkdown
-            rehypePlugins={[RehypeSanitize]}
-            remarkPlugins={[RemarkEmoji]}
-            linkTarget={linkTargetTransform}
-          >
-            {book.synopsis}
-          </ReactMarkdown>
-        </div>
-      )}
+      {book.synopsis && <Markdown className="w-full">{book.synopsis}</Markdown>}
     </div>
   )
 }
