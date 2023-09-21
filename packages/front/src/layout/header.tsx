@@ -1,11 +1,10 @@
 import { Bars3Icon, BuildingLibraryIcon } from '@heroicons/react/24/outline'
 import { useCallback } from 'react'
 
-type Props = {
-  toggleSidebar: () => void
-}
+import { useToggleSidebarOpen } from './state'
 
-export function Header({ toggleSidebar }: Props) {
+export function Header() {
+  const toggleSidebar = useToggleSidebarOpen()
   const onClickHandler = useCallback(() => toggleSidebar(), [toggleSidebar])
 
   return (

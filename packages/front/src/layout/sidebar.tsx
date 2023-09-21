@@ -1,13 +1,13 @@
 import { BookOpenIcon, PencilIcon } from '@heroicons/react/24/solid'
 import { useLocation, useMatches } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
 
-type Props = {
-  isOpen: boolean
-}
+import { sidebarOpenState } from './state'
 
-export function Sidebar({ isOpen }: Props) {
+export function Sidebar() {
   const location = useLocation()
   const matches = useMatches()
+  const isOpen = useRecoilValue(sidebarOpenState)
   const width = isOpen ? 'w-80' : 'w-8'
 
   return (

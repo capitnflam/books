@@ -26,6 +26,7 @@
     "react-dom": "18.2.0",
     "react-markdown": "8.0.7",
     "react-router-dom": "6.16.0",
+    "recoil": "0.7.7",
     "reflect-metadata": "0.1.13",
     "rehype-sanitize": "6.0.0",
     "remark-emoji": "4.0.0",
