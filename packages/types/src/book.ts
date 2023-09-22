@@ -1,10 +1,9 @@
 import validator from 'validator'
 import { z } from 'zod'
 
+import { authorMinimalSchema } from './author'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
-
-import { authorMinimalSchema } from './author'
 
 const bookInternalSchema = z.object({
   id: z.number(),

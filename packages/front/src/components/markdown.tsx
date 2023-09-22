@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown'
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
 import RehypeSanitize from 'rehype-sanitize'
 import RemarkEmoji from 'remark-emoji'
-import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
 
 interface Props {
   children: string

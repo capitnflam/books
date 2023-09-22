@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { Link, useParams } from 'react-router-dom'
 
+import { Book as BookType } from '~books/types'
+
 import { Markdown } from '../components/markdown'
 import { Spinner } from '../components/spinner'
 import { RouteParams } from '../utils/route-params'
-
-import { Book as BookType } from '~books/types'
 
 type ParamsKey = 'id'
 

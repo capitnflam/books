@@ -1,9 +1,9 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
-
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import dts from 'vite-plugin-dts'
 import * as path from 'path'
+
+import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
+import viteTsConfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/types',

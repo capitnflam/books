@@ -1,9 +1,8 @@
 import { z } from 'zod'
 
+import { bookMinimalSchema } from './book'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
-
-import { bookMinimalSchema } from './book'
 
 const collectionInternalSchema = z.object({
   id: z.number(),
