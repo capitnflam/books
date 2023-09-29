@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { Book as BookType } from '~books/types'
@@ -29,6 +30,21 @@ export function Book() {
     retry: false,
   })
 
+  const cover = useMemo(() => {
+    if (book) {
+      if (book?.coverURL) {
+        return (
+          <img className="h-auto w-auto" src={book.coverURL} alt={book.title} />
+        )
+      }
+      return (
+        <span className="h-auto w-auto whitespace-nowrap bg-slate-300">
+          No cover
+        </span>
+      )
+    }
+  }, [book])
+
   if (isLoading) {
     return (
       <Spinner className="flex h-full w-full items-center justify-center" />
@@ -46,16 +62,16 @@ export function Book() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <div className="flex w-full flex-row">
-        <div className="flex h-[600px] w-[400px] items-center justify-center">
-          <img className="h-auto w-auto" src={book.coverURL} alt={book.title} />
+    <div className="flex h-full w-full flex-col items-center">
+      <div className="flex w-full flex-row items-center justify-between">
+        <div className="flex max-h-[600px] max-w-[400px] items-center justify-center">
+          {cover}
         </div>
-        <div className="w-full">
+        <div className="flex w-full flex-col items-center">
           <Link className="text-xl font-bold" to={book.uri}>
             {book.title}
           </Link>
-          <div className="flex w-full flex-wrap">
+          <div className="flex w-full flex-wrap justify-evenly">
             {book.authors.map((author, index) => (
               <Link
                 key={`${author.name}_${index}`}
@@ -68,7 +84,7 @@ export function Book() {
           </div>
         </div>
       </div>
-      {book.synopsis && <Markdown className="w-full">{book.synopsis}</Markdown>}
+      {book.synopsis && <Markdown>{book.synopsis}</Markdown>}
     </div>
   )
 }

@@ -16,13 +16,14 @@ function linkTargetTransform(href: string) {
 
 export function Markdown({ children: markdown, className }: Props) {
   return (
-    <ReactMarkdown
-      className={`prose ${className ?? ''}`}
-      rehypePlugins={[RehypeSanitize, rehypeAccessibleEmojis]}
-      remarkPlugins={[RemarkEmoji]}
-      linkTarget={linkTargetTransform}
-    >
-      {markdown}
-    </ReactMarkdown>
+    <article className={`prose ${className ?? ''}`}>
+      <ReactMarkdown
+        rehypePlugins={[RehypeSanitize, rehypeAccessibleEmojis]}
+        remarkPlugins={[RemarkEmoji]}
+        linkTarget={linkTargetTransform}
+      >
+        {markdown}
+      </ReactMarkdown>
+    </article>
   )
 }
