@@ -1,7 +1,15 @@
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Divider,
+  Link,
+  Image,
+} from '@nextui-org/react'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { useMemo } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link as RoutedLink, useParams } from 'react-router-dom'
 
 import { Book as BookType } from '~books/types'
 
@@ -33,9 +41,7 @@ export function Book() {
   const cover = useMemo(() => {
     if (book) {
       if (book?.coverURL) {
-        return (
-          <img className="h-auto w-auto" src={book.coverURL} alt={book.title} />
-        )
+        return <Image alt={book.title} src={book.coverURL} />
       }
       return (
         <span className="h-auto w-auto whitespace-nowrap bg-slate-300">
@@ -62,29 +68,36 @@ export function Book() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center">
-      <div className="flex w-full flex-row items-center justify-between">
-        <div className="flex max-h-[600px] max-w-[400px] items-center justify-center">
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex max-h-[600px] min-h-[150px] min-w-[100px] max-w-[400px] items-center justify-center">
           {cover}
         </div>
-        <div className="flex w-full flex-col items-center">
-          <Link className="text-xl font-bold" to={book.uri}>
+        <div className="flex flex-col">
+          <Link className="text-xl font-bold" as={RoutedLink} to={book.uri}>
             {book.title}
           </Link>
           <div className="flex w-full flex-wrap justify-evenly">
-            {book.authors.map((author, index) => (
-              <Link
-                key={`${author.name}_${index}`}
-                className="m-1 rounded-full bg-blue-400 px-2"
-                to={author.uri}
-              >
-                {author.name}
-              </Link>
-            ))}
+            {book.authors.map((author, index) => {
+              console.log(author)
+              return (
+                <Link
+                  key={`${author.name}_${index}`}
+                  className="m-1 rounded-full bg-blue-400 px-2"
+                  as={RoutedLink}
+                  to={author.uri}
+                >
+                  {author.name}
+                </Link>
+              )
+            })}
           </div>
         </div>
-      </div>
-      {book.synopsis && <Markdown>{book.synopsis}</Markdown>}
-    </div>
+      </CardHeader>
+      <Divider />
+      <CardBody>
+        {book.synopsis && <Markdown>{book.synopsis}</Markdown>}
+      </CardBody>
+    </Card>
   )
 }
