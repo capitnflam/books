@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
+import RehypeExternalLinks from 'rehype-external-links'
 import RehypeSanitize from 'rehype-sanitize'
 import RemarkEmoji from 'remark-emoji'
 
@@ -8,19 +9,16 @@ interface Props {
   className?: string
 }
 
-function linkTargetTransform(href: string) {
-  if (!href.startsWith('/')) {
-    return '_blank'
-  }
-}
-
 export function Markdown({ children: markdown, className }: Props) {
   return (
     <article className={`prose ${className ?? ''}`}>
       <ReactMarkdown
-        rehypePlugins={[RehypeSanitize, rehypeAccessibleEmojis]}
+        rehypePlugins={[
+          rehypeAccessibleEmojis,
+          RehypeExternalLinks,
+          RehypeSanitize,
+        ]}
         remarkPlugins={[RemarkEmoji]}
-        linkTarget={linkTargetTransform}
       >
         {markdown}
       </ReactMarkdown>
