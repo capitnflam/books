@@ -14,13 +14,14 @@ module.exports = {
     ...createGlobPatternsForDependencies(__dirname),
     join(
       __dirname,
-      './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
+      '../../node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
     ),
   ],
   theme: {
     extend: {},
   },
   plugins: [
+    require('tailwindcss-react-aria-components'),
     nextui(),
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),

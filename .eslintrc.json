@@ -34,16 +34,28 @@
             "allow": [],
             "depConstraints": [
               {
+                "sourceTag": "type:config",
+                "onlyDependOnLibsWithTags": ["type:config"]
+              },
+              {
                 "sourceTag": "scope:shared",
-                "onlyDependOnLibsWithTags": ["scope:shared"]
+                "onlyDependOnLibsWithTags": ["scope:shared", "type:config"]
               },
               {
                 "sourceTag": "scope:client",
-                "onlyDependOnLibsWithTags": ["scope:client", "scope:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "scope:client",
+                  "scope:shared",
+                  "type:config"
+                ]
               },
               {
                 "sourceTag": "scope:api",
-                "onlyDependOnLibsWithTags": ["scope:api", "scope:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "scope:api",
+                  "scope:shared",
+                  "type:config"
+                ]
               },
               {
                 "sourceTag": "*",

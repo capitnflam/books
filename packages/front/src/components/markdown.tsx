@@ -11,12 +11,12 @@ interface Props {
 
 export function Markdown({ children: markdown, className }: Props) {
   return (
-    <article className={`prose ${className ?? ''}`}>
+    <article className={`prose dark:prose-invert ${className ?? ''}`}>
       <ReactMarkdown
         rehypePlugins={[
-          rehypeAccessibleEmojis,
-          RehypeExternalLinks,
           RehypeSanitize,
+          RehypeExternalLinks,
+          rehypeAccessibleEmojis,
         ]}
         remarkPlugins={[RemarkEmoji]}
       >

@@ -10,7 +10,7 @@ import { route as appRoute } from './app'
 import { route as authorRoute } from './author'
 import { route as bookRoute } from './book'
 import { route as booksRoute } from './books'
-import { Layout } from './layout'
+import { Layout } from './components/layout'
 // eslint-disable-next-line import/order
 import './index.css'
 

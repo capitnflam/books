@@ -11,8 +11,8 @@ export function Sidebar() {
   const width = isOpen ? 'w-80' : 'w-8'
 
   return (
-    <aside className={`bg-blue-900 text-slate-100 ${width}`}>
-      <nav>
+    <aside className="bg-blue-900 text-slate-100">
+      <nav className={width}>
         <BookOpenIcon className="h-6 w-6" />
         <pre>{JSON.stringify(location, null, 2)}</pre>
         <PencilIcon className="h-6 w-6" />
