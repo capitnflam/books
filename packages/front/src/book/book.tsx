@@ -1,3 +1,4 @@
+import { LinkIcon } from '@heroicons/react/24/outline'
 import {
   Card,
   CardBody,
@@ -53,7 +54,7 @@ export function Book() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center gap-4">
+      <div className="flex h-full w-full flex-row items-center justify-center">
         <Spinner size="lg" label="Loading..." color="default" />
       </div>
     )
@@ -75,8 +76,14 @@ export function Book() {
         <div className="flex max-h-[600px] min-h-[150px] min-w-[100px] max-w-[400px] items-center justify-center">
           {cover}
         </div>
-        <div className="flex flex-col">
-          <Link className="text-xl font-bold" as={RoutedLink} to={book?.uri}>
+        <div className="flex w-full flex-col items-center">
+          <Link
+            className="text-3xl font-bold"
+            as={RoutedLink}
+            to={book?.uri}
+            anchorIcon={<LinkIcon className="h-4" />}
+            showAnchorIcon
+          >
             {book?.title}
           </Link>
           <div className="flex w-full flex-wrap justify-evenly">
