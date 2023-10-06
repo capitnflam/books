@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 
-import { BookMinimal, AuthorMinimal, CollectionMinimal } from '~books/types'
+import { AuthorMinimal, BookMinimal, CollectionMinimal } from '~books/types'
 
 const authors: AuthorMinimal[] = [
   { name: 'Isaac Asimov', uri: '/author/1' },

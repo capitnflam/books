@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 
-import { collectionSchema, Collection } from '~books/types'
+import { Collection, collectionSchema } from '~books/types'
 
 import { PrismaService } from '../prisma/service'
 

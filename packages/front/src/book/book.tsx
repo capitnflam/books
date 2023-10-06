@@ -1,10 +1,10 @@
 import {
   Card,
-  CardHeader,
   CardBody,
+  CardHeader,
   Divider,
-  Link,
   Image,
+  Link,
   Spinner,
 } from '@nextui-org/react'
 import { useQuery } from '@tanstack/react-query'
