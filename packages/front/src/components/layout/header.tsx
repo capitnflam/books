@@ -22,7 +22,7 @@ export function Header() {
   const onClickHandler = useCallback(() => toggleSidebar(), [toggleSidebar])
 
   return (
-    <header className="mx-1 flex h-8 items-center justify-between">
+    <header className="sticky top-0 flex h-8 items-center justify-between bg-green-400 px-1">
       <button type="button" onClick={onClickHandler}>
         <Bars3Icon className="h-6" />
       </button>

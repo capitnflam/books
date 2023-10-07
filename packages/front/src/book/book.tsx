@@ -3,6 +3,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Chip,
   Divider,
   Image,
   Link,
@@ -71,7 +72,7 @@ export function Book() {
   }
 
   return (
-    <Card className="m-2 w-full">
+    <Card className="h-full w-full">
       <CardHeader>
         <div className="flex max-h-[600px] min-h-[150px] min-w-[100px] max-w-[400px] items-center justify-center">
           {cover}
@@ -86,15 +87,14 @@ export function Book() {
           >
             {book?.title}
           </Link>
-          <div className="flex w-full flex-wrap justify-evenly">
+          <div className="m-2 flex w-full flex-wrap justify-evenly">
             {book?.authors.map((author, index) => (
               <Link
                 key={`${author.name}_${index}`}
-                className="m-1 rounded-full bg-blue-400 px-2"
                 as={RoutedLink}
                 to={author.uri}
               >
-                {author.name}
+                <Chip variant="solid">{author.name}</Chip>
               </Link>
             ))}
           </div>

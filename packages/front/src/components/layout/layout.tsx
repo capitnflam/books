@@ -6,11 +6,11 @@ import { Sidebar } from './sidebar'
 
 export function Layout() {
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-screen w-full flex-col">
       <Header />
-      <div className="flex h-full w-full flex-grow flex-row">
+      <div className="flex h-full w-full flex-grow flex-row space-x-1 overflow-hidden">
         <Sidebar />
-        <main>
+        <main className="w-full overflow-y-auto p-1">
           <Outlet />
         </main>
       </div>

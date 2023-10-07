@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useDarkMode } from 'usehooks-ts'
 
 export type Theme = 'light' | 'dark'
 
@@ -7,35 +8,23 @@ export const useTheme = (): [Theme, () => void, (theme: Theme) => void] => {
     () => document.getElementsByTagName('html')[0],
     [],
   )
-  const initialTheme = useMemo(() => {
-    const isLight = htmlElement.classList.contains('light')
-    const isDark = htmlElement.classList.contains('dark')
-
-    if (isLight && isDark) {
-      htmlElement.classList.remove('dark')
-      return 'light'
-    }
-    if (isLight) {
-      return 'light'
-    }
-    if (isDark) {
-      return 'dark'
-    }
-    htmlElement.classList.add('light')
-    return 'light'
-  }, [htmlElement.classList])
-  const [theme, setThemeState] = useState<Theme>(initialTheme)
+  const { isDarkMode, disable, enable, toggle } = useDarkMode()
   const setTheme = useCallback(
     (theme: Theme) => {
-      setThemeState(theme)
-      htmlElement.classList.remove('light', 'dark')
-      htmlElement.classList.add(theme)
+      if (theme === 'light') {
+        disable()
+      } else {
+        enable()
+      }
     },
-    [htmlElement.classList],
+    [disable, enable],
   )
-  const toggleTheme = useCallback(() => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }, [setTheme, theme])
+  const theme = useMemo(() => (isDarkMode ? 'dark' : 'light'), [isDarkMode])
 
-  return [theme, toggleTheme, setTheme]
+  useEffect(() => {
+    htmlElement.classList.remove('light', 'dark')
+    htmlElement.classList.add(isDarkMode ? 'dark' : 'light')
+  }, [htmlElement.classList, isDarkMode])
+
+  return [theme, toggle, setTheme]
 }
