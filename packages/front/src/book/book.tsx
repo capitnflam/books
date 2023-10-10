@@ -1,4 +1,4 @@
-import { LinkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, LinkIcon } from '@heroicons/react/24/outline'
 import {
   Card,
   CardBody,
@@ -11,7 +11,7 @@ import {
 } from '@nextui-org/react'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link as RoutedLink, useParams } from 'react-router-dom'
 
 import { Book as BookType } from '~books/types'
@@ -28,7 +28,9 @@ export function Book() {
     error,
     isError,
     isLoading,
+    isRefetching,
     isSuccess,
+    refetch,
   } = useQuery<BookType>({
     queryKey: ['book', id],
     queryFn: async ({ queryKey }) => {
@@ -38,7 +40,11 @@ export function Book() {
       return axios.get(uri, { baseURL: '/api' }).then((res) => res.data)
     },
     retry: false,
+    refetchOnWindowFocus: false,
   })
+  const refreshOnDemand = useCallback(async () => {
+    await refetch()
+  }, [refetch])
 
   const cover = useMemo(() => {
     if (book) {
@@ -46,7 +52,7 @@ export function Book() {
         return <Image alt={book.title} src={book.coverURL} />
       }
       return (
-        <span className="h-auto w-auto whitespace-nowrap bg-slate-300">
+        <span className="h-auto w-auto whitespace-nowrap bg-yellow-100 text-black">
           No cover
         </span>
       )
@@ -55,20 +61,38 @@ export function Book() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full flex-row items-center justify-center">
-        <Spinner size="lg" label="Loading..." color="default" />
-      </div>
+      <Card className="h-full w-full">
+        <CardHeader className="justify-center">Loading</CardHeader>
+        <Divider />
+        <CardBody className="items-center justify-center">
+          <Spinner size="lg" label="Loading..." color="default" />
+        </CardBody>
+      </Card>
     )
   }
 
   if (isError) {
-    // TODO
-    return <span>{JSON.stringify(error)}</span>
+    return (
+      <Card className="h-full w-full">
+        <CardHeader className="justify-center">Error</CardHeader>
+        <Divider />
+        <CardBody className="items-center justify-center">
+          {(error as Error).message}
+        </CardBody>
+      </Card>
+    )
   }
 
   if (!isSuccess) {
-    // TODO
-    return <span>Unknown error</span>
+    return (
+      <Card className="h-full w-full">
+        <CardHeader className="justify-center">Error</CardHeader>
+        <Divider />
+        <CardBody className="items-center justify-center">
+          Unknown error
+        </CardBody>
+      </Card>
+    )
   }
 
   return (
@@ -98,6 +122,14 @@ export function Book() {
               </Link>
             ))}
           </div>
+        </div>
+        <div className="flex h-full flex-col justify-start">
+          <ArrowPathIcon
+            className={`h-6 w-6 ${
+              isRefetching ? 'animate-spin' : ''
+            } hover:cursor-pointer`}
+            onClick={refreshOnDemand}
+          />
         </div>
       </CardHeader>
       <Divider />
