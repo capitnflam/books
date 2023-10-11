@@ -82,7 +82,7 @@ export function Book() {
             >
               {book?.title}
             </Link>
-            <div className="m-2 flex w-full flex-wrap justify-evenly">
+            <div className="m-2 flex w-full flex-wrap justify-center gap-2">
               {book?.authors.map((author, index) => (
                 <Link
                   key={`${author.name}_${index}`}

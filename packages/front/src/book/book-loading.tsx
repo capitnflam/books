@@ -25,25 +25,33 @@ export function BookLoading({ id }: { id: string }) {
     return lines
   }, [id])
 
+  const randomAuthors = useMemo(() => {
+    const nbAuthors = getRandomInt(1, 3)
+    const authors = Array.from({ length: nbAuthors }).map((_, index) => {
+      return (
+        <Chip key={`author_${id}_${index}`} variant="solid">
+          <Skeleton className="h-4 w-24 rounded-lg" />
+        </Chip>
+      )
+    })
+
+    return authors
+  }, [id])
+
   return (
     <BookCard
       header={
         <>
           <div className="flex max-h-[600px] min-h-[150px] min-w-[100px] max-w-[400px] items-center justify-center">
-            <Skeleton className="h-[150px] w-[100px]" />
+            <Skeleton className="h-[150px] w-[100px] rounded-xl" />
           </div>
           <div className="flex w-full flex-col items-center">
             <Skeleton className="h-8 w-1/2 rounded-lg text-3xl font-bold" />
-            <div className="m-2 flex w-full flex-wrap justify-evenly">
-              <Chip variant="solid">
-                <Skeleton className="h-4 w-24 rounded-lg" />
-              </Chip>
-              <Chip variant="solid">
-                <Skeleton className="h-4 w-36 rounded-lg" />
-              </Chip>
+            <div className="m-2 flex w-full flex-wrap justify-center gap-2">
+              {randomAuthors}
             </div>
           </div>
-          <div className="flex h-full flex-col justify-start">
+          <div className="absolute right-0 top-0 mr-4 mt-4">
             <Skeleton className="h-6 w-6 rounded-full" />
           </div>
         </>
