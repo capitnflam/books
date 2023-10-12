@@ -1,13 +1,12 @@
 import { ArrowPathIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { Chip, Image, Link } from '@nextui-org/react'
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { useCallback, useMemo } from 'react'
 import { Link as RoutedLink, useParams } from 'react-router-dom'
 
 import { Book as BookType } from '~books/types'
 
 import { Markdown } from '../components/markdown'
+import { useEntityApiQuery } from '../hooks/use-entity-api-query'
 import { RouteParams } from '../utils/route-params'
 
 import { BookCard } from './book-card'
@@ -25,14 +24,7 @@ export function Book() {
     isRefetching,
     isSuccess,
     refetch,
-  } = useQuery<BookType>({
-    queryKey: ['book', id],
-    queryFn: async ({ queryKey }) => {
-      const [type, id] = queryKey
-      const uri = `/${type}/${id}`
-
-      return axios.get(uri, { baseURL: '/api' }).then((res) => res.data)
-    },
+  } = useEntityApiQuery<BookType>('book', id, {
     retry: false,
     refetchOnWindowFocus: false,
   })
