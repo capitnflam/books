@@ -6,6 +6,15 @@
   ],
   "plugins": ["jsx-a11y"],
   "ignorePatterns": ["!**/*"],
+  "rules": {
+    "react/prefer-stateless-function": "error",
+    "react/no-this-in-sfc": "error",
+    "react/no-arrow-function-lifecycle": "error",
+    "react/function-component-definition": ["error", {
+      "namedComponents": "function-declaration",
+      "unnamedComponents": "arrow-function"
+    }]
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],

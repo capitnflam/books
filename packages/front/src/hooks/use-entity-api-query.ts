@@ -18,5 +18,6 @@ export function useEntityApiQuery<T>(
 
       return axios.get(uri, { baseURL: '/api' }).then((res) => res.data)
     },
+    enabled: (options.enabled ?? true) && id !== undefined,
   })
 }

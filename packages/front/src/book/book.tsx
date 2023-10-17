@@ -1,5 +1,9 @@
-import { ArrowPathIcon, LinkIcon } from '@heroicons/react/24/outline'
-import { Chip, Image, Link } from '@nextui-org/react'
+import {
+  ArrowPathIcon,
+  LinkIcon,
+  PencilIcon,
+} from '@heroicons/react/24/outline'
+import { Chip, Image, Link, Tooltip } from '@nextui-org/react'
 import { useCallback, useMemo } from 'react'
 import { Link as RoutedLink, useParams } from 'react-router-dom'
 
@@ -7,15 +11,15 @@ import { Book as BookType } from '~books/types'
 
 import { Markdown } from '../components/markdown'
 import { useEntityApiQuery } from '../hooks/use-entity-api-query'
-import { RouteParams } from '../utils/route-params'
 
 import { BookCard } from './book-card'
+import { BookEdit } from './book-edit'
 import { BookLoading } from './book-loading'
 
 type ParamsKey = 'id'
 
 export function Book() {
-  const { id } = useParams<RouteParams<ParamsKey>>()
+  const { id } = useParams<ParamsKey>()
   const {
     data: book,
     error,
@@ -44,6 +48,10 @@ export function Book() {
       )
     }
   }, [book])
+
+  if (id === undefined) {
+    return <BookCard header="Error">No book id</BookCard>
+  }
 
   if (isLoading) {
     return <BookLoading id={id ?? '0'} />
@@ -86,13 +94,22 @@ export function Book() {
               ))}
             </div>
           </div>
-          <div className="absolute right-0 top-0 mr-4 mt-4">
-            <ArrowPathIcon
-              className={`h-6 w-6 ${
-                isRefetching ? 'animate-spin' : ''
-              } hover:animate-spin hover:cursor-pointer`}
-              onClick={refreshOnDemand}
-            />
+          <div className="absolute right-0 top-0 mr-4 mt-4 flex flex-row gap-2">
+            <BookEdit id={id}>
+              {/* FIXME: disable tooltip due to bug: https://github.com/nextui-org/nextui/issues/1759 */}
+              {/* <Tooltip content="Edit"> */}
+              <PencilIcon className="h-6 w-6 hover:cursor-pointer" />
+              {/* </Tooltip> */}
+            </BookEdit>
+
+            <Tooltip content="Refresh">
+              <ArrowPathIcon
+                className={`h-6 w-6 ${
+                  isRefetching ? 'animate-spin' : ''
+                } hover:animate-spin hover:cursor-pointer`}
+                onClick={refreshOnDemand}
+              />
+            </Tooltip>
           </div>
         </>
       }

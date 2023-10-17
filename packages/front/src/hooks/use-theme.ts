@@ -3,7 +3,7 @@ import { useDarkMode } from 'usehooks-ts'
 
 export type Theme = 'light' | 'dark'
 
-export const useTheme = (): [Theme, () => void, (theme: Theme) => void] => {
+export function useTheme(): [Theme, () => void, (theme: Theme) => void] {
   const htmlElement = useMemo(
     () => document.getElementsByTagName('html')[0],
     [],
