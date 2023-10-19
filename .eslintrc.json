@@ -14,12 +14,6 @@
         "alwaysTryTypes": true,
         "project": "packages/*/tsconfig.json"
       },
-      "eslint-import-resolver-custom-alias": {
-        "alias": {
-          "~books/types": "types/src/index.ts"
-        },
-        "packages": ["packages"]
-      },
       "node": true
     }
   },
