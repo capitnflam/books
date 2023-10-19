@@ -10,7 +10,7 @@ import { route as appRoute } from './app'
 import { route as authorRoute } from './author'
 import { route as bookRoute } from './book'
 import { route as booksRoute } from './books'
-import { Layout } from './components/layout'
+import { ErrorLayout, Layout } from './components/layout'
 // eslint-disable-next-line import/order
 import './index.css'
 
@@ -20,6 +20,7 @@ const router = createBrowserRouter([
   {
     element: <Layout />,
     path: '/',
+    errorElement: <ErrorLayout />,
     children: [appRoute, booksRoute, bookRoute, authorRoute],
   },
 ])

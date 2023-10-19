@@ -1,39 +1,71 @@
+import { BuildingLibraryIcon } from '@heroicons/react/24/outline'
 import {
-  Bars3Icon,
-  BuildingLibraryIcon,
-  MoonIcon,
-  SunIcon,
-} from '@heroicons/react/24/outline'
-import { useCallback, useMemo } from 'react'
+  Navbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  Link as NextUILink,
+  // NavbarMenu,
+  // NavbarMenuItem,
+  // NavbarMenuToggle,
+} from '@nextui-org/react'
+import { useCallback } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
-import { useTheme } from '../../hooks/use-theme'
-
-import { useToggleSidebarOpen } from './state'
+import { startsWithPlural } from '../../utils/starts-with-plural'
+import { DarkToggle } from '../dark-toggle'
 
 export function Header() {
-  const [theme, toggleTheme] = useTheme()
-  const ThemeIcon = useMemo(() => {
-    if (theme === 'dark') {
-      return SunIcon
-    }
-    return MoonIcon
-  }, [theme])
-  const toggleSidebar = useToggleSidebarOpen()
-  const onClickHandler = useCallback(() => toggleSidebar(), [toggleSidebar])
+  const { pathname: currentPathname } = useLocation()
+  const isActive = useCallback(
+    (pathname: string) => {
+      return (
+        pathname === currentPathname ||
+        startsWithPlural(currentPathname, pathname)
+      )
+    },
+    [currentPathname],
+  )
 
   return (
-    <header className="sticky top-0 flex h-8 items-center justify-between bg-green-400 px-1">
-      <button type="button" onClick={onClickHandler}>
-        <Bars3Icon className="h-6" />
-      </button>
-      <div className="flex justify-start">
-        <ThemeIcon
-          className="h-6 hover:cursor-pointer"
-          aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'}
-          onClick={toggleTheme}
-        />
-        <BuildingLibraryIcon className="h-6" />
-      </div>
-    </header>
+    <Navbar
+      maxWidth="full"
+      position="sticky"
+      isBordered
+      classNames={{
+        item: [
+          'data-[active=true]:border-b',
+          'data-[active=true]:border-secondary',
+        ],
+      }}
+    >
+      <NavbarBrand>
+        <NextUILink as={Link} to="/" color="foreground" aria-label="Home">
+          <BuildingLibraryIcon className="h-9" />
+        </NextUILink>
+      </NavbarBrand>
+      <NavbarContent justify="center">
+        <NavbarItem isActive={isActive('/collections')}>
+          <NextUILink as={Link} to="/collections">
+            Collections
+          </NextUILink>
+        </NavbarItem>
+        <NavbarItem isActive={isActive('/books')}>
+          <NextUILink as={Link} to="/books">
+            Books
+          </NextUILink>
+        </NavbarItem>
+        <NavbarItem isActive={isActive('/authors')}>
+          <NextUILink as={Link} to="/authors">
+            Authors
+          </NextUILink>
+        </NavbarItem>
+      </NavbarContent>
+      <NavbarContent justify="end">
+        <NavbarItem>
+          <DarkToggle />
+        </NavbarItem>
+      </NavbarContent>
+    </Navbar>
   )
 }

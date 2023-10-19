@@ -18,7 +18,11 @@ export function BookEdit({ children, id }: Props) {
 
   return (
     <>
-      <button className="appearance-none" onClick={handleOpen}>
+      <button
+        className="appearance-none"
+        onClick={handleOpen}
+        aria-label="Edit"
+      >
         {children}
       </button>
       <BookEditModal isOpen={open} onClose={onClose} id={id} />
