@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 
-import { Footer } from './footer'
+// import { Footer } from './footer'
 import { Header } from './header'
 
 export function Layout() {
@@ -10,7 +10,7 @@ export function Layout() {
       <main className="container mx-auto max-w-7xl flex-grow px-6 py-16">
         <Outlet />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   )
 }
