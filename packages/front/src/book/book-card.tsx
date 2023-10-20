@@ -1,9 +1,9 @@
 import { Card, CardBody, CardHeader, Divider } from '@nextui-org/react'
 
 interface Props {
-  className?: string
-  header: React.ReactNode
-  children: React.ReactNode
+  readonly className?: string
+  readonly header: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 export function BookCard({

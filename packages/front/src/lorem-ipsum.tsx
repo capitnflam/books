@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 type Props = {
-  paragraphCount?: number
+  readonly paragraphCount?: number
 }
 
 export function LoremIpsum({ paragraphCount = 5 }: Props) {

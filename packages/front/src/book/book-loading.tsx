@@ -9,7 +9,7 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (maxValue - minValue) + minValue)
 }
 
-export function BookLoading({ id }: { id: string }) {
+export function BookLoading({ id }: { readonly id: string }) {
   const randomContent = useMemo(() => {
     const nbLines = getRandomInt(3, 9)
     const lines = Array.from({ length: nbLines }).map((_, index) => {

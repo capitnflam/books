@@ -2,10 +2,10 @@ import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual'
 import { ReactNode, useRef } from 'react'
 
 interface Props<Item> {
-  className: string
-  estimateSize: (index: number) => number
-  overscan: number
-  rows: Item[]
+  readonly className: string
+  readonly estimateSize: (index: number) => number
+  readonly overscan: number
+  readonly rows: Item[]
   // style={{
   //   position: 'absolute',
   //   top: 0,
@@ -14,7 +14,7 @@ interface Props<Item> {
   //   height: `${rows[virtualRow.index]}px`,
   //   transform: `translateY(${virtualRow.start}px)`,
   // }}
-  rowRenderer: (item: VirtualItem & { data: Item }) => ReactNode
+  readonly rowRenderer: (item: VirtualItem & { data: Item }) => ReactNode
 }
 
 export function VirtualList<Item>({

@@ -3,8 +3,8 @@ import { type ReactNode, useCallback, useState } from 'react'
 import { BookEditModal } from './book-edit-modal'
 
 interface Props {
-  children: ReactNode
-  id: string
+  readonly children: ReactNode
+  readonly id: string
 }
 
 export function BookEdit({ children, id }: Props) {

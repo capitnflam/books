@@ -1,11 +1,15 @@
-import { UseQueryOptions, useQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  UseInfiniteQueryOptions,
+  useInfiniteQuery,
+} from '@tanstack/react-query'
 import axios from 'axios'
 
-export function useEntitiesApiQuery<T>(
+export function useEntitiesApiQuery<T extends InfiniteData<T, unknown>>(
   type: string,
-  options: Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'>,
+  options: Omit<UseInfiniteQueryOptions<T>, 'queryKey' | 'queryFn'>,
 ) {
-  return useQuery<T>({
+  return useInfiniteQuery<T>({
     ...options,
     queryKey: [type],
     queryFn: async ({ queryKey }) => {

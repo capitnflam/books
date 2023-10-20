@@ -19,7 +19,7 @@ import { Markdown } from '../components/markdown'
 import { useEntityApiQuery } from '../hooks/use-entity-api-query'
 
 interface OwnProps {
-  id: string
+  readonly id: string
 }
 
 type Props = OwnProps & Pick<ModalProps, 'isOpen' | 'onClose'>

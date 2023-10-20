@@ -5,8 +5,8 @@ import RehypeSanitize from 'rehype-sanitize'
 import RemarkEmoji from 'remark-emoji'
 
 interface Props {
-  children: string
-  className?: string
+  readonly children: string
+  readonly className?: string
 }
 
 export function Markdown({ children: markdown, className }: Props) {
