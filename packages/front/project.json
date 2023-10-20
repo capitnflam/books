@@ -6,9 +6,7 @@
   "targets": {
     "build": {
       "executor": "@nx/vite:build",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/packages/front"
@@ -56,27 +54,19 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/packages/front"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/packages/front"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/packages/front"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/front/**/*.{ts,tsx,js,jsx}"
-        ]
+        "lintFilePatterns": ["packages/front/**/*.{ts,tsx,js,jsx}"]
       }
     }
   },
-  "tags": [
-    "scope:client"
-  ]
+  "tags": ["scope:client"]
 }

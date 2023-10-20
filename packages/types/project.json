@@ -6,36 +6,26 @@
   "targets": {
     "build": {
       "executor": "@nx/vite:build",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/types"
       }
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/packages/types"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/packages/types"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/packages/types"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/types/**/*.ts"
-        ]
+        "lintFilePatterns": ["packages/types/**/*.ts"]
       }
     }
   },
-  "tags": [
-    "scope:shared"
-  ]
+  "tags": ["scope:shared"]
 }
