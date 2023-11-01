@@ -1,19 +1,34 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
 import { Book, bookSchema } from '~books/types'
 
-import { PrismaService } from '../prisma/service'
-
-const newLineRegEx = /\\n/g
+import { BookEntity } from './entity'
 
 @Injectable()
 export class BookService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(BookEntity)
+    private readonly booksRepository: Repository<BookEntity>,
+  ) {}
+
+  async getAll(): Promise<Book[]> {
+    const books = await this.booksRepository.find({ relations: ['authors'] })
+
+    if (!books) {
+      throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
+    }
+
+    const results = books.map((book) => bookSchema.parse(book))
+
+    return results
+  }
 
   async get(id: number): Promise<Book> {
-    const book = await this.prisma.book.findUnique({
+    const book = await this.booksRepository.findOne({
       where: { id },
-      include: { authors: true },
+      relations: ['authors'],
     })
 
     if (!book) {
@@ -21,8 +36,6 @@ export class BookService {
     }
 
     const result = bookSchema.parse(book)
-
-    result.synopsis = result.synopsis?.replace(newLineRegEx, '\n')
 
     return result
   }

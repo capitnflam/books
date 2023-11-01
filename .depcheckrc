@@ -4,7 +4,6 @@ ignores:
     '~books/*',
     'tslib',
     '@nx/*',
-    '@nx-tools/nx-prisma',
     '@typescript-eslint/eslint-plugin',
     'autoprefixer',
     'depcheck',

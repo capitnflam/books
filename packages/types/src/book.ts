@@ -5,6 +5,8 @@ import { authorMinimalSchema } from './author'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
 
+const newLineRegEx = /\\n/g
+
 const bookInternalSchema = z.object({
   id: z.number(),
   coverURL: z
@@ -30,7 +32,7 @@ export const bookSchema = bookInternalSchema
       synopsis: z
         .string()
         .nullish()
-        .transform((x) => x ?? undefined),
+        .transform((x) => x?.replace(newLineRegEx, '\n') ?? undefined),
       authors: z.array(authorMinimalSchema),
     }),
   )

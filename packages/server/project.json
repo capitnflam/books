@@ -53,60 +53,44 @@
         "reportsDirectory": "../../coverage/packages/server"
       }
     },
-    "prisma-generate": {
-      "executor": "@nx-tools/nx-prisma:generate",
+    "typeorm": {
+      "executor": "nx:run-commands",
+      "outputs": [],
       "options": {
-        "schema": "packages/server/prisma/schema.prisma"
+        "command": "ts-node -r tsconfig-paths/register --project ./tsconfig.app.json ../../node_modules/typeorm/cli -d ./src/typeorm/cli.config.ts",
+        "cwd": "packages/server"
       }
     },
-    "prisma-migrate": {
-      "executor": "@nx-tools/nx-prisma:migrate",
+    "migration-generate": {
+      "executor": "nx:run-commands",
+      "outputs": [],
       "options": {
-        "schema": "packages/server/prisma/schema.prisma"
+        "command": "nx run server:typeorm migration:generate ./src/typeorm/migrations/{args.name}",
+        "cwd": "packages/server"
       }
     },
-    "prisma-pull": {
-      "executor": "@nx-tools/nx-prisma:pull",
+    "migration-run": {
+      "executor": "nx:run-commands",
+      "outputs": [],
       "options": {
-        "schema": "packages/server/prisma/schema.prisma"
+        "command": "nx run server:typeorm migration:run",
+        "cwd": "packages/server"
       }
     },
-    "prisma-push": {
-      "executor": "@nx-tools/nx-prisma:push",
+    "migration-show": {
+      "executor": "nx:run-commands",
+      "outputs": [],
       "options": {
-        "schema": "packages/server/prisma/schema.prisma"
+        "command": "nx run server:typeorm migration:show",
+        "cwd": "packages/server"
       }
     },
-    "prisma-reset": {
-      "executor": "@nx-tools/nx-prisma:reset",
+    "schema-drop": {
+      "executor": "nx:run-commands",
+      "outputs": [],
       "options": {
-        "schema": "packages/server/prisma/schema.prisma",
-        "force": true
-      }
-    },
-    "prisma-deploy": {
-      "executor": "@nx-tools/nx-prisma:deploy",
-      "options": {
-        "schema": "packages/server/prisma/schema.prisma"
-      }
-    },
-    "prisma-seed": {
-      "executor": "@nx-tools/nx-prisma:seed",
-      "options": {
-        "script": "packages/server/src/seed.ts",
-        "tsConfig": "packages/server/tsconfig.app.json"
-      }
-    },
-    "prisma-status": {
-      "executor": "@nx-tools/nx-prisma:status",
-      "options": {
-        "schema": "packages/server/prisma/schema.prisma"
-      }
-    },
-    "prisma-studio": {
-      "executor": "@nx-tools/nx-prisma:studio",
-      "options": {
-        "schema": "packages/server/prisma/schema.prisma"
+        "command": "nx run server:typeorm schema:drop",
+        "cwd": "packages/server"
       }
     }
   },

@@ -1,1 +1,0 @@
-export { BooksModule } from './module'

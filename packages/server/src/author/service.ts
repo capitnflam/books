@@ -1,25 +1,38 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
 import { Author, authorSchema } from '~books/types'
 
-import { PrismaService } from '../prisma/service'
+import { AuthorEntity } from './entity'
 
 @Injectable()
 export class AuthorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(AuthorEntity)
+    private readonly authorsRepository: Repository<AuthorEntity>,
+  ) {}
+
+  async getAll(): Promise<Author[]> {
+    const authors = await this.authorsRepository.find()
+
+    if (!authors) {
+      throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
+    }
+
+    const results = authors.map((author) => authorSchema.parse(author))
+
+    return results
+  }
 
   async get(id: number): Promise<Author> {
-    const authorPromise = this.prisma.author.findUnique({ where: { id } })
+    const author = await this.authorsRepository.findOne({ where: { id } })
 
-    const author = await authorPromise
     if (!author) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
     }
-    const dbResult = {
-      ...author,
-    }
 
-    const result = authorSchema.parse(dbResult)
+    const result = authorSchema.parse(author)
 
     return result
   }

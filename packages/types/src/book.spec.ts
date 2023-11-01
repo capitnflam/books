@@ -6,7 +6,7 @@ const bookFixture = {
   id: 42,
   coverURL: 'http://foo.bar/cover.jpg',
   title: 'test',
-  synopsis: 'test synopsis',
+  synopsis: 'test synopsis\nnewline',
   isbn: '978-3-16-148410-0',
   authors: [
     {
@@ -22,7 +22,8 @@ const bookFixtureResult = {
   uri: '/book/42',
   coverURL: 'http://foo.bar/cover.jpg',
   title: 'test',
-  synopsis: 'test synopsis',
+  synopsis: `test synopsis
+newline`,
   isbn: '978-3-16-148410-0',
   authors: [
     {
