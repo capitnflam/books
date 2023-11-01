@@ -32,7 +32,10 @@ root.render(
       <RecoilRoot>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
-          <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+          <ReactQueryDevtools
+            initialIsOpen={false}
+            buttonPosition="bottom-right"
+          />
         </QueryClientProvider>
       </RecoilRoot>
     </NextUIProvider>
