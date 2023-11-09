@@ -1,4 +1,5 @@
 import { DevTool } from '@hookform/devtools'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Button,
   Input,
@@ -14,7 +15,7 @@ import {
 } from '@nextui-org/react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 
-import { Book as BookType } from '~books/types'
+import { Book as BookType, bookSchema } from '~books/types'
 
 import { Markdown } from '../components/markdown'
 import { useEntityApiQuery } from '../hooks/use-entity-api-query'
@@ -56,7 +57,7 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
     formState: { errors },
   } = useForm<
     Pick<BookType, 'authors' | 'coverURL' | 'isbn' | 'synopsis' | 'title'>
-  >({ defaultValues: book })
+  >({ defaultValues: book, resolver: zodResolver(bookSchema) })
   const currentSynopsisMarkdown = watch('synopsis')
 
   return (
