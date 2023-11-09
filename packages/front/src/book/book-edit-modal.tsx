@@ -1,3 +1,4 @@
+import { DevTool } from '@hookform/devtools'
 import {
   Button,
   Input,
@@ -59,55 +60,58 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
   const currentSynopsisMarkdown = watch('synopsis')
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="5xl">
       <ModalContent>
         {(close) => (
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader>Edit {book?.title}</ModalHeader>
-            <ModalBody>
-              <Input
-                label="Title"
-                placeholder="Book title"
-                {...register('title')}
-              />
-              <Input
-                label="ISBN"
-                placeholder="0-553-29335-4"
-                isInvalid={!!errors.isbn}
-                errorMessage={errors.isbn?.message}
-                {...register('isbn', {
-                  pattern: isbnPattern,
-                })}
-              />
-              <Tabs variant="underlined">
-                <Tab key="raw" title="Synopsis">
-                  <Textarea
-                    className="resize-y"
-                    placeholder="Book synopsis"
-                    {...register('synopsis')}
-                  />
-                </Tab>
-                <Tab key="rendered" title="Preview">
-                  <Markdown className="mx-auto max-h-[188px] overflow-y-scroll">
-                    {currentSynopsisMarkdown ?? ''}
-                  </Markdown>
-                </Tab>
-              </Tabs>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                onClick={() => {
-                  reset(book)
-                  close()
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" color="primary" onClick={close}>
-                Save
-              </Button>
-            </ModalFooter>
-          </form>
+          <>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <ModalHeader>Edit {book?.title}</ModalHeader>
+              <ModalBody>
+                <Input
+                  label="Title"
+                  placeholder="Book title"
+                  {...register('title')}
+                />
+                <Input
+                  label="ISBN"
+                  placeholder="0-553-29335-4"
+                  isInvalid={!!errors.isbn}
+                  errorMessage={errors.isbn?.message}
+                  {...register('isbn', {
+                    pattern: isbnPattern,
+                  })}
+                />
+                <Tabs variant="underlined">
+                  <Tab key="raw" title="Synopsis">
+                    <Textarea
+                      className="resize-y"
+                      placeholder="Book synopsis"
+                      {...register('synopsis')}
+                    />
+                  </Tab>
+                  <Tab key="rendered" title="Preview">
+                    <Markdown className="mx-auto max-h-[188px] overflow-y-scroll">
+                      {currentSynopsisMarkdown ?? ''}
+                    </Markdown>
+                  </Tab>
+                </Tabs>
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  onClick={() => {
+                    reset(book)
+                    close()
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" color="primary" onClick={close}>
+                  Save
+                </Button>
+              </ModalFooter>
+            </form>
+            <DevTool control={control} placement="top-left" />
+          </>
         )}
       </ModalContent>
     </Modal>
