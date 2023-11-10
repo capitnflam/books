@@ -85,7 +85,7 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
                 <Tabs variant="underlined">
                   <Tab key="raw" title="Synopsis">
                     <Textarea
-                      className="resize-y"
+                      className="resize"
                       placeholder="Book synopsis"
                       {...register('synopsis')}
                     />

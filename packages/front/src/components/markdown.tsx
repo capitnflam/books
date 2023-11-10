@@ -4,6 +4,8 @@ import RehypeExternalLinks from 'rehype-external-links'
 import RehypeSanitize from 'rehype-sanitize'
 import RemarkEmoji from 'remark-emoji'
 
+import { cn } from '../utils/cn'
+
 interface Props {
   readonly children: string
   readonly className?: string
@@ -11,7 +13,7 @@ interface Props {
 
 export function Markdown({ children: markdown, className }: Props) {
   return (
-    <article className={`prose dark:prose-invert ${className ?? ''}`}>
+    <article className={cn('prose dark:prose-invert', className)}>
       <ReactMarkdown
         rehypePlugins={[
           RehypeSanitize,

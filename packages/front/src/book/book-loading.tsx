@@ -1,6 +1,8 @@
 import { Chip, Skeleton } from '@nextui-org/react'
 import { useMemo } from 'react'
 
+import { cn } from '../utils/cn'
+
 import { BookCard } from './book-card'
 
 function getRandomInt(min: number, max: number) {
@@ -8,6 +10,22 @@ function getRandomInt(min: number, max: number) {
   const maxValue = Math.floor(max)
   return Math.floor(Math.random() * (maxValue - minValue) + minValue)
 }
+
+const widthClassNames = [
+  'w-0',
+  'w-1/12',
+  'w-2/12',
+  'w-3/12',
+  'w-4/12',
+  'w-5/12',
+  'w-6/12',
+  'w-7/12',
+  'w-8/12',
+  'w-9/12',
+  'w-10/12',
+  'w-11/12',
+  'w-full',
+]
 
 export function BookLoading({ id }: { readonly id: string }) {
   const randomContent = useMemo(() => {
@@ -17,7 +35,7 @@ export function BookLoading({ id }: { readonly id: string }) {
       return (
         <Skeleton
           key={`random_${id}_${index}`}
-          className={`h-6 w-${length}/12 rounded-lg`}
+          className={cn('h-6 rounded-lg', widthClassNames[length])}
         />
       )
     })
