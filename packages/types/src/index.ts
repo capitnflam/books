@@ -1,13 +1,18 @@
 export {
-  Author,
-  AuthorMinimal,
+  type Author,
+  type AuthorMinimal,
   authorSchema,
   authorMinimalSchema,
 } from './author'
-export { Book, BookMinimal, bookSchema, bookMinimalSchema } from './book'
 export {
-  Collection,
-  CollectionMinimal,
+  type Book,
+  type BookMinimal,
+  bookSchema,
+  bookMinimalSchema,
+} from './book'
+export {
+  type Collection,
+  type CollectionMinimal,
   collectionSchema,
   collectionMinimalSchema,
 } from './collection'
