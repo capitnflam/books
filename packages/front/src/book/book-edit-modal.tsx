@@ -85,15 +85,17 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
                 <Tabs variant="underlined">
                   <Tab key="raw" title="Synopsis">
                     <Textarea
-                      className="resize"
+                      maxRows={20}
                       placeholder="Book synopsis"
                       {...register('synopsis')}
                     />
                   </Tab>
                   <Tab key="rendered" title="Preview">
-                    <Markdown className="mx-auto max-h-[188px] overflow-y-scroll">
-                      {currentSynopsisMarkdown ?? ''}
-                    </Markdown>
+                    <div className="rounded-medium bg-default-100 px-3 py-2 shadow-sm outline-none !duration-150 tap-highlight-transparent transition-background motion-reduce:transition-none">
+                      <Markdown className="max-h-[428px] w-full max-w-full overflow-y-scroll">
+                        {currentSynopsisMarkdown ?? ''}
+                      </Markdown>
+                    </div>
                   </Tab>
                 </Tabs>
               </ModalBody>
