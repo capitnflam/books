@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "postinstall": "rimraf .nx node_modules/.vite",
     "build": "nx run-many --target=build",
     "format:check": "nx format:check",
     "lint": "nx run-many --target=lint",
@@ -95,6 +96,7 @@
     "postcss": "8.4.31",
     "prettier": "3.0.3",
     "prettier-plugin-tailwindcss": "0.5.6",
+    "rimraf": "5.0.5",
     "ts-node": "10.9.1",
     "tsconfig-paths": "4.2.0",
     "typescript": "5.2.2",
