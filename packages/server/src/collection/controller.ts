@@ -8,13 +8,13 @@ export class CollectionController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  async getCollections() {
-    return JSON.stringify(await this.collectionService.getAll())
+  getCollections() {
+    return this.collectionService.getAll()
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  async getCollection(@Param('id') id: string) {
-    return JSON.stringify(await this.collectionService.get(Number.parseInt(id)))
+  getCollection(@Param('id') id: string) {
+    return this.collectionService.get(Number.parseInt(id))
   }
 }

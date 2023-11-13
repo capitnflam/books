@@ -1,25 +1,31 @@
 import { z } from 'zod'
 
-// import { bookMinimalSchema } from './book'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
 
-// TODO: redo
-
-const collectionInternalSchema = z.object({
-  id: z.number(),
+const collectionCommonSchema = z.object({
   name: z.string(),
-  // books: z.array(bookMinimalSchema),
-  books: z.array(z.string()),
 })
 
-export const collectionMinimalSchema = collectionInternalSchema.transform(
-  transformURI('/collection'),
-)
-
-export const collectionSchema = collectionInternalSchema
+export const collectionResultSchema = z
+  .object({
+    id: z.number(),
+    books: z.array(z.object({ id: z.number() })),
+  })
+  .merge(collectionCommonSchema)
   .merge(dateInfoSchema)
   .transform(transformURI('/collection'))
+  .transform(({ books, ...rest }) => ({
+    ...rest,
+    books: books.map(transformURI('/book')).map(({ uri }) => uri),
+  }))
 
-export type CollectionMinimal = z.infer<typeof collectionMinimalSchema>
-export type Collection = z.infer<typeof collectionSchema>
+export const collectionRequestSchema = z
+  .object({
+    uri: z.string().refine((x) => x.startsWith('/collection/')),
+    books: z.array(z.string().refine((x) => x.startsWith('/book/'))),
+  })
+  .merge(collectionCommonSchema)
+
+export type CollectionResult = z.infer<typeof collectionResultSchema>
+export type CollectionRequest = z.infer<typeof collectionRequestSchema>

@@ -13,8 +13,9 @@ export {
 } from './book'
 export { type BooksResult, booksResultSchema } from './books'
 export {
-  type Collection,
-  type CollectionMinimal,
-  collectionSchema,
-  collectionMinimalSchema,
+  type CollectionRequest,
+  type CollectionResult,
+  collectionRequestSchema,
+  collectionResultSchema,
 } from './collection'
+export { type CollectionsResult, collectionsResultSchema } from './collections'

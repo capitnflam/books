@@ -65,7 +65,7 @@ describe('types::book', () => {
     })
 
     it('rejects an invalid object', () => {
-      expect(() => bookResultSchema.parse({ foo: 42 })).toThrow()
+      expect(() => bookRequestSchema.parse({ foo: 42 })).toThrow()
     })
   })
   describe('result', () => {

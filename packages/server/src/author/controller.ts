@@ -8,13 +8,13 @@ export class AuthorController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  async getAuthors() {
+  getAuthors() {
     return this.authorService.getAll()
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  async getAuthor(@Param('id') id: string) {
+  getAuthor(@Param('id') id: string) {
     return this.authorService.get(Number.parseInt(id))
   }
 }
