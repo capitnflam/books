@@ -2,7 +2,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { Author, authorSchema } from '~books/types'
+import {
+  AuthorResult,
+  AuthorsResult,
+  authorResultSchema,
+  authorsResultSchema,
+} from '~books/types'
 
 import { AuthorEntity } from './entity'
 
@@ -13,26 +18,26 @@ export class AuthorService {
     private readonly authorsRepository: Repository<AuthorEntity>,
   ) {}
 
-  async getAll(): Promise<Author[]> {
+  async getAll(): Promise<AuthorsResult> {
     const authors = await this.authorsRepository.find()
 
     if (!authors) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
     }
 
-    const results = authors.map((author) => authorSchema.parse(author))
+    const results = authorsResultSchema.parse(authors)
 
     return results
   }
 
-  async get(id: number): Promise<Author> {
+  async get(id: number): Promise<AuthorResult> {
     const author = await this.authorsRepository.findOne({ where: { id } })
 
     if (!author) {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
     }
 
-    const result = authorSchema.parse(author)
+    const result = authorResultSchema.parse(author)
 
     return result
   }

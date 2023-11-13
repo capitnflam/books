@@ -1,14 +1,13 @@
 import validator from 'validator'
 import { z } from 'zod'
 
-import { authorMinimalSchema } from './author'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
 
-const newLineRegEx = /\\n/g
+const escapedNewLineRegEx = /\\n/g
+const newLineRegEx = /\n/g
 
-const bookInternalSchema = z.object({
-  id: z.number(),
+const bookCommonSchema = z.object({
   coverURL: z
     .string()
     .url()
@@ -22,22 +21,33 @@ const bookInternalSchema = z.object({
     .transform((x) => x ?? undefined),
 })
 
-export const bookMinimalSchema = bookInternalSchema.transform(
-  transformURI('/book'),
-)
-
-export const bookSchema = bookInternalSchema
-  .merge(
-    z.object({
-      synopsis: z
-        .string()
-        .nullish()
-        .transform((x) => x?.replace(newLineRegEx, '\n') ?? undefined),
-      authors: z.array(authorMinimalSchema),
-    }),
-  )
+export const bookResultSchema = z
+  .object({
+    id: z.number(),
+    authors: z.array(z.object({ id: z.number() })),
+    synopsis: z
+      .string()
+      .nullish()
+      .transform((x) => x?.replace(escapedNewLineRegEx, '\n') ?? undefined),
+  })
+  .merge(bookCommonSchema)
   .merge(dateInfoSchema)
   .transform(transformURI('/book'))
+  .transform(({ authors, ...rest }) => ({
+    ...rest,
+    authors: authors.map(transformURI('/author')).map(({ uri }) => uri),
+  }))
 
-export type BookMinimal = z.infer<typeof bookMinimalSchema>
-export type Book = z.infer<typeof bookSchema>
+export const bookRequestSchema = z
+  .object({
+    uri: z.string().refine((x) => x.startsWith('/book/')),
+    authors: z.array(z.string().refine((x) => x.startsWith('/author/'))),
+    synopsis: z
+      .string()
+      .nullish()
+      .transform((x) => x?.replace(newLineRegEx, '\\n') ?? undefined),
+  })
+  .merge(bookCommonSchema)
+
+export type BookResult = z.infer<typeof bookResultSchema>
+export type BookRequest = z.infer<typeof bookRequestSchema>

@@ -2,32 +2,18 @@ import { collectionSchema } from './collection'
 
 const date = new Date()
 
-const bookFixture = {
-  id: 42,
-  coverURL: 'http://foo.bar/cover.jpg',
-  title: 'test',
-  isbn: '978-3-16-148410-0',
-}
-
 const collectionFixture = {
   id: 21,
   name: 'test collection',
-  books: [bookFixture],
+  books: ['/book/42'],
   createdAt: date,
   updatedAt: date,
-}
-
-const bookFixtureResult = {
-  uri: '/book/42',
-  coverURL: 'http://foo.bar/cover.jpg',
-  title: 'test',
-  isbn: '978-3-16-148410-0',
 }
 
 const collectionFixtureResult = {
   uri: '/collection/21',
   name: 'test collection',
-  books: [bookFixtureResult],
+  books: ['/book/42'],
   createdAt: date.toISOString(),
   updatedAt: date.toISOString(),
 }

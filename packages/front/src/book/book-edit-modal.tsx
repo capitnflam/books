@@ -13,12 +13,14 @@ import {
   Tabs,
   Textarea,
 } from '@nextui-org/react'
-import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
 
-import { Book as BookType, bookSchema } from '~books/types'
+import { BookResult, bookRequestSchema } from '~books/types'
 
 import { Markdown } from '../components/markdown'
-import { useEntityApiQuery } from '../hooks/use-entity-api-query'
+import { getBookQuery } from '../queries/book/get'
+import { updateBook } from '../services/book/update'
 
 interface OwnProps {
   readonly id: string
@@ -26,26 +28,21 @@ interface OwnProps {
 
 type Props = OwnProps & Pick<ModalProps, 'isOpen' | 'onClose'>
 
-// https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html
-const isbnPattern =
-  /^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$/
-
-const onSubmit = (data) => {
-  console.log(data)
-}
-
 export function BookEditModal({ id, isOpen, onClose }: Props) {
-  const {
-    data: book,
-    error,
-    isError,
-    isLoading,
-    isFetching,
-    isSuccess,
-  } = useEntityApiQuery<BookType>('book', id, {
+  const queryClient = useQueryClient()
+  const getQuery = getBookQuery(`/book/${id}`, {
     retry: false,
     refetchOnWindowFocus: false,
     enabled: isOpen,
+    staleTime: Infinity,
+  })
+
+  const { data: book } = useQuery(getQuery)
+
+  const { mutate } = useMutation({
+    mutationFn: updateBook,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: getQuery.queryKey }),
   })
 
   const {
@@ -55,9 +52,10 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
     watch,
     reset,
     formState: { errors },
-  } = useForm<
-    Pick<BookType, 'authors' | 'coverURL' | 'isbn' | 'synopsis' | 'title'>
-  >({ defaultValues: book, resolver: zodResolver(bookSchema) })
+  } = useForm<BookResult>({
+    defaultValues: book,
+    resolver: zodResolver(bookRequestSchema),
+  })
   const currentSynopsisMarkdown = watch('synopsis')
 
   return (
@@ -65,7 +63,22 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
       <ModalContent>
         {(close) => (
           <>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form
+              onSubmit={handleSubmit(
+                (values) => {
+                  return mutate(values, {
+                    onSuccess: () => {
+                      reset()
+                      close()
+                    },
+                  })
+                },
+                (errors) => {
+                  // TODO
+                  console.error('errors', errors)
+                },
+              )}
+            >
               <ModalHeader>Edit {book?.title}</ModalHeader>
               <ModalBody>
                 <Input
@@ -78,9 +91,7 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
                   placeholder="0-553-29335-4"
                   isInvalid={!!errors.isbn}
                   errorMessage={errors.isbn?.message}
-                  {...register('isbn', {
-                    pattern: isbnPattern,
-                  })}
+                  {...register('isbn')}
                 />
                 <Tabs variant="underlined">
                   <Tab key="raw" title="Synopsis">
@@ -108,7 +119,7 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" color="primary" onClick={close}>
+                <Button type="submit" color="primary">
                   Save
                 </Button>
               </ModalFooter>

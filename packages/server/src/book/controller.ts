@@ -1,4 +1,15 @@
-import { Controller, Get, Header, Param } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Param,
+  ParseIntPipe,
+  Put,
+} from '@nestjs/common'
+import { ZodValidationPipe } from 'nestjs-zod'
+
+import { BookRequest, bookRequestSchema } from '~books/types'
 
 import { BookService } from './service'
 
@@ -8,13 +19,22 @@ export class BookController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  async getBooks() {
-    return JSON.stringify(await this.bookService.getAll())
+  getBooks() {
+    return this.bookService.getAll()
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  async getBook(@Param('id') id: string) {
-    return JSON.stringify(await this.bookService.get(Number.parseInt(id)))
+  getBook(@Param('id', ParseIntPipe) id: number) {
+    return this.bookService.get(id)
+  }
+
+  @Put(':id')
+  @Header('Content-Type', 'application/json')
+  updateBook(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe(bookRequestSchema)) body: BookRequest,
+  ) {
+    return this.bookService.update(id, body)
   }
 }

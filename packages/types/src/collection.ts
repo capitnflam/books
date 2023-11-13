@@ -1,13 +1,16 @@
 import { z } from 'zod'
 
-import { bookMinimalSchema } from './book'
+// import { bookMinimalSchema } from './book'
 import { dateInfoSchema } from './sub/date-info'
 import { transformURI } from './sub/transform-uri'
+
+// TODO: redo
 
 const collectionInternalSchema = z.object({
   id: z.number(),
   name: z.string(),
-  books: z.array(bookMinimalSchema),
+  // books: z.array(bookMinimalSchema),
+  books: z.array(z.string()),
 })
 
 export const collectionMinimalSchema = collectionInternalSchema.transform(

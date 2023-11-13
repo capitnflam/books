@@ -41,7 +41,7 @@ async function bootstrap() {
   Logger.debug('Application is running', { appURL: await app.getUrl() })
 }
 
-if (import.meta.env.PROD) {
+if (process.env.PROD) {
   void bootstrap()
 }
 
