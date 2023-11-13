@@ -15,6 +15,7 @@ import {
 } from '@nextui-org/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
 
 import { BookResult, bookRequestSchema } from '~books/types'
 
@@ -75,6 +76,7 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
                 },
                 (errors) => {
                   // TODO
+                  toast.error('errors')
                   console.error('errors', errors)
                 },
               )}

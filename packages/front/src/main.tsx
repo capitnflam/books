@@ -11,6 +11,9 @@ import { route as authorRoute } from './author'
 import { route as bookRoute } from './book'
 import { route as booksRoute } from './books'
 import { ErrorLayout, Layout } from './components/layout'
+
+// eslint-disable-next-line import/order
+import 'react-toastify/dist/ReactToastify.min.css'
 // eslint-disable-next-line import/order
 import './index.css'
 
