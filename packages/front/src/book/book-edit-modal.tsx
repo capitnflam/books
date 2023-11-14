@@ -54,8 +54,10 @@ export function BookEditModal({ id, isOpen, onClose }: Props) {
     reset,
     formState: { errors },
   } = useForm<BookResult>({
-    defaultValues: book,
+    mode: 'onBlur',
+    values: book,
     resolver: zodResolver(bookRequestSchema),
+    disabled: !book,
   })
   const currentSynopsisMarkdown = watch('synopsis')
 

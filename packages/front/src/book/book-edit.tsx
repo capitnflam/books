@@ -25,7 +25,7 @@ export function BookEdit({ children, id }: Props) {
       >
         {children}
       </button>
-      <BookEditModal isOpen={open} onClose={onClose} id={id} />
+      {open && <BookEditModal isOpen={open} onClose={onClose} id={id} />}
     </>
   )
 }
