@@ -2,6 +2,7 @@
   "root": true,
   "ignorePatterns": ["**/*"],
   "extends": [
+    "plugin:@nx/typescript",
     "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:prettier/recommended"
