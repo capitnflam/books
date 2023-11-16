@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Header,
   Param,
   ParseIntPipe,
   Put,
+  Query,
 } from '@nestjs/common'
 import { ZodValidationPipe } from 'nestjs-zod'
 
@@ -19,8 +21,14 @@ export class BookController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  getBooks() {
-    return this.bookService.getAll()
+  getBooks(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+  ) {
+    return this.bookService.getAll({
+      page,
+      limit,
+    })
   }
 
   @Get(':id')

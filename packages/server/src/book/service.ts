@@ -1,13 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import {
+  IPaginationOptions,
+  Pagination,
+  paginate,
+} from 'nestjs-typeorm-paginate'
 import { Repository } from 'typeorm'
 
 import {
   BookRequest,
   BookResult,
-  BooksResult,
+  BooksResultItem,
+  BooksResultItemInput,
   bookResultSchema,
-  booksResultSchema,
+  booksResultItemSchema,
 } from '~books/types'
 
 import { BookEntity } from './entity'
@@ -19,19 +25,25 @@ export class BookService {
     private readonly booksRepository: Repository<BookEntity>,
   ) {}
 
-  async getAll(): Promise<BooksResult> {
-    const books = await this.booksRepository.find({
-      select: { authors: { id: true } },
-      relations: ['authors'],
-    })
+  async getAll(
+    options: IPaginationOptions,
+  ): Promise<Pagination<BooksResultItem>> {
+    const requestResult = await paginate<BooksResultItemInput>(
+      this.booksRepository,
+      options,
+      {
+        select: { authors: { id: true } },
+        relations: ['authors'],
+      },
+    )
 
-    if (!books) {
-      throw new HttpException('Not Found', HttpStatus.NOT_FOUND)
-    }
+    const result = new Pagination<BooksResultItem>(
+      requestResult.items.map((item) => booksResultItemSchema.parse(item)),
+      requestResult.meta,
+      requestResult.links,
+    )
 
-    const results = booksResultSchema.parse(books)
-
-    return results
+    return result
   }
 
   async get(id: number): Promise<BookResult> {

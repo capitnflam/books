@@ -1,23 +1,56 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  QueryFunctionContext,
+  QueryKey,
+  useInfiniteQuery,
+} from '@tanstack/react-query'
 
 import { BooksResult } from '~books/types'
 
 import { getBooks } from '../../services/books/get'
+import { PageParam } from '../../types/page-param'
 
-export function getBooksQuery(
-  options: Omit<
-    Parameters<typeof useQuery<BooksResult>>[0],
-    'queryKey' | 'queryFn'
-  > = {},
-) {
-  return { ...options, queryKey: ['books'], queryFn: () => getBooks() }
-}
+type UseInfiniteQueryParameters = Parameters<
+  typeof useInfiniteQuery<
+    BooksResult,
+    Error,
+    InfiniteData<BooksResult, PageParam>,
+    QueryKey,
+    PageParam
+  >
+>
 
 export function getBooksQueryInfinite(
   options: Omit<
-    Parameters<typeof useInfiniteQuery<BooksResult>>[0],
-    'queryKey' | 'queryFn'
-  >,
+    UseInfiniteQueryParameters[0],
+    'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
+  > &
+    Partial<
+      Pick<
+        UseInfiniteQueryParameters[0],
+        'getNextPageParam' | 'initialPageParam'
+      >
+    >,
 ) {
-  return { ...options, queryKey: ['books'], queryFn: () => getBooks() }
+  return {
+    initialPageParam: { page: 1, limit: 10 },
+    getNextPageParam: (lastPage: BooksResult) => {
+      if (
+        (lastPage.meta.totalPages == null
+          ? Infinity
+          : lastPage.meta.totalPages) > lastPage.meta.currentPage &&
+        lastPage.meta.itemCount > 0
+      ) {
+        return {
+          page: lastPage.meta.currentPage + 1,
+          limit: lastPage.meta.itemsPerPage,
+        }
+      }
+      return undefined
+    },
+    ...options,
+    queryKey: ['books'],
+    queryFn: (context: QueryFunctionContext<QueryKey, PageParam>) =>
+      getBooks(context.pageParam),
+  }
 }

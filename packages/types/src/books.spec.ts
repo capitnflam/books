@@ -6,69 +6,83 @@ type BooksResultInput = z.input<typeof booksResultSchema>
 
 const date = new Date()
 
-const booksResultFixture: BooksResultInput = [
-  {
-    id: 42,
-    title: 'test',
-    isbn: '978-3-16-148410-0',
-    authors: [
-      {
-        id: 21,
-      },
-    ],
-    createdAt: date,
-    updatedAt: date,
+const booksResultFixture: BooksResultInput = {
+  items: [
+    {
+      id: 42,
+      title: 'test',
+      isbn: '978-3-16-148410-0',
+      authors: [
+        {
+          id: 21,
+        },
+      ],
+      createdAt: date,
+      updatedAt: date,
+    },
+    {
+      id: 43,
+      title: 'test2',
+      authors: [
+        {
+          id: 21,
+        },
+      ],
+      createdAt: date,
+      updatedAt: date,
+    },
+    {
+      id: 41,
+      title: 'test3',
+      isbn: '978-3-16-148410-0',
+      authors: [
+        {
+          id: 21,
+        },
+      ],
+      createdAt: date,
+      updatedAt: date,
+    },
+  ],
+  meta: {
+    currentPage: 1,
+    itemCount: 3,
+    itemsPerPage: 10,
   },
-  {
-    id: 43,
-    title: 'test2',
-    authors: [
-      {
-        id: 21,
-      },
-    ],
-    createdAt: date,
-    updatedAt: date,
-  },
-  {
-    id: 41,
-    title: 'test3',
-    isbn: '978-3-16-148410-0',
-    authors: [
-      {
-        id: 21,
-      },
-    ],
-    createdAt: date,
-    updatedAt: date,
-  },
-]
+}
 
-const booksResultFixtureExpected: BooksResult = [
-  {
-    uri: '/book/42',
-    title: 'test',
-    authors: ['/author/21'],
-    isbn: '978-3-16-148410-0',
-    createdAt: date.toISOString(),
-    updatedAt: date.toISOString(),
+const booksResultFixtureExpected: BooksResult = {
+  items: [
+    {
+      uri: '/book/42',
+      title: 'test',
+      authors: ['/author/21'],
+      isbn: '978-3-16-148410-0',
+      createdAt: date.toISOString(),
+      updatedAt: date.toISOString(),
+    },
+    {
+      uri: '/book/43',
+      title: 'test2',
+      authors: ['/author/21'],
+      createdAt: date.toISOString(),
+      updatedAt: date.toISOString(),
+    },
+    {
+      uri: '/book/41',
+      title: 'test3',
+      authors: ['/author/21'],
+      isbn: '978-3-16-148410-0',
+      createdAt: date.toISOString(),
+      updatedAt: date.toISOString(),
+    },
+  ],
+  meta: {
+    currentPage: 1,
+    itemCount: 3,
+    itemsPerPage: 10,
   },
-  {
-    uri: '/book/43',
-    title: 'test2',
-    authors: ['/author/21'],
-    createdAt: date.toISOString(),
-    updatedAt: date.toISOString(),
-  },
-  {
-    uri: '/book/41',
-    title: 'test3',
-    authors: ['/author/21'],
-    isbn: '978-3-16-148410-0',
-    createdAt: date.toISOString(),
-    updatedAt: date.toISOString(),
-  },
-]
+}
 
 describe('types::books', () => {
   describe('result', () => {

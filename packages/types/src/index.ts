@@ -11,7 +11,13 @@ export {
   bookRequestSchema,
   bookResultSchema,
 } from './book'
-export { type BooksResult, booksResultSchema } from './books'
+export {
+  type BooksResult,
+  type BooksResultItem,
+  type BooksResultItemInput,
+  booksResultSchema,
+  booksResultItemSchema,
+} from './books'
 export {
   type CollectionRequest,
   type CollectionResult,
