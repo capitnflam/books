@@ -2,7 +2,9 @@ import {
   InfiniteData,
   QueryFunctionContext,
   QueryKey,
+  keepPreviousData,
   useInfiniteQuery,
+  useQuery,
 } from '@tanstack/react-query'
 
 import { BooksResult } from '~books/types'
@@ -19,6 +21,21 @@ type UseInfiniteQueryParameters = Parameters<
     PageParam
   >
 >
+
+export function getBooksQueryPaginated(
+  pageParam: PageParam,
+  options: Omit<
+    Parameters<typeof useQuery<BooksResult>>[0],
+    'queryKey' | 'queryFn'
+  > = {},
+) {
+  return {
+    placeHolderData: keepPreviousData<BooksResult>,
+    ...options,
+    queryKey: ['books', pageParam],
+    queryFn: () => getBooks(pageParam),
+  }
+}
 
 export function getBooksQueryInfinite(
   options: Omit<
