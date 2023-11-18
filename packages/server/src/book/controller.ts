@@ -1,19 +1,28 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Get,
   Header,
   Param,
   ParseIntPipe,
   Put,
-  Query,
 } from '@nestjs/common'
 import { ZodValidationPipe } from 'nestjs-zod'
 
 import { BookRequest, bookRequestSchema } from '~books/types'
 
+import {
+  Filtering,
+  FilteringParamsGenerator,
+} from '../decorators/filtering-params'
+import { Pagination, PaginationParams } from '../decorators/pagination-params'
+import { Sorting, SortingParamsGenerator } from '../decorators/sorting-params'
+
+import { BookEntity } from './entity'
 import { BookService } from './service'
+
+const SortingParams = SortingParamsGenerator<BookEntity>()
+const FilteringParams = FilteringParamsGenerator<BookEntity>()
 
 @Controller('books?')
 export class BookController {
@@ -22,13 +31,32 @@ export class BookController {
   @Get()
   @Header('Content-Type', 'application/json')
   getBooks(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
-  ) {
-    return this.bookService.getAll({
-      page,
-      limit,
+    @PaginationParams({ defaultValues: { limit: 10, page: 1 } })
+    pagination: Pagination,
+    @SortingParams({
+      allowedProperties: [
+        'createdAt',
+        'deletedAt',
+        'id',
+        'isbn',
+        'updatedAt',
+        'title',
+      ],
     })
+    sort?: Sorting<BookEntity>,
+    @FilteringParams({
+      allowedProperties: [
+        'createdAt',
+        'deletedAt',
+        'isbn',
+        'synopsis',
+        'title',
+        'updatedAt',
+      ],
+    })
+    filter?: Filtering<BookEntity>,
+  ) {
+    return this.bookService.getAll(pagination, sort, filter)
   }
 
   @Get(':id')

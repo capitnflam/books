@@ -16,6 +16,10 @@ import {
   booksResultItemSchema,
 } from '~books/types'
 
+import { Filtering } from '../decorators/filtering-params'
+import { Sorting } from '../decorators/sorting-params'
+import { getOrder, getWhere } from '../decorators/typeorm'
+
 import { BookEntity } from './entity'
 
 @Injectable()
@@ -27,13 +31,19 @@ export class BookService {
 
   async getAll(
     options: IPaginationOptions,
+    sort?: Sorting<BookEntity>,
+    filter?: Filtering<BookEntity>,
   ): Promise<Pagination<BooksResultItem>> {
+    const order = getOrder(sort)
+    const where = getWhere(filter)
     const requestResult = await paginate<BooksResultItemInput>(
       this.booksRepository,
       options,
       {
         select: { authors: { id: true } },
         relations: ['authors'],
+        order,
+        where,
       },
     )
 
