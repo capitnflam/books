@@ -1,4 +1,5 @@
 import {
+  FindOptionsWhere,
   ILike,
   In,
   IsNull,
@@ -9,19 +10,7 @@ import {
   Not,
 } from 'typeorm'
 
-import { FilterRule, Filtering } from './filtering-params'
-import { Sorting } from './sorting-params'
-
-export function getOrder<Entity>(sortArray?: Sorting<Entity>[]) {
-  return sortArray
-    ? sortArray.reduce((acc, sort) => {
-        return {
-          ...acc,
-          [sort.property]: sort.direction,
-        }
-      }, {})
-    : undefined
-}
+import { FilterRule, Filtering } from '../../filtering-params'
 
 function getWhereItem<Entity>(filter: Filtering<Entity>) {
   switch (filter.rule) {
@@ -54,12 +43,14 @@ function getWhereItem<Entity>(filter: Filtering<Entity>) {
   }
 }
 
-export function getWhere<Entity>(filterArray?: Filtering<Entity>[]) {
+export function getWhere<Entity>(
+  filterArray?: Filtering<Entity>[],
+): FindOptionsWhere<Entity> | undefined {
   if (!filterArray) {
     return undefined
   }
 
-  return filterArray.reduce((acc, filter) => {
+  return filterArray.reduce<FindOptionsWhere<Entity>>((acc, filter) => {
     const where = getWhereItem(filter)
     if (where) {
       return {

@@ -18,7 +18,7 @@ import {
 
 import { Filtering } from '../decorators/filtering-params'
 import { Sorting } from '../decorators/sorting-params'
-import { getOrder, getWhere } from '../decorators/typeorm'
+import { getOrder, getWhere } from '../decorators/transformers/typeorm'
 
 import { BookEntity } from './entity'
 
