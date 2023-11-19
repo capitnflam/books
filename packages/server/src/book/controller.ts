@@ -43,7 +43,7 @@ export class BookController {
         'title',
       ],
     })
-    sort?: Sorting<BookEntity>,
+    sort?: Sorting<BookEntity>[],
     @FilteringParams({
       allowedProperties: [
         'createdAt',
@@ -54,7 +54,7 @@ export class BookController {
         'updatedAt',
       ],
     })
-    filter?: Filtering<BookEntity>,
+    filter?: Filtering<BookEntity>[],
   ) {
     return this.bookService.getAll(pagination, sort, filter)
   }

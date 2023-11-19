@@ -327,7 +327,7 @@ Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit u
   },
   {
     coverURL: 'http://dummyimage.com/214x100.png/5fa2dd/ffffff',
-    title: 'Celeste and Jesse Forever (Celeste & Jesse Forever)',
+    title: 'julias eyes',
     isbn: '531104103-X',
     synopsis:
       'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.',
@@ -343,7 +343,7 @@ Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit u
   },
   {
     coverURL: 'http://dummyimage.com/215x100.png/dddddd/000000',
-    title: 'Arise, My Love',
+    title: 'Julia',
     isbn: '098885530-5',
     synopsis:
       'Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.',

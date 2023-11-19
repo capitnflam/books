@@ -19,41 +19,50 @@ export interface Sorting<Entity> {
 }
 
 interface SortingParamsInput<Entity> {
-  defaultValues?: Sorting<Entity>
+  defaultValues?: Sorting<Entity>[]
   allowedProperties: (keyof Entity)[]
 }
+
+const sortPattern = /^([a-zA-Z0-9]+):(asc|desc)$/
 
 export const SortingParamsGenerator = <Entity>() =>
   createParamDecorator<SortingParamsInput<Entity>>(
     (
       { allowedProperties, defaultValues }: SortingParamsInput<Entity>,
       ctx: ExecutionContext,
-    ): Sorting<Entity> | undefined => {
+    ): Sorting<Entity>[] | undefined => {
       const req: Request = ctx.switchToHttp().getRequest()
-      const sort = req.query.sort as string
-      if (!sort) {
+      let sortArray: string[] = req.query.sort as string[]
+      const result: Sorting<Entity>[] = []
+      if (!req.query.sort) {
         return defaultValues
       }
 
-      // check the format of the sort query param
-      const sortPattern = /^([a-zA-Z0-9]+):(asc|desc)$/
-      if (!sort.match(sortPattern)) {
-        throw new BadRequestException('Invalid sort parameter')
-      }
-      // extract the property name and direction and check if they are valid
-      const [property, direction] = sort.split(':')
-      if (!direction || !isDirection(direction)) {
-        throw new BadRequestException(
-          `Invalid sort direction: ${direction}. Valid directions are: ${validDirections.join(
-            ', ',
-          )}`,
-        )
-      }
-      const propertyCast = property as keyof Entity
-      if (!allowedProperties.includes(propertyCast)) {
-        throw new BadRequestException(`Invalid sort property: ${property}`)
+      if (!Array.isArray(req.query.sort)) {
+        sortArray = [req.query.sort as string]
       }
 
-      return { property: propertyCast, direction }
+      sortArray.forEach((sort) => {
+        // check the format of the sort query param
+        if (!sort.match(sortPattern)) {
+          throw new BadRequestException('Invalid sort parameter')
+        }
+        // extract the property name and direction and check if they are valid
+        const [property, direction] = sort.split(':')
+        if (!direction || !isDirection(direction)) {
+          throw new BadRequestException(
+            `Invalid sort direction: ${direction}. Valid directions are: ${validDirections.join(
+              ', ',
+            )}`,
+          )
+        }
+        const propertyCast = property as keyof Entity
+        if (!allowedProperties.includes(propertyCast)) {
+          throw new BadRequestException(`Invalid sort property: ${property}`)
+        }
+        result.push({ property: propertyCast, direction })
+      })
+
+      return result
     },
   )

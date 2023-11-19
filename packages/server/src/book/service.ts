@@ -31,8 +31,8 @@ export class BookService {
 
   async getAll(
     options: IPaginationOptions,
-    sort?: Sorting<BookEntity>,
-    filter?: Filtering<BookEntity>,
+    sort?: Sorting<BookEntity>[],
+    filter?: Filtering<BookEntity>[],
   ): Promise<Pagination<BooksResultItem>> {
     const order = getOrder(sort)
     const where = getWhere(filter)

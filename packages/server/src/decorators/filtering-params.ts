@@ -28,40 +28,52 @@ export enum FilterRule {
 }
 
 interface FilteringParamsInput<Entity> {
-  defaultValues?: Filtering<Entity>
+  defaultValues?: Filtering<Entity>[]
   allowedProperties: (keyof Entity)[]
 }
+
+const filterPatternValue =
+  /^[a-zA-Z0-9_]+:(eq|neq|gt|gte|lt|lte|like|nlike|in|nin):[a-zA-Z0-9_,]+$/
+const filterPatternNull = /^[a-zA-Z0-9_]+:(isnull|isnotnull)$/
 
 export const FilteringParamsGenerator = <Entity>() =>
   createParamDecorator(
     (
       { defaultValues, allowedProperties }: FilteringParamsInput<Entity>,
       ctx: ExecutionContext,
-    ): Filtering<Entity> | undefined => {
+    ): Filtering<Entity>[] | undefined => {
       const req: Request = ctx.switchToHttp().getRequest()
-      const filter = req.query.filter as string
-      if (!filter) {
+      let filterArray: string[] = req.query.filter as string[]
+      const result: Filtering<Entity>[] = []
+      if (!req.query.filter) {
         return defaultValues
       }
 
-      // validate the format of the filter, if the rule is 'isnull' or 'isnotnull' it don't need to have a value
-      if (
-        !filter.match(
-          /^[a-zA-Z0-9_]+:(eq|neq|gt|gte|lt|lte|like|nlike|in|nin):[a-zA-Z0-9_,]+$/,
-        ) &&
-        !filter.match(/^[a-zA-Z0-9_]+:(isnull|isnotnull)$/)
-      ) {
-        throw new BadRequestException('Invalid filter parameter')
+      if (!Array.isArray(req.query.filter)) {
+        filterArray = [req.query.filter as string]
       }
 
-      // extract the parameters and validate if the rule and the property are valid
-      const [property, rule, value] = filter.split(':')
-      const propertyCast = property as keyof Entity
-      if (!allowedProperties.includes(propertyCast))
-        throw new BadRequestException(`Invalid filter property: ${property}`)
-      if (!Object.values(FilterRule).includes(rule as FilterRule))
-        throw new BadRequestException(`Invalid filter rule: ${rule}`)
+      filterArray.forEach((filter) => {
+        // validate the format of the filter, if the rule is 'isnull' or 'isnotnull' it don't need to have a value
+        if (
+          !filter.match(filterPatternValue) &&
+          !filter.match(filterPatternNull)
+        ) {
+          throw new BadRequestException('Invalid filter parameter')
+        }
 
-      return { property: propertyCast, rule, value }
+        // extract the parameters and validate if the rule and the property are valid
+        const [property, rule, value] = filter.split(':')
+        const propertyCast = property as keyof Entity
+        if (!allowedProperties.includes(propertyCast)) {
+          throw new BadRequestException(`Invalid filter property: ${property}`)
+        }
+        if (!Object.values(FilterRule).includes(rule as FilterRule)) {
+          throw new BadRequestException(`Invalid filter rule: ${rule}`)
+        }
+        result.push({ property: propertyCast, rule, value })
+      })
+
+      return result
     },
   )

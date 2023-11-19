@@ -12,15 +12,18 @@ import {
 import { FilterRule, Filtering } from './filtering-params'
 import { Sorting } from './sorting-params'
 
-export function getOrder<Entity>(sort?: Sorting<Entity>) {
-  return sort ? { [sort.property]: sort.direction } : undefined
+export function getOrder<Entity>(sortArray?: Sorting<Entity>[]) {
+  return sortArray
+    ? sortArray.reduce((acc, sort) => {
+        return {
+          ...acc,
+          [sort.property]: sort.direction,
+        }
+      }, {})
+    : undefined
 }
 
-export function getWhere<Entity>(filter?: Filtering<Entity>) {
-  if (!filter) {
-    return undefined
-  }
-
+function getWhereItem<Entity>(filter: Filtering<Entity>) {
   switch (filter.rule) {
     case FilterRule.IS_NULL:
       return { [filter.property]: IsNull() }
@@ -49,4 +52,21 @@ export function getWhere<Entity>(filter?: Filtering<Entity>) {
     default:
       return undefined
   }
+}
+
+export function getWhere<Entity>(filterArray?: Filtering<Entity>[]) {
+  if (!filterArray) {
+    return undefined
+  }
+
+  return filterArray.reduce((acc, filter) => {
+    const where = getWhereItem(filter)
+    if (where) {
+      return {
+        ...acc,
+        ...where,
+      }
+    }
+    return acc
+  }, {})
 }
