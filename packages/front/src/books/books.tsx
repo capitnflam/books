@@ -1,4 +1,4 @@
-import { Card, CardBody, Chip, Pagination } from '@nextui-org/react'
+import { Card, CardBody, Chip, Pagination, Spinner } from '@nextui-org/react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -50,19 +50,25 @@ export function Books() {
             return (
               <Link key={book.uri} to={book.uri}>
                 <Card className="transition-opacity hover:opacity-80">
-                  <CardBody className="flex flex-row">
-                    {book.title}
-                    <div className="mx-2 flex flex-row gap-2">
-                      {book.authors.map((author) => {
-                        if (authors[author]) {
-                          return (
-                            <Chip key={author} size="sm">
-                              {authors[author].name}
-                            </Chip>
-                          )
-                        }
-                        return null
-                      })}
+                  <CardBody className="flex flex-row justify-between">
+                    <div className="flex flex-col gap-2">
+                      {book.title}
+                      <div className="flex flex-row gap-2">
+                        {book.authors.map((author) => {
+                          if (authors[author]) {
+                            return (
+                              <Chip key={author} size="sm">
+                                {authors[author].name}
+                              </Chip>
+                            )
+                          }
+                          return null
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span>22/12/2023</span>
+                      <span>{book.isbn}</span>
                     </div>
                   </CardBody>
                 </Card>
@@ -88,5 +94,9 @@ export function Books() {
     return <p>Error: {(error as Error).message}</p>
   }
 
-  return <p>loading</p>
+  return (
+    <div className="flex h-full w-full flex-row items-center justify-center">
+      <Spinner />
+    </div>
+  )
 }
