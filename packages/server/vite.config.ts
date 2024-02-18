@@ -1,5 +1,7 @@
+/// <reference types="vitest" />
+
+import { VitePluginNode } from '@flaminc/vite-plugin-node'
 import { defineConfig } from 'vite'
-import { VitePluginNode } from 'vite-plugin-node'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({

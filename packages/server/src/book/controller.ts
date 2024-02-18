@@ -9,13 +9,16 @@ import {
 } from '@nestjs/common'
 import { ZodValidationPipe } from 'nestjs-zod'
 
-import { BookRequest, bookRequestSchema } from '~books/types'
+import { type BookRequest, bookRequestSchema } from '~books/types'
 
 import {
   Filtering,
   FilteringParamsGenerator,
 } from '../decorators/filtering-params'
-import { Pagination, PaginationParams } from '../decorators/pagination-params'
+import {
+  type Pagination,
+  PaginationParams,
+} from '../decorators/pagination-params'
 import { Sorting, SortingParamsGenerator } from '../decorators/sorting-params'
 
 import { BookEntity } from './entity'

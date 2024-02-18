@@ -9,7 +9,7 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/packages/front"
+        "outputPath": "dist/packages/server"
       },
       "configurations": {
         "development": {
@@ -57,7 +57,7 @@
       "executor": "nx:run-commands",
       "outputs": [],
       "options": {
-        "command": "ts-node -r tsconfig-paths/register --project ./tsconfig.app.json ../../node_modules/typeorm/cli -d ./src/typeorm/cli.config.ts",
+        "command": "ts-node -r tsconfig-paths/register --project ./tsconfig.json ../../node_modules/typeorm/cli -d ./src/typeorm/cli.config.ts",
         "cwd": "packages/server"
       }
     },
@@ -114,7 +114,7 @@
       "executor": "nx:run-commands",
       "outputs": [],
       "options": {
-        "command": "ts-node -r tsconfig-paths/register --project ./tsconfig.app.json ./src/typeorm/seed.ts",
+        "command": "ts-node -r tsconfig-paths/register --project ./tsconfig.json ./src/typeorm/seed.ts",
         "cwd": "packages/server"
       },
       "dependsOn": ["server:seed-step2"]
