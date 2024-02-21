@@ -45,6 +45,13 @@ export default defineConfig({
       'class-validator',
       'fastify-swagger',
     ],
+    esbuildOptions: {
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: true,
+        },
+      },
+    },
   },
   test: {
     globals: true,
