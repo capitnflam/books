@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts",
+    "oxlint.config.ts",
+    "oxfmt.config.ts"
+  ],
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}
