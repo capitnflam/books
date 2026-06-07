@@ -3,6 +3,7 @@ packages:
   - 'apps/*'
 minimumReleaseAgeStrict: true
 allowBuilds:
+  '@nestjs/core': false
   esbuild: false
 minimumReleaseAgeExclude:
   - '@types/node@25.9.2'
