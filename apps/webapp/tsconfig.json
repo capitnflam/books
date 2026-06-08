@@ -1,13 +1,13 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "outDir": "dist",
-    "strictNullChecks": true,
-    // "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "strictNullChecks": true,
+    "types": ["vitest/globals"]
   },
-  "include": ["src", "next-env.d.ts", "next.config.ts", ".next/types/**/*.ts"],
-  "exclude": ["dist", "build", "node_modules"]
+  "exclude": ["dist", "build", "node_modules"],
+  "extends": "@repo/typescript-config/nextjs.json",
+  "include": ["src", "next-env.d.ts", "next.config.ts", ".next/types/**/*.ts"]
 }

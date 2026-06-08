@@ -22,7 +22,7 @@ export default defineConfig({
         // NestJS empty decorated classes are valid (modules, controllers)
         'typescript/no-extraneous-class': ['error', { allowWithDecorator: true }],
         // NestJS DI requires runtime class references — disable without type-aware linting
-        // 'typescript/consistent-type-imports': 'off',
+        'typescript/consistent-type-imports': 'off',
       },
     },
     {

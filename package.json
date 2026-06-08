@@ -2,20 +2,20 @@
   "name": "books",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "MIT",
+  "author": "capitN.flam",
   "main": "index.js",
   "scripts": {
-    "dev": "turbo run dev",
     "build": "turbo run build",
-    "type:check": "turbo run type:check",
-    "lint:check": "turbo run lint:check",
-    "lint:fix": "turbo run lint:fix",
+    "dev": "turbo run dev",
     "format:check": "turbo run format:check",
     "format:fix": "turbo run format:fix",
-    "test": "turbo run test"
+    "lint:check": "turbo run lint:check",
+    "lint:fix": "turbo run lint:fix",
+    "test": "turbo run test",
+    "type:check": "turbo run type:check"
   },
-  "keywords": [],
-  "author": "capitN.flam",
-  "license": "MIT",
   "devDependencies": {
     "@infra-x/code-quality": "0.6.2",
     "@repo/typescript-config": "workspace:*",
@@ -24,8 +24,8 @@
     "oxlint-tsgolint": "0.23.0",
     "turbo": "2.9.16"
   },
-  "packageManager": "pnpm@11.5.2",
   "engines": {
     "node": "26.3.0"
-  }
+  },
+  "packageManager": "pnpm@11.5.2"
 }
