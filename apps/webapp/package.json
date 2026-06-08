@@ -6,12 +6,15 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "start": "next start",
-    "type:check": "tsc --noEmit",
+    "format:check": "oxfmt --check .",
+    "format:fix": "oxfmt --write .",
     "lint:check": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format:check": "oxfmt --check .",
-    "format:fix": "oxfmt --write ."
+    "start": "next start",
+    "test": "vitest",
+    "test:cov": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/postcss": "4.3.0",

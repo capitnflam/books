@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
- 
+
 const nextConfig: NextConfig = {
   logging: {
     browserToTerminal: true,
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     },
     incomingRequests: true,
     serverFunctions: true,
-  }
+  },
 }
- 
+
 export default nextConfig
