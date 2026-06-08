@@ -21,6 +21,7 @@
     "@repo/typescript-config": "workspace:*",
     "oxfmt": "0.53.0",
     "oxlint": "1.68.0",
+    "oxlint-tsgolint": "0.23.0",
     "turbo": "2.9.16"
   },
   "packageManager": "pnpm@11.5.2",
