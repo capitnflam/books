@@ -11,4 +11,12 @@ export default defineConfig({
     nextjs(),
     vitest({ files: ['**/*.{test,spec}.ts', '**/*.e2e-spec.ts', '**/__tests__/**/*.ts'] }),
   ],
+  overrides: [
+    {
+      files: ['**/*.tsx'],
+      rules: {
+        'unicorn/filename-case': 'off',
+      },
+    },
+  ],
 })
