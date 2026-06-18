@@ -1,11 +1,8 @@
 import { Inter } from 'next/font/google'
 
-import { cn } from '@/lib/utils'
-import { QueryProvider } from '@/providers/QueryProvider'
+import { RootProvider } from '@/providers/RootProvider'
 
 import type { PropsWithChildren } from 'react'
-
-import '@/styles/globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -13,9 +10,11 @@ type RootLayoutProps = PropsWithChildren
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={cn('font-sans', inter.variable)}>
+    <html lang="en">
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <RootProvider>
+          <div>{children}</div>
+        </RootProvider>
       </body>
     </html>
   )
