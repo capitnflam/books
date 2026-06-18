@@ -7,5 +7,3 @@ allowBuilds:
   '@scarf/scarf': false
   esbuild: false
   sharp: false
-minimumReleaseAgeExclude:
-  - shadcn@4.11.0
