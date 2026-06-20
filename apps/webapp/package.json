@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "format:check": "oxfmt --check .",
-    "format:fix": "oxfmt --write .",
+    "format:check": "oxfmt --check",
+    "format:fix": "oxfmt --write",
     "lint:check": "oxlint",
     "lint:fix": "oxlint --fix",
     "start": "next start",
@@ -27,6 +28,6 @@
     "@repo/typescript-config": "workspace:*",
     "@types/react": "19.2.17",
     "typescript": "6.0.3",
-    "vitest": "4.1.8"
+    "vitest": "4.1.9"
   }
 }
