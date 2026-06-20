@@ -14,12 +14,15 @@
     "lint:check": "turbo run lint:check",
     "lint:fix": "turbo run lint:fix",
     "test": "turbo run test",
-    "type:check": "turbo run type:check"
+    "type:check": "turbo run type:check",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@infra-x/code-quality": "0.6.2",
     "@types/node": "25.9.3",
-    "knip": "^6.17.1",
+    "husky": "9.1.7",
+    "knip": "6.17.1",
+    "lint-staged": "17.0.7",
     "oxfmt": "0.55.0",
     "oxlint": "1.70.0",
     "oxlint-tsgolint": "0.23.0",
