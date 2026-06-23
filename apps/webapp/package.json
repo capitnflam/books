@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
+    "clean:dist": "rimraf dist",
     "dev": "next dev",
     "format:check": "oxfmt --check",
     "format:fix": "oxfmt --write",
@@ -18,6 +19,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/design-system": "workspace:*",
     "@tanstack/react-query": "5.101.0",
     "next": "16.2.9",
     "react": "19.2.7",
@@ -27,6 +29,7 @@
     "@infra-x/code-quality": "0.6.2",
     "@repo/typescript-config": "workspace:*",
     "@types/react": "19.2.17",
+    "sass": "1.101.0",
     "typescript": "6.0.3",
     "vitest": "4.1.9"
   }

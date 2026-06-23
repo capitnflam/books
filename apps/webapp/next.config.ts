@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     incomingRequests: true,
     serverFunctions: true,
   },
+  transpilePackages: ['@repo/design-system'],
 }
 
 export default nextConfig

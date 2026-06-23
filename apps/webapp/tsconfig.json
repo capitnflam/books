@@ -8,6 +8,6 @@
     "types": ["vitest/globals"]
   },
   "exclude": ["dist", "build", "node_modules"],
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/typescript-config/react.json",
   "include": ["src", "next-env.d.ts", "next.config.ts", ".next/types/**/*.ts"]
 }

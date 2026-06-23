@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strictNullChecks": true,
+    "types": ["vitest/globals"]
+  },
+  "exclude": ["dist", "build", "node_modules"],
+  "extends": "@repo/typescript-config/react.json",
+  "include": ["src"]
+}
