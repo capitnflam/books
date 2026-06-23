@@ -1,3 +1,5 @@
+import { Typography } from '@repo/design-system'
+
 export default function Page() {
-  return <h1 className="text-3xl font-bold underline">Hello, Next.js!</h1>
+  return <Typography>Hello, Next.js!</Typography>
 }

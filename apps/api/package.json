@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "nest build",
+    "clean:dist": "rimraf dist",
+    "dev": "nest start --watch",
     "format:check": "oxfmt --check",
     "format:fix": "oxfmt --write",
     "lint:check": "oxlint",

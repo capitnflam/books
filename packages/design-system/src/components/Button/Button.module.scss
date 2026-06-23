@@ -1,0 +1,70 @@
+/* Button styles using SCSS Modules */
+
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem; /* Example radius */
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+/* Variants */
+.primary {
+  background-color: #007bff; /* Primary color example */
+  color: white;
+  border: 1px solid #007bff;
+}
+
+.primary:hover {
+  background-color: #0056b3;
+}
+
+.secondary {
+  background-color: #f8f9fa; /* Secondary color example */
+  color: #343a40;
+  border: 1px solid #ced4da;
+}
+
+.secondary:hover {
+  background-color: #e2e6ea;
+}
+
+.ghost {
+  background-color: transparent;
+  color: #007bff;
+  border: none;
+}
+
+.ghost:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.destructive {
+  background-color: #dc3545; /* Destructive color example */
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.destructive:hover {
+  background-color: #c82333;
+}
+
+/* Sizes */
+.small {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.875rem; /* text-sm */
+}
+
+.medium {
+  padding: 0.5rem 1rem;
+  font-size: 1rem; /* text-base */
+}
+
+.large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.25rem; /* text-xl */
+}

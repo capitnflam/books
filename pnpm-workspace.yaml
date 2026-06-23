@@ -4,6 +4,7 @@ packages:
 minimumReleaseAgeStrict: true
 allowBuilds:
   '@nestjs/core': false
+  '@parcel/watcher': false
   '@scarf/scarf': false
   esbuild: false
   sharp: false
