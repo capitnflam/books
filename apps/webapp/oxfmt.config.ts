@@ -2,5 +2,10 @@ import { format } from '@infra-x/code-quality/format'
 import { defineConfig } from 'oxfmt'
 
 export default defineConfig({
-  ...format(),
+  ignorePatterns: ['dist', 'node_modules', 'src/routeTree.gen.ts'],
+  ...format({
+    sortImports: {
+      internalPattern: ['#/'],
+    },
+  }),
 })

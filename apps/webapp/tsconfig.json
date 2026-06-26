@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
+    "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     },
-    "strictNullChecks": true,
-    "types": ["vitest/globals"]
+    "types": ["vite/client"]
   },
-  "exclude": ["dist", "build", "node_modules"],
-  "extends": "@repo/typescript-config/react.json",
-  "include": ["src", "next-env.d.ts", "next.config.ts", ".next/types/**/*.ts"]
+  "extends": "@repo/typescript-config/base.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["dist", "build", "node_modules"]
 }

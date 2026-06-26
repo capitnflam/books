@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "paths": {
+      "#/*": ["./src/*"]
+    },
+    "strictNullChecks": true,
+    "types": ["vite/client"]
+  },
+  "exclude": ["dist", "build", "node_modules"],
+  "extends": "@repo/typescript-config/base.json",
+  "include": ["src", "drizzle.config.ts"]
+}

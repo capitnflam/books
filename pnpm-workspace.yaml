@@ -1,10 +1,14 @@
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - "packages/*"
+  - "apps/*"
 minimumReleaseAgeStrict: true
 allowBuilds:
-  '@nestjs/core': false
-  '@parcel/watcher': false
-  '@scarf/scarf': false
-  esbuild: false
-  sharp: false
+  "@prisma/engines": true
+  esbuild: true
+  lightningcss: true
+minimumReleaseAgeExclude:
+  - "@clerk/backend"
+  - "@clerk/react"
+  - "@clerk/shared"
+  - "@clerk/tanstack-react-start"
+  - "@types/node"
