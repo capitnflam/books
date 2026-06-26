@@ -1,4 +1,4 @@
-import { base, depend, react, unicorn, vitest } from '@infra-x/code-quality/lint'
+import { base, depend, unicorn, vitest } from '@infra-x/code-quality/lint'
 import { defineConfig } from 'oxlint'
 
 export default defineConfig({
@@ -6,14 +6,13 @@ export default defineConfig({
     base(),
     unicorn(),
     depend(),
-    react(),
     vitest({ files: ['**/*.{test,spec}.ts', '**/*.e2e-spec.ts', '**/__tests__/**/*.ts'] }),
   ],
   overrides: [
     {
-      files: ['**/*.tsx'],
+      files: ['**/types/*.ts', '**/scripts/*.ts'],
       rules: {
-        'unicorn/filename-case': 'off',
+        'import/no-relative-parent-imports': 'off',
       },
     },
   ],

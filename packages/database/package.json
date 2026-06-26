@@ -1,0 +1,45 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "clean:dist": "rimraf dist",
+    "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:pull": "drizzle-kit pull",
+    "db:push": "drizzle-kit push",
+    "db:reset": "tsx ./src/scripts/reset.ts",
+    "db:seed": "tsx ./src/scripts/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "dev": "vite build --watch",
+    "format:check": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "lint:check": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "start": "vite build",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2",
+    "drizzle-seed": "0.3.1",
+    "pg": "8.22.0"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "1.75.1",
+    "@infra-x/code-quality": "0.6.2",
+    "@repo/typescript-config": "workspace:*",
+    "@types/pg": "8.20.0",
+    "tsx": "4.22.4",
+    "typescript": "6.0.3",
+    "vite": "8.1.0"
+  }
+}
