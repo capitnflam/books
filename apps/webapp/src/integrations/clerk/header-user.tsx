@@ -4,12 +4,10 @@ export default function HeaderUser() {
   return (
     <>
       <Show when="signed-in">
-        bar
         <UserButton />
       </Show>
       <Show when="signed-out">
-        foo
-        <SignInButton />
+        <SignInButton mode="modal" />
       </Show>
     </>
   )

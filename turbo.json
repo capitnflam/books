@@ -1,6 +1,6 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalEnv": ["DATABASE_URL"],
+  "globalEnv": ["DATABASE_URL", "VITE_CLERK_PUBLISHABLE_KEY"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

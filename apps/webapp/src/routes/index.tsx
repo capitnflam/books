@@ -6,18 +6,16 @@ import HeaderUser from '#/integrations/clerk/header-user'
 export const Route = createFileRoute('/')({
   component: Home,
   loader: async () => {
-    const user = await db.query.users.findFirst()
+    const users = await db.query.users.findMany()
 
-    return {
-      user,
-    }
+    return { users }
   },
   head: ({ loaderData }) => ({
     meta:
-      loaderData?.user && loaderData.user.name
+      loaderData?.users && loaderData.users.length > 0
         ? [
             {
-              title: `Welcome ${loaderData.user.name} to TanStack Start`,
+              title: `Welcome ${loaderData.users[Math.floor(Math.random() * loaderData.users.length)]?.name} to TanStack Start`,
             },
           ]
         : undefined,

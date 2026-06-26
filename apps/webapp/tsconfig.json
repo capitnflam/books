@@ -7,6 +7,6 @@
     "types": ["vite/client"]
   },
   "extends": "@repo/typescript-config/base.json",
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../../packages/env.d.ts", "../../packages/sign-in.$.tsx"],
   "exclude": ["dist", "build", "node_modules"]
 }
