@@ -8,11 +8,11 @@ import appCss from '#/styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 
-interface MyRouterContext {
+export interface BooksRouterContext {
   queryClient: QueryClient
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<BooksRouterContext>()({
   head: () => ({
     meta: [
       {

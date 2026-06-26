@@ -8,14 +8,20 @@
     "incremental": false,
     "isolatedModules": true,
     "lib": ["es2023", "DOM", "DOM.Iterable"],
-    "module": "nodenext",
+    "module": "esnext",
     "moduleDetection": "force",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "rewriteRelativeImportExtensions": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2023"
+    "target": "es2023",
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
   }
 }

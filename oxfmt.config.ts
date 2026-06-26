@@ -4,7 +4,7 @@ import { defineConfig } from 'oxfmt'
 export default defineConfig({
   ...format({
     sortImports: {
-      internalPattern: ['#/', '@/'],
+      internalPattern: ['#/'],
     },
   }),
 })
