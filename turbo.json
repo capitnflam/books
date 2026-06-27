@@ -31,28 +31,36 @@
     },
     "test": {},
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:check": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:migrate": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:push": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:pull": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:seed": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:reset": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "db:studio": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     }
   }
 }

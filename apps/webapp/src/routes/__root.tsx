@@ -1,8 +1,6 @@
-import { auth } from '@clerk/tanstack-react-start/server'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { createServerFn } from '@tanstack/react-start'
 
 import ClerkProvider from '#/integrations/clerk/provider'
 import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
@@ -12,23 +10,9 @@ import type { QueryClient } from '@tanstack/react-query'
 
 export interface BooksRouterContext {
   queryClient: QueryClient
-  userId?: string // Added userId to the context interface
 }
 
-const fetchClerkAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { userId } = await auth()
-
-  return {
-    userId,
-  }
-})
-
 export const Route = createRootRouteWithContext<BooksRouterContext>()({
-  beforeLoad: async () => {
-    const { userId } = await fetchClerkAuth()
-
-    return { userId }
-  },
   head: () => ({
     meta: [
       {

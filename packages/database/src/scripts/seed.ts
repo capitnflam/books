@@ -8,7 +8,7 @@ async function main() {
   await seed(db, { users }).refine((f) => ({
     users: {
       columns: {
-        id: undefined,
+        id: f.uuid(),
         name: f.fullName(),
         email: f.email(),
       },

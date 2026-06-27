@@ -4,8 +4,8 @@ export const booksSchema = pgSchema('books')
 
 export const users = booksSchema.table('users', {
   id: serial().primaryKey(),
-  email: text().notNull(),
-  name: text(),
+  authenticationId: text('authentication_id').notNull(),
+  displayName: text('display_name'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
