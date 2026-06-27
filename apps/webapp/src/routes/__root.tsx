@@ -23,7 +23,7 @@ export const Route = createRootRouteWithContext<BooksRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Books',
       },
     ],
     links: [
