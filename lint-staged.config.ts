@@ -39,7 +39,7 @@ function computeFilesByPackage(filenames: readonly string[]): [string, string[]]
 }
 
 const lintStagedConfig: Configuration = {
-  '(apps|packages)/**/*.{ts,tsx}': (filenames) => {
+  '(apps|packages)/**/!(*.gen).{ts,tsx}': (filenames) => {
     const filesByPackage = computeFilesByPackage(filenames)
     return filesByPackage.flatMap(([packageName, relativeFiles]) => {
       return [

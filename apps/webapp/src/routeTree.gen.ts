@@ -9,10 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as MeRouteImport } from './routes/me'
-import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 
 const MeRoute = MeRouteImport.update({
   id: '/me',
@@ -48,7 +48,7 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
 }
 export interface FileRoutesById {
-  '__root__': typeof rootRouteImport
+  __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/me': typeof MeRoute
   '/sign-in/$': typeof SignInSplatRoute
