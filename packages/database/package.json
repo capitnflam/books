@@ -31,7 +31,8 @@
     "drizzle-kit": "0.31.10",
     "drizzle-orm": "0.45.2",
     "drizzle-seed": "0.3.1",
-    "pg": "8.22.0"
+    "pg": "8.22.0",
+    "postgres": "3.4.9"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.75.1",

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "vite build",
     "clean:dist": "rimraf dist",
+    "clerk": "clerk",
     "dev": "vite dev --port 3000",
     "format:check": "oxfmt --check",
     "format:fix": "oxfmt --write",
@@ -45,6 +46,7 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.3",
     "babel-plugin-react-compiler": "1.0.0",
+    "clerk": "1.5.0",
     "jsdom": "29.1.1",
     "tsx": "4.22.4",
     "typescript": "6.0.3",
