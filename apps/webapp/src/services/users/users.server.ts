@@ -3,7 +3,7 @@ import { db, orm, schema } from '@repo/database'
 
 import { getServerEnv } from '#/config/env'
 
-export async function getUserByIdServer(authenticationId: string) {
+async function getUserByIdServer(authenticationId: string) {
   try {
     const user = await db.query.users.findFirst({
       where: orm.eq(schema.users.authenticationId, authenticationId),

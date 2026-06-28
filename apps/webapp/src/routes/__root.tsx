@@ -5,6 +5,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import ClerkProvider from '#/integrations/clerk/provider'
 import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
 import appCss from '#/styles.css?url'
+import { seo } from '#/utils/seo'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -22,14 +23,22 @@ export const Route = createRootRouteWithContext<BooksRouterContext>()({
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
-      {
+      ...seo({
         title: 'Books',
-      },
+        description: 'Library management application',
+        url: 'https://books.flaminc.networks',
+        image: '/logo512.png',
+      }),
     ],
     links: [
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      { rel: 'manifest', href: '/manifest.json', color: '#ffffff' },
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
       },
     ],
   }),
