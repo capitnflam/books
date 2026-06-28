@@ -1,15 +1,14 @@
 packages:
-  - "packages/*"
-  - "apps/*"
+  - 'packages/*'
+  - 'apps/*'
 minimumReleaseAgeStrict: true
 allowBuilds:
-  "@prisma/engines": true
+  '@prisma/engines': true
   esbuild: true
   lightningcss: true
-  prisma: false
 minimumReleaseAgeExclude:
-  - "@clerk/backend"
-  - "@clerk/react"
-  - "@clerk/shared"
-  - "@clerk/tanstack-react-start"
-  - "@types/node"
+  - '@clerk/backend'
+  - '@clerk/react'
+  - '@clerk/shared'
+  - '@clerk/tanstack-react-start'
+  - '@types/node'
