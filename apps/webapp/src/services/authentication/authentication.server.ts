@@ -1,10 +1,10 @@
-import { auth } from '@clerk/tanstack-react-start/server'
-import { redirect } from '@tanstack/react-router'
+import { auth } from "@clerk/tanstack-react-start/server";
+import { redirect } from "@tanstack/react-router";
 
 export async function checkIsAuthenticatedServer(redirect_url?: string) {
-  const { isAuthenticated } = await auth()
+  const { isAuthenticated } = await auth();
 
   if (!isAuthenticated) {
-    redirect({ to: '/sign-in/$', throw: true, search: { redirect_url: redirect_url ?? '/' } })
+    redirect({ to: "/sign-in/$", throw: true, search: { redirect_url: redirect_url ?? "/" } });
   }
 }

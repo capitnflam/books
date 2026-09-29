@@ -1,10 +1,10 @@
-import type { KnipConfig } from 'knip'
+import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
-  tags: ['-lintignore'],
+  tags: ["-lintignore"],
   workspaces: {
-    '.': {},
+    ".": {},
   },
-}
+};
 
-export default config
+export default config;

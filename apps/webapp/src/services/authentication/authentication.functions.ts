@@ -1,9 +1,9 @@
-import { createServerFn } from '@tanstack/react-start'
+import { createServerFn } from "@tanstack/react-start";
 
-import { checkIsAuthenticatedServer } from './authentication.server'
+import { checkIsAuthenticatedServer } from "./authentication.server";
 
-export const checkIsAuthenticatedFn = createServerFn({ method: 'GET' })
-  .validator((data: { redirect_url?: string } = { redirect_url: '/' }) => data)
+export const checkIsAuthenticatedFn = createServerFn({ method: "GET" })
+  .validator(({ redirect_url = "/" } = {}) => ({ redirect_url }))
   .handler(async ({ data }) => {
-    return checkIsAuthenticatedServer(data.redirect_url)
-  })
+    return checkIsAuthenticatedServer(data.redirect_url);
+  });

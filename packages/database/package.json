@@ -20,10 +20,6 @@
     "db:seed": "tsx ./src/scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "vite build --watch",
-    "format:check": "oxfmt --check",
-    "format:fix": "oxfmt --write",
-    "lint:check": "oxlint",
-    "lint:fix": "oxlint --fix",
     "start": "vite build",
     "type:check": "tsc --noEmit"
   },
@@ -36,7 +32,6 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.75.1",
-    "@infra-x/code-quality": "0.6.2",
     "@repo/typescript-config": "workspace:*",
     "@types/pg": "8.20.0",
     "tsx": "4.22.4",
