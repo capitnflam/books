@@ -1,7 +1,7 @@
-import { createServerFn } from '@tanstack/react-start'
+import { createServerFn } from "@tanstack/react-start";
 
-import { getAuthenticatedUserServer } from './users.server'
+import { getAuthenticatedUserServer } from "./users.server";
 
-export const getAuthenticatedUserFn = createServerFn({ method: 'GET' }).handler(
+export const getAuthenticatedUserFn = createServerFn({ method: "GET" }).handler(
   getAuthenticatedUserServer,
-)
+);

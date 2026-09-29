@@ -16,17 +16,17 @@
     "type:check": {
       "dependsOn": ["^build"]
     },
-    "lint:check": {
+    "//#lint:check": {
       "dependsOn": ["^build"]
     },
-    "lint:fix": {
+    "//#lint:fix": {
       "dependsOn": ["^build"],
       "cache": false
     },
-    "format:check": {
+    "//#format:check": {
       "cache": false
     },
-    "format:fix": {
+    "//#format:fix": {
       "cache": false
     },
     "test": {},

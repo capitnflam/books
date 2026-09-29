@@ -8,10 +8,6 @@
     "access": "public"
   },
   "scripts": {
-    "format:check": "oxfmt --check",
-    "format:fix": "oxfmt --write",
-    "lint:check": "oxlint",
-    "lint:fix": "oxlint --fix",
     "type:check": "echo 'No type checking needed for this package.'"
   },
   "devDependencies": {}
