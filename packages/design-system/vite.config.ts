@@ -8,15 +8,13 @@ import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vite';
 
-const dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
-
 export default defineConfig({
   plugins: [tailwindcss(), react()],
 
   build: {
     lib: {
       // Entry point for the library
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: '@books/design-system',
       // Global name for the library
       fileName: (format) => `design-system.${format}.js`,
@@ -40,7 +38,7 @@ export default defineConfig({
           // The plugin will run tests for the stories defined in your Storybook config
           // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
           storybookTest({
-            configDir: path.join(dirname, '.storybook'),
+            configDir: path.join(import.meta.dirname, '.storybook'),
           }),
         ],
         test: {
