@@ -1,16 +1,13 @@
 packages:
-  - "packages/*"
-  - "apps/*"
-minimumReleaseAgeStrict: true
+  - 'packages/*'
+  - 'apps/*'
+# minimumReleaseAgeStrict: true
 allowBuilds:
-  "@parcel/watcher": true
-  "@prisma/engines": true
+  '@parcel/watcher': true
+  '@prisma/engines': true
   esbuild: true
   lightningcss: true
   prisma: true
 minimumReleaseAgeExclude:
-  - "@clerk/backend"
-  - "@clerk/react"
-  - "@clerk/shared"
-  - "@clerk/tanstack-react-start"
-  - "@types/node"
+  - vite@8.3.2
+  - '@chromatic-com/storybook@5.4.0'

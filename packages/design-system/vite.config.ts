@@ -1,27 +1,62 @@
-import { resolve } from "path";
+import path from 'node:path';
+/// <reference types="vitest/config" />
+import { resolve } from 'path';
 
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright';
+import { defineConfig } from 'vite';
+
+const dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
 
 export default defineConfig({
-  // oxlint-disable-next-line typescript/no-unsafe-call
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
+
   build: {
     lib: {
       // Entry point for the library
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "@repo/design-system", // Global name for the library
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: '@books/design-system',
+      // Global name for the library
       fileName: (format) => `design-system.${format}.js`,
     },
     rollupOptions: {
       // Make sure external dependencies are not bundled into the output
-      external: ["react", "react-dom"],
+      external: ['react', 'react-dom'],
       output: {
         globals: {
-          react: "React",
-          "react-dom": "ReactDOM",
+          react: 'React',
+          'react-dom': 'ReactDOM',
         },
       },
     },
+  },
+  test: {
+    projects: [
+      {
+        extends: true,
+        plugins: [
+          // The plugin will run tests for the stories defined in your Storybook config
+          // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
+          storybookTest({
+            configDir: path.join(dirname, '.storybook'),
+          }),
+        ],
+        test: {
+          name: 'storybook',
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright({}),
+            instances: [
+              {
+                browser: 'chromium',
+              },
+            ],
+          },
+        },
+      },
+    ],
   },
 });

@@ -2,12 +2,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "paths": {
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     },
     "strictNullChecks": true,
     "types": ["vitest/globals"]
   },
   "exclude": ["dist", "build", "node_modules"],
-  "extends": "@repo/typescript-config/react.json",
-  "include": ["src"]
+  "extends": "@books/typescript-config/react.json",
+  "include": ["src", "css.d.ts"]
 }

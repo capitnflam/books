@@ -1,5 +1,5 @@
-import { base, depend, react, typeAware, unicorn, vitest } from "@infra-x/code-quality/lint";
-import { defineConfig } from "oxlint";
+import { base, depend, react, typeAware, unicorn, vitest } from '@infra-x/code-quality/lint';
+import { defineConfig } from 'oxlint';
 
 export default defineConfig({
   extends: [
@@ -7,20 +7,20 @@ export default defineConfig({
     unicorn(),
     depend(),
     react(),
-    vitest({ files: ["**/*.{test,spec}.ts", "**/*.e2e-spec.ts", "**/__tests__/**/*.ts"] }),
+    vitest({ files: ['**/*.{test,spec}.ts', '**/*.e2e-spec.ts', '**/__tests__/**/*.ts'] }),
   ],
-  ignorePatterns: ["dist", "node_modules", "src/routeTree.gen.ts"],
+  ignorePatterns: ['dist', 'node_modules', 'src/routeTree.gen.ts'],
   overrides: [
     {
-      files: ["**/*.ts{x,}"],
+      files: ['**/*.ts{x,}'],
       rules: {
-        "unicorn/filename-case": "off",
+        'unicorn/filename-case': 'off',
       },
     },
     {
-      files: ["**/types/*.ts", "**/scripts/*.ts"],
+      files: ['**/types/*.ts', '**/scripts/*.ts'],
       rules: {
-        "import/no-relative-parent-imports": "off",
+        'import/no-relative-parent-imports': 'off',
       },
     },
   ],

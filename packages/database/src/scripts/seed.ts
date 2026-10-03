@@ -1,10 +1,10 @@
-import { seed } from "drizzle-seed";
+import { seed } from 'drizzle-seed';
 
-import { db } from "../db/index.ts";
-import { users } from "../db/schema.ts";
+import { db } from '../db/index.ts';
+import { users } from '../db/schema.ts';
 
 async function main() {
-  console.log("Seeding database...");
+  console.log('Seeding database...');
   await seed(db, { users }).refine((f) => ({
     users: {
       columns: {

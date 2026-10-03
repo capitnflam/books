@@ -1,4 +1,5 @@
 {
+  "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "paths": {
@@ -6,7 +7,6 @@
     },
     "types": ["vite/client"]
   },
-  "extends": "@repo/typescript-config/base.json",
-  "include": ["**/*.ts", "**/*.tsx", "../../packages/env.d.ts", "../../packages/sign-in.$.tsx"],
+  "extends": "@books/typescript-config/base.json",
   "exclude": ["dist", "build", "node_modules"]
 }

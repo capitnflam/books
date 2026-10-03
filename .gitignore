@@ -318,3 +318,6 @@ tags
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/nextjs,turbo,visualstudiocode,emacs,vim,node,terraform,git
+
+*storybook.log
+storybook-static

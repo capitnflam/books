@@ -1,3 +1,9 @@
+@import 'tailwindcss';
+@import '@books/design-tokens/theme.css';
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
 * {
   box-sizing: border-box;
 }

@@ -39,5 +39,9 @@
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
+  },
+  "tailwindCSS.experimental.configFile": {
+    "apps/webapp/src/styles.css": "apps/webapp/src/**/*",
+    "packages/design-system/src/styles.css": "packages/design-system/src/**/*"
   }
 }

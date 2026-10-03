@@ -1,0 +1,11 @@
+{
+  "name": "@books/design-tokens",
+  "version": "1.0.0",
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "exports": {
+    "./theme.css": "./src/theme.css"
+  }
+}

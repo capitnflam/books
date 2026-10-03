@@ -8,6 +8,6 @@
     "types": ["vite/client"]
   },
   "exclude": ["dist", "build", "node_modules"],
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@books/typescript-config/base.json",
   "include": ["src", "drizzle.config.ts"]
 }
