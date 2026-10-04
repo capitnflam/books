@@ -14,6 +14,7 @@ const config = defineConfig({
       project: './project.inlang',
       outdir: './src/paraglide',
       strategy: ['url', 'baseLocale'],
+      emitTsDeclarations: true,
     }),
     tailwindcss(),
     tanstackStart(),
