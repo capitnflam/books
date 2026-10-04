@@ -1,7 +1,7 @@
-import { auth, clerkClient } from "@clerk/tanstack-react-start/server";
-import { db, orm, schema } from "@repo/database";
+import { db, orm, schema } from '@books/database';
+import { auth, clerkClient } from '@clerk/tanstack-react-start/server';
 
-import { getServerEnv } from "#/config/env";
+import { getServerEnv } from '#/config/env';
 
 async function getUserByIdServer(authenticationId: string) {
   try {
@@ -42,7 +42,7 @@ export async function getAuthenticatedUserServer() {
     const authenticatedUser = await clerk.users.getUser(userId);
     user = await insertUserServer({
       authenticationId: userId,
-      displayName: authenticatedUser.fullName || "",
+      displayName: authenticatedUser.fullName || '',
     });
   }
 

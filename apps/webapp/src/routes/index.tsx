@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
 
-import HeaderUser from "#/integrations/clerk/header-user";
-import { getAuthenticatedUserFn } from "#/services/users/users.functions";
+import HeaderUser from '#/integrations/clerk/header-user';
+import { getAuthenticatedUserFn } from '#/services/users/users.functions';
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: Home,
   loader: async () => {
     const user = await getAuthenticatedUserFn();
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { user } = Route.useLoaderData();
+
   return (
     <div>
       <h1>Welcome to TanStack Start {user?.displayName}</h1>
