@@ -1,4 +1,4 @@
-import { Icon } from '#/components/icon';
+import { Icon, iconNameList } from '#/components/icon';
 
 import { IconGallery } from './components/icon-gallery';
 
@@ -12,6 +12,14 @@ const meta: Meta<typeof Icon> = {
   },
   tags: ['autodocs'],
   args: {},
+  argTypes: {
+    icon: {
+      type: {
+        name: 'enum',
+        value: iconNameList,
+      },
+    },
+  },
 };
 
 export default meta;

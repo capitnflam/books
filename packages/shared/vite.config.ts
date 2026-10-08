@@ -12,21 +12,12 @@ export default defineConfig({
       name: '@books/shared', // Global name for the library
       fileName: (format) => `shared.${format}.js`,
     },
-    rollupOptions: {
-      // Make sure external dependencies are not bundled into the output
-      external: ['react', 'react-dom'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
-      },
-    },
   },
   test: {
     typecheck: {
       include: ['**/*.type.spec.ts'],
     },
-    include: ['**/(!.type).spec.ts'],
+    include: ['**/*.spec.ts'],
+    exclude: ['**/*.type.spec.ts'],
   },
 });
