@@ -1,0 +1,27 @@
+{
+  "name": "@books/shared",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "clean:dist": "rimraf dist",
+    "dev": "vite build --watch",
+    "type:check": "tsc --noEmit",
+    "test": "vitest run --typecheck"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@books/typescript-config": "workspace:*",
+    "@vitest/coverage-v8": "5.0.3",
+    "tsx": "4.22.4",
+    "typescript": "7.0.2",
+    "vite": "8.1.0",
+    "vitest": "5.0.3"
+  }
+}

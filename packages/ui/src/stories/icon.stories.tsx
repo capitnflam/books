@@ -19,7 +19,7 @@ type Story = StoryObj<typeof Icon>;
 
 export const Primary: Story = {
   args: {
-    icon: 'IconBook',
+    icon: 'book',
   },
 };
 

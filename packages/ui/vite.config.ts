@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-/// <reference types="vitest/config" />
 import { resolve } from 'path';
 
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 
 const srcRoot = fileURLToPath(new URL('./src', import.meta.url));
