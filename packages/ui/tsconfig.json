@@ -5,8 +5,7 @@
       "#/*": ["./src/*"],
       "@books/ui/*": ["./src/*"]
     },
-    "strictNullChecks": true,
-    "types": ["vitest/globals"]
+    "strictNullChecks": true
   },
   "exclude": ["dist", "build", "node_modules"],
   "extends": "@books/typescript-config/react.json",

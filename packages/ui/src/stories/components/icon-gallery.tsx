@@ -62,7 +62,7 @@ export const IconGallery: FC = () => {
             placeholder="search filter"
           />
           <IconButton
-            icon="IconX"
+            icon="x"
             variant="secondary"
             onClick={() => {
               setSearchFilter('');
@@ -88,7 +88,7 @@ export const IconGallery: FC = () => {
             }
             return acc;
           }, '')}
-          <IconItem iconName="IconBook" />
+          <IconItem iconName="book" />
         </div>
       </div>
     </div>
