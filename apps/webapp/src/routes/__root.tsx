@@ -1,3 +1,4 @@
+import appCss from '@books/ui/globals.css?url';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
@@ -5,7 +6,6 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import ClerkProvider from '#/integrations/clerk/provider';
 import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools';
 import { getLocale } from '#/paraglide/runtime';
-import appCss from '#/styles.css?url';
 import { seo } from '#/utils/seo';
 
 import type { QueryClient } from '@tanstack/react-query';
@@ -22,7 +22,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       document.documentElement.setAttribute('lang', getLocale());
     }
   },
-
   head: () => ({
     meta: [
       {
@@ -54,6 +53,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
+  notFoundComponent: () => (
+    <main className="container mx-auto p-4 pt-16">
+      <h1>404</h1>
+      <p>The requested page could not be found.</p>
+    </main>
+  ),
   shellComponent: RootDocument,
 });
 

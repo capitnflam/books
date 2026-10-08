@@ -3,7 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "paths": {
-      "#/*": ["./src/*"]
+      "#/*": ["./src/*"],
+      "@books/ui/*": ["../../packages/ui/src/*"]
     },
     "types": ["vite/client"]
   },
