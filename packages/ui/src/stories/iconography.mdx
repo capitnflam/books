@@ -1,0 +1,16 @@
+import { Meta, IconGallery, IconItem } from '@storybook/addon-docs/blocks';
+import { icons } from '@tabler/icons-react';
+
+import { Icon } from '#/components/icon';
+
+<Meta title="Documentation/Icons" />
+
+# Icons
+
+<IconGallery>
+  {Object.keys(icons).map((icon) => (
+    <IconItem name={icon}>
+      <Icon icon={icon} />
+    </IconItem>
+  ))}
+</IconGallery>

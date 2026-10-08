@@ -1,3 +1,4 @@
+import { Button } from '@books/ui/components/button';
 import { createFileRoute } from '@tanstack/react-router';
 
 import HeaderUser from '#/integrations/clerk/header-user';
@@ -31,7 +32,8 @@ function Home() {
         <HeaderUser />
       </div>
       <p>
-        Edit <code>src/routes/index.tsx</code> to get started.
+        Edit <code>src/routes/index.tsx</code> to get started.{' '}
+        <Button onClick={() => console.log('clicked')}>Click me</Button>
       </p>
     </div>
   );

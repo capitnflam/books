@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "paths": {
+      "#/*": ["./src/*"],
+      "@books/ui/*": ["./src/*"]
+    },
+    "strictNullChecks": true,
+    "types": ["vitest/globals"]
+  },
+  "exclude": ["dist", "build", "node_modules"],
+  "extends": "@books/typescript-config/react.json",
+  "include": ["src", "global.d.ts", ".storybook"]
+}

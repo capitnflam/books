@@ -5,9 +5,14 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/engines': true
+  core-js: set this to true or false
   esbuild: true
   lightningcss: true
   prisma: true
 minimumReleaseAgeExclude:
   - vite@8.3.2
   - '@chromatic-com/storybook@5.4.0'
+  - '@shadcn/registry@0.1.1'
+  - shadcn@4.21.2
+  - '@tabler/icons-react@3.49.0'
+  - '@tabler/icons@3.49.0'
