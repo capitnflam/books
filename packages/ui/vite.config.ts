@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'path';
 
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import tailwindcss from '@tailwindcss/vite';
@@ -18,26 +17,7 @@ export default defineConfig({
       '@books/ui': srcRoot,
     },
   },
-  plugins: [tailwindcss(), react()],
-  // build: {
-  //   lib: {
-  //     // Entry point for the library
-  //     entry: resolve(import.meta.dirname, 'src/index.ts'),
-  //     name: '@books/ui',
-  //     // Global name for the library
-  //     fileName: (format) => `ui.${format}.js`,
-  //   },
-  //   rollupOptions: {
-  //     // Make sure external dependencies are not bundled into the output
-  //     external: ['react', 'react-dom'],
-  //     output: {
-  //       globals: {
-  //         react: 'React',
-  //         'react-dom': 'ReactDOM',
-  //       },
-  //     },
-  //   },
-  // },
+  plugins: [tailwindcss(), react({})],
   test: {
     projects: [
       {
