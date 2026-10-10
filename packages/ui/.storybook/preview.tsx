@@ -2,9 +2,7 @@ import { withThemeByClassName } from '@storybook/addon-themes';
 
 import type { Preview, ReactRenderer } from '@storybook/react-vite';
 
-// oxlint-disable-next-line import/no-relative-parent-imports
 import '#/styles/globals.css';
-// import '../src/styles/globals.css';
 
 const preview: Preview = {
   parameters: {
