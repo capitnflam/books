@@ -8,11 +8,13 @@ import { IconButton } from '#/components/icon-button';
 import { Input } from '#/components/input';
 import { Label } from '#/components/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/tooltip';
+import { useClipboard } from '#/hooks/use-clipboard';
 
 import type { IconName } from '#/components/icon';
 import type { FC } from 'react';
 
 const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
+  const clipboard = useClipboard();
   return (
     <Tooltip>
       <TooltipTrigger
@@ -22,9 +24,10 @@ const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
             className={cn(
               'flex items-center justify-center rounded border shadow',
               'h-20 max-h-20 min-h-20 w-20 max-w-20 min-w-20',
+              'cursor-pointer',
             )}
             onClick={() => {
-              navigator.clipboard.writeText(iconName);
+              clipboard.copy(iconName);
             }}
           >
             <Icon icon={iconName} />

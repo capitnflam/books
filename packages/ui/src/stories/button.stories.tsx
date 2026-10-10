@@ -1,7 +1,7 @@
-import { IconBook } from '@tabler/icons-react';
 import { fn } from 'storybook/test';
 
 import { Button } from '#/components/button';
+import { Icon } from '#/components/icon';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -12,7 +12,19 @@ const meta: Meta<typeof Button> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  args: { onClick: fn() },
+  args: { onClick: fn(), variant: 'default', size: 'default' },
+  argTypes: {
+    variant: {
+      control: {
+        type: 'radio',
+      },
+    },
+    size: {
+      control: {
+        type: 'radio',
+      },
+    },
+  },
 };
 
 export default meta;
@@ -24,9 +36,9 @@ export const Primary: Story = {
   },
 };
 
-export const Icon: Story = {
+export const IconButton: Story = {
   args: {
-    children: <IconBook />,
+    children: <Icon icon="book" />,
     size: 'icon',
   },
 };
@@ -103,7 +115,7 @@ export const AllIconButtons: Story = {
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
                   <Button variant={variant} size={size}>
-                    <IconBook />
+                    <Icon icon="book" />
                   </Button>
                 </td>
               ))}

@@ -14,9 +14,9 @@ const meta: Meta<typeof Icon> = {
   args: {},
   argTypes: {
     icon: {
-      type: {
-        name: 'enum',
-        value: iconNameList,
+      options: iconNameList,
+      control: {
+        type: 'select',
       },
     },
   },
