@@ -1,9 +1,9 @@
-import { icons } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { cn } from 'cn';
 import { useMemo, useRef, useState } from 'react';
 
 import { Field, FieldLabel } from '#/components/field';
-import { Icon } from '#/components/icon';
+import { Icon, iconNameList } from '#/components/icon';
 import { IconButton } from '#/components/icon-button';
 import { Input } from '#/components/input';
 import { Label } from '#/components/label';
@@ -12,14 +12,21 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/tooltip';
 import type { IconName } from '#/components/icon';
 import type { FC } from 'react';
 
-const iconNames = Object.keys(icons) as IconName[];
-
 const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
   return (
     <Tooltip>
       <TooltipTrigger
+        delay={0}
         render={
-          <div className="flex w-fit flex-col items-center gap-1 rounded border p-1 shadow">
+          <div
+            className={cn(
+              'flex items-center justify-center rounded border shadow',
+              'h-20 max-h-20 min-h-20 w-20 max-w-20 min-w-20',
+            )}
+            onClick={() => {
+              navigator.clipboard.writeText(iconName);
+            }}
+          >
             <Icon icon={iconName} />
           </div>
         }
@@ -29,23 +36,19 @@ const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
   );
 };
 
-// <Tooltip>
-//   <TooltipTrigger render={<Button variant="outline">Hover</Button>} />
-//   <TooltipContent>
-//     <p>Add to library</p>
-//   </TooltipContent>
-// </Tooltip>
+const ICONS_PER_ROW = 6;
 
 export const IconGallery: FC = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [searchFilter, setSearchFilter] = useState('');
   const filteredIconNames = useMemo(() => {
-    return iconNames.filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase()));
+    return iconNameList.filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase()));
   }, [searchFilter]);
   const virtualizer = useVirtualizer({
-    count: filteredIconNames.length,
+    count: Math.ceil(filteredIconNames.length / ICONS_PER_ROW),
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
+    estimateSize: () => 80,
+    gap: 2,
   });
 
   return (
@@ -78,17 +81,31 @@ export const IconGallery: FC = () => {
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
           }}
+          className="relative flex w-full flex-col"
         >
-          {iconNames.reduce((acc, item) => {
-            if (item.length > acc.length) {
-              return item;
-            }
-            return acc;
-          }, '')}
-          <IconItem iconName="book" />
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const startIndex = virtualRow.index * ICONS_PER_ROW;
+            const endIndex = Math.min(startIndex + ICONS_PER_ROW, filteredIconNames.length);
+            const rowIcons = filteredIconNames.slice(startIndex, endIndex);
+
+            return (
+              <div
+                key={virtualRow.key}
+                className={cn(
+                  'flex w-full flex-row flex-nowrap justify-start gap-0.5',
+                  'absolute top-0 left-0',
+                )}
+                style={{
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                {rowIcons.map((iconName) => (
+                  <IconItem key={iconName} iconName={iconName} />
+                ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
