@@ -47,6 +47,7 @@ export const IconGallery: FC = () => {
   const filteredIconNames = useMemo(() => {
     return iconNameList.filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase()));
   }, [searchFilter]);
+  // oxlint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: Math.ceil(filteredIconNames.length / ICONS_PER_ROW),
     getScrollElement: () => parentRef.current,

@@ -55,9 +55,9 @@ Use `auth()` in a loader or server function when authorization must happen on th
 server:
 
 ```tsx
+import { auth } from '@clerk/tanstack-react-start/server';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { auth } from '@clerk/tanstack-react-start/server';
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { userId } = await auth();
