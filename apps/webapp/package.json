@@ -8,21 +8,19 @@
   "scripts": {
     "build": "vite build",
     "clean:dist": "rimraf dist",
-    "clerk": "clerk",
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
+    "paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy url baseLocale --emit-ts-declarations --silent",
+    "postinstall": "pnpm paraglide:compile",
     "preview": "vite preview",
-    "test": "vitest run",
-    "type:check": "tsc --noEmit"
+    "test": "vitest run --passWithNoTests",
+    "type:check": "pnpm paraglide:compile && tsc --noEmit"
   },
   "dependencies": {
     "@books/database": "workspace:*",
     "@books/ui": "workspace:*",
     "@clerk/tanstack-react-start": "1.7.8",
-    "@tabler/icons-react": "3.50.0",
-    "@tailwindcss/vite": "4.3.3",
     "@tanstack/react-devtools": "0.10.14",
-    "@tanstack/react-form": "1.33.5",
     "@tanstack/react-query": "5.105.0",
     "@tanstack/react-query-devtools": "5.105.0",
     "@tanstack/react-router": "1.170.46",
@@ -31,7 +29,6 @@
     "@tanstack/react-start": "1.169.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "tailwindcss": "4.3.3",
     "zod": "4.6.7"
   },
   "devDependencies": {
