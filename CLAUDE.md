@@ -95,7 +95,7 @@ Every commit message must follow [Conventional Commits](https://www.conventional
 
 ## Branches and pull requests
 
-`master` is protected: changes land only through a pull request, merged by squash (the only merge method allowed), with linear history and no force pushes or deletion. Merged branches are deleted automatically.
+`master` is protected: changes land only through a pull request, merged by squash (the only merge method allowed), with linear history and no force pushes or deletion. The CI `Checks` job must pass and the branch must be up to date with `master` before merging. Merged branches are deleted automatically.
 
 - Branch from up-to-date `master` and name the branch `<type>/<short-kebab-description>`, using the Conventional Commit types above, e.g. `feat/book-search`, `fix/login-redirect`, `docs/claude-md`.
 - The PR title becomes the squashed commit on `master`, so it must follow the Conventional Commits rules above (commitlint does not check it).
@@ -105,4 +105,4 @@ Every commit message must follow [Conventional Commits](https://www.conventional
   - a new or changed `ui` component with its story;
   - an update to this file when the PR changes tooling, scripts or conventions.
 - The PR description says what changed, why, and anything a reviewer should check.
-- Merge only when every CI check is green, the branch is up to date with `master`, and all review threads are resolved. CI is not a required status check, so this is on the author.
+- Merge only when CI is green, the branch is up to date with `master`, and all review threads are resolved (all enforced by the ruleset). Never bypass a failing check.
