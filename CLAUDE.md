@@ -1,5 +1,41 @@
 # CLAUDE.md
 
+## Repository
+
+pnpm + Turborepo monorepo (workspaces in `apps/*` and `packages/*`).
+
+| Package                    | Path                         | Contents                                                                        |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------------------------- |
+| `webapp`                   | `apps/webapp`                | TanStack Start app (React, TanStack Router + Query), Clerk auth, Paraglide i18n |
+| `@books/database`          | `packages/database`          | Drizzle ORM schema, client, migrations and seed scripts for PostgreSQL          |
+| `@books/ui`                | `packages/ui`                | Shared React components (shadcn, Base UI, Tailwind CSS 4), hooks and Storybook  |
+| `@books/shared`            | `packages/shared`            | Framework-free TypeScript types and utilities                                   |
+| `@books/typescript-config` | `packages/typescript-config` | Shared `tsconfig` presets (`base.json`, `react.json`)                           |
+
+`webapp` depends on `database` and `ui`; `ui` depends on `shared`.
+
+### Tooling
+
+- Use pnpm (version pinned in `packageManager`), never npm or yarn. Node version is pinned in `engines.node`.
+- Lint with oxlint and format with oxfmt; there is no ESLint or Prettier. knip reports unused files, exports and dependencies.
+- Run scripts from the root (`pnpm <script>`, which goes through turbo) or for one package with `pnpm --filter <package-name> run <script>`.
+
+### Imports
+
+- Between packages, import by workspace name: `@books/database`, `@books/shared`, and `@books/ui/components/<name>`, `@books/ui/hooks/<name>`, `@books/ui/lib/<name>` (see `exports` in `packages/ui/package.json`). Never import another package's files by relative path.
+- Within a package, use the `#/*` alias for `src/*` rather than long relative paths.
+- `packages/ui/components.json` configures the shadcn CLI for adding components to `ui`.
+
+### Translations
+
+`webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` as the other one (`apps/webapp/project.inlang/settings.json`).
+
+## Testing
+
+- `packages/ui`: every story in `src/stories/` runs as a test in headless Chromium (Storybook Vitest addon). A new component needs a story; use `play` functions to test interactions. Run one file with `pnpm --filter @books/ui exec vitest run src/stories/button.stories.tsx`.
+- `packages/shared` and `apps/webapp`: Vitest (`shared` also runs type tests with `--typecheck`). Run one file with `pnpm --filter <package-name> exec vitest run <path>`.
+- `pnpm test` from the root runs every package's tests.
+
 ## Local setup
 
 ### Environment variables
