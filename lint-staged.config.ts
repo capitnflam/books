@@ -76,6 +76,8 @@ const lintStagedConfig: Configuration = {
     //   return [`pnpm --filter=${packageName} run format:fix -- ${relativeFiles.join(" ")}`];
     // });
   },
+  // Requires actionlint on PATH: https://github.com/rhysd/actionlint/blob/main/docs/install.md
+  '.github/workflows/*.{yml,yaml}': 'actionlint',
 };
 
 export default lintStagedConfig;
