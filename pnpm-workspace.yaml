@@ -5,7 +5,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/engines': true
-  core-js: set this to true or false
+  core-js: false
   esbuild: true
   lightningcss: true
   prisma: true

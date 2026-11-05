@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      # Version comes from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v4
+
+      # Version comes from "engines.node" in package.json.
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The Storybook tests in packages/ui run in headless Chromium.
+      - name: Install Playwright Chromium
+        run: pnpm --filter @books/ui exec playwright install --with-deps chromium
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint:check
+
+      - name: Knip
+        run: pnpm knip
+
+      - name: Type check
+        run: pnpm type:check
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
