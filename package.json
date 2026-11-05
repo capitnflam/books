@@ -30,6 +30,8 @@
     "storybook": "turbo run storybook"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@infra-x/code-quality": "0.7.0",
     "@types/node": "26.6.6",
     "husky": "9.1.7",
