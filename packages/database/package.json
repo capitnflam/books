@@ -2,7 +2,7 @@
   "name": "@books/database",
   "version": "1.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "Beerware",
   "type": "module",
   "main": "src/index.ts",
   "imports": {

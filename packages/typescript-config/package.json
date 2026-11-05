@@ -2,7 +2,7 @@
   "name": "@books/typescript-config",
   "version": "1.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "Beerware",
   "type": "module",
   "publishConfig": {
     "access": "public"
