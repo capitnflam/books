@@ -1,6 +1,7 @@
 import { Button } from '@books/ui/components/button';
 import { createFileRoute } from '@tanstack/react-router';
 
+import LocaleSwitcher from '#/components/LocaleSwitcher';
 import HeaderUser from '#/integrations/clerk/header-user';
 import { getAuthenticatedUserFn } from '#/services/users/users.functions';
 
@@ -30,6 +31,7 @@ function Home() {
       <h1>Welcome to TanStack Start {user?.displayName}</h1>
       <div>
         <HeaderUser />
+        <LocaleSwitcher />
       </div>
       <p>
         Edit <code>src/routes/index.tsx</code> to get started.{' '}
