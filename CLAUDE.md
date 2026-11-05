@@ -92,3 +92,17 @@ Every commit message must follow [Conventional Commits](https://www.conventional
 - Body (optional): blank line after the header, explain what and why
 - Breaking changes: `!` after the type/scope and a `BREAKING CHANGE:` footer
 - Never use placeholder messages like `wip`
+
+## Branches and pull requests
+
+`master` is protected: changes land only through a pull request, merged by squash (the only merge method allowed), with linear history and no force pushes or deletion. Merged branches are deleted automatically.
+
+- Branch from up-to-date `master` and name the branch `<type>/<short-kebab-description>`, using the Conventional Commit types above, e.g. `feat/book-search`, `fix/login-redirect`, `docs/claude-md`.
+- The PR title becomes the squashed commit on `master`, so it must follow the Conventional Commits rules above (commitlint does not check it).
+- Keep each PR to one concern; split unrelated refactors, features and fixes into separate PRs.
+- Ship related pieces together in the same PR:
+  - a schema change with its generated migration;
+  - a new or changed `ui` component with its story;
+  - an update to this file when the PR changes tooling, scripts or conventions.
+- The PR description says what changed, why, and anything a reviewer should check.
+- Merge only when every CI check is green, the branch is up to date with `master`, and all review threads are resolved. CI is not a required status check, so this is on the author.
