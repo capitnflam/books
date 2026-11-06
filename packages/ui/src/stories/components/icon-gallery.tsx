@@ -6,7 +6,6 @@ import { Field, FieldLabel } from '#/components/field';
 import { Icon, iconNameList } from '#/components/icon';
 import { IconButton } from '#/components/icon-button';
 import { Input } from '#/components/input';
-import { Label } from '#/components/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/tooltip';
 import { useClipboard } from '#/hooks/use-clipboard';
 
@@ -19,21 +18,19 @@ const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
     <Tooltip>
       <TooltipTrigger
         delay={0}
-        render={
-          <div
-            className={cn(
-              'flex items-center justify-center rounded border shadow',
-              'h-20 max-h-20 min-h-20 w-20 max-w-20 min-w-20',
-              'cursor-pointer',
-            )}
-            onClick={() => {
-              clipboard.copy(iconName);
-            }}
-          >
-            <Icon icon={iconName} />
-          </div>
-        }
-      />
+        type="button"
+        aria-label={`Copy ${iconName}`}
+        className={cn(
+          'flex items-center justify-center rounded border shadow',
+          'h-20 max-h-20 min-h-20 w-20 max-w-20 min-w-20',
+          'focus-visible:ring-ring/50 cursor-pointer outline-none focus-visible:ring-3',
+        )}
+        onClick={() => {
+          clipboard.copy(iconName);
+        }}
+      >
+        <Icon icon={iconName} aria-hidden />
+      </TooltipTrigger>
       <TooltipContent>{iconName}</TooltipContent>
     </Tooltip>
   );
@@ -78,11 +75,18 @@ export const IconGallery: FC = () => {
           />
         </div>
       </Field>
-      <div className="flex flex-row items-center gap-1">
-        <Label htmlFor="total-icons">Total:</Label>
-        <span id="total-icons">{filteredIconNames.length}</span>
-      </div>
-      <div ref={parentRef} className="h-96 w-full overflow-auto border">
+      <p role="status" className="text-sm">
+        <span className="font-medium">Total:</span> {filteredIconNames.length}
+      </p>
+      {/* Focusable so keyboard users can scroll the list. */}
+      {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+      <div
+        ref={parentRef}
+        role="region"
+        aria-label="Icons"
+        tabIndex={0}
+        className="focus-visible:ring-ring/50 h-96 w-full overflow-auto border outline-none focus-visible:ring-3"
+      >
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
