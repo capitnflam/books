@@ -12,12 +12,28 @@ import { useClipboard } from '#/hooks/use-clipboard';
 import type { IconName } from '#/components/icon';
 import type { FC } from 'react';
 
+type CopyStatus = 'idle' | 'copied' | 'failed';
+
+const copyStatusText: Record<Exclude<CopyStatus, 'idle'>, string> = {
+  copied: 'Copied!',
+  failed: 'Copy failed',
+};
+
 const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
   const clipboard = useClipboard();
+  const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
+
   return (
-    <Tooltip>
+    <Tooltip
+      onOpenChange={(open) => {
+        if (open) {
+          setCopyStatus('idle');
+        }
+      }}
+    >
       <TooltipTrigger
         delay={0}
+        closeOnClick={false}
         type="button"
         aria-label={`Copy ${iconName}`}
         className={cn(
@@ -25,13 +41,20 @@ const IconItem: FC<{ iconName: IconName }> = ({ iconName }) => {
           'h-20 max-h-20 min-h-20 w-20 max-w-20 min-w-20',
           'focus-visible:ring-ring/50 cursor-pointer outline-none focus-visible:ring-3',
         )}
-        onClick={() => {
-          clipboard.copy(iconName);
+        onClick={async () => {
+          try {
+            await clipboard.copy(iconName);
+            setCopyStatus('copied');
+          } catch {
+            setCopyStatus('failed');
+          }
         }}
       >
         <Icon icon={iconName} aria-hidden />
       </TooltipTrigger>
-      <TooltipContent>{iconName}</TooltipContent>
+      <TooltipContent aria-live="polite">
+        {copyStatus === 'idle' ? iconName : copyStatusText[copyStatus]}
+      </TooltipContent>
     </Tooltip>
   );
 };
