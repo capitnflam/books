@@ -1,4 +1,4 @@
-import { fn } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 
 import { Button } from '#/components/button';
 import { Icon } from '#/components/icon';
@@ -34,7 +34,34 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Button' });
+
+    await userEvent.click(button);
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+
+    await userEvent.keyboard('{Enter}');
+    await expect(button).toHaveFocus();
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const Disabled: Story = {
+  args: { disabled: true },
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Button' });
+
+    await expect(button).toBeDisabled();
+    await userEvent.tab();
+    await expect(button).not.toHaveFocus();
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+};
+
+export const Invalid: Story = {
+  args: { 'aria-invalid': true, variant: 'outline' },
+};
 
 export const IconOnly: Story = {
   name: 'Icon Only',
@@ -42,6 +69,10 @@ export const IconOnly: Story = {
     'aria-label': 'Book',
     children: <Icon icon="book" aria-hidden />,
     size: 'icon',
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Book' }));
+    await expect(args.onClick).toHaveBeenCalledOnce();
   },
 };
 
@@ -81,6 +112,11 @@ export const AllTextButtons: Story = {
       </table>
     );
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole('button')).toHaveLength(
+      buttonVariants.length * buttonTextSizes.length,
+    );
+  },
 };
 
 export const AllIconButtons: Story = {
@@ -117,6 +153,11 @@ export const AllIconButtons: Story = {
           ))}
         </tbody>
       </table>
+    );
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole('button', { name: 'Book' })).toHaveLength(
+      buttonVariants.length * buttonIconSizes.length,
     );
   },
 };

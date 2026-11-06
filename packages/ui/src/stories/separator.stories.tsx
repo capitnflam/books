@@ -1,4 +1,5 @@
 import { cn } from 'cn';
+import { expect } from 'storybook/test';
 
 import { Separator } from '#/components/separator';
 
@@ -20,12 +21,6 @@ const meta: Meta<typeof Separator> = {
       },
     },
   },
-};
-
-export default meta;
-type Story = StoryObj<typeof Separator>;
-
-export const Default: Story = {
   render: (args) => (
     <div
       className={cn('flex items-center justify-center', {
@@ -36,4 +31,21 @@ export const Default: Story = {
       <Separator {...args} />
     </div>
   ),
+  play: async ({ args, canvas }) => {
+    const separator = canvas.getByRole('separator');
+    const { width, height } = separator.getBoundingClientRect();
+
+    await expect(separator).toHaveAttribute('aria-orientation', args.orientation);
+    // A horizontal line is 1px tall; a vertical one is 1px wide.
+    await expect(args.orientation === 'vertical' ? width : height).toBe(1);
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Separator>;
+
+export const Default: Story = {};
+
+export const Vertical: Story = {
+  args: { orientation: 'vertical' },
 };

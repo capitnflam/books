@@ -1,4 +1,4 @@
-import { fn } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 
 import { iconNameList } from '#/components/icon';
 import { IconButton } from '#/components/icon-button';
@@ -40,7 +40,24 @@ const meta: Meta<typeof IconButton> = {
 export default meta;
 type Story = StoryObj<typeof IconButton>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    // The label is the accessible name; there is no visible text.
+    const button = canvas.getByRole('button', { name: 'Book' });
+
+    await expect(button).not.toHaveTextContent(/./u);
+    await userEvent.click(button);
+    await expect(args.onClick).toHaveBeenCalledOnce();
+  },
+};
+
+export const Disabled: Story = {
+  args: { disabled: true },
+  play: async ({ args, canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Book' })).toBeDisabled();
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+};
 
 export const AllIconButtons: Story = {
   name: 'All Icon Buttons',
@@ -75,5 +92,16 @@ export const AllIconButtons: Story = {
         </tbody>
       </table>
     );
+  },
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button', { name: 'Book' });
+
+    await expect(buttons).toHaveLength(buttonVariants.length * iconButtonSizes.length);
+
+    // Every size must render a square button.
+    for (const button of buttons) {
+      const { width, height } = button.getBoundingClientRect();
+      await expect(width).toBeCloseTo(height, 0);
+    }
   },
 };
