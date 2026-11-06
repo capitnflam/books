@@ -51,6 +51,7 @@ type Story = StoryObj<typeof IconButton>;
 export const Default: Story = {
   args: {
     icon: 'book',
+    label: 'Book',
   },
 };
 
@@ -75,7 +76,7 @@ export const AllIconButtons: Story = {
               <td className="border p-1">{size}</td>
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
-                  <IconButton variant={variant} size={size} icon="book" />
+                  <IconButton variant={variant} size={size} icon="book" label="Book" />
                 </td>
               ))}
             </tr>

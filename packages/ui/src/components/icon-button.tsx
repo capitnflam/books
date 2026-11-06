@@ -7,15 +7,25 @@ import type { FC } from 'react';
 
 type IconButtonSize = 'default' | 'xs' | 'sm' | 'lg';
 
-export type IconButtonProps = Omit<ButtonProps, 'children' | 'size'> & {
-  size?: IconButtonSize;
-  icon: IconName;
+// Icon buttons use the square `icon-*` button sizes, not the padded text sizes.
+const buttonSizes: Record<IconButtonSize, NonNullable<ButtonProps['size']>> = {
+  default: 'icon',
+  xs: 'icon-xs',
+  sm: 'icon-sm',
+  lg: 'icon-lg',
 };
 
-export const IconButton: FC<IconButtonProps> = ({ size = 'default', icon, ...props }) => {
+export type IconButtonProps = Omit<ButtonProps, 'children' | 'size' | 'aria-label'> & {
+  size?: IconButtonSize;
+  icon: IconName;
+  /** Accessible name announced by screen readers, since the button has no visible text. */
+  label: string;
+};
+
+export const IconButton: FC<IconButtonProps> = ({ size = 'default', icon, label, ...props }) => {
   return (
-    <Button size={size} {...props}>
-      <Icon icon={icon} />
+    <Button size={buttonSizes[size]} aria-label={label} {...props}>
+      <Icon icon={icon} aria-hidden />
     </Button>
   );
 };
