@@ -15,15 +15,17 @@ const buttonSizes: Record<IconButtonSize, NonNullable<ButtonProps['size']>> = {
   lg: 'icon-lg',
 };
 
-export type IconButtonProps = Omit<ButtonProps, 'children' | 'size'> & {
+export type IconButtonProps = Omit<ButtonProps, 'children' | 'size' | 'aria-label'> & {
   size?: IconButtonSize;
   icon: IconName;
+  /** Accessible name announced by screen readers, since the button has no visible text. */
+  label: string;
 };
 
-export const IconButton: FC<IconButtonProps> = ({ size = 'default', icon, ...props }) => {
+export const IconButton: FC<IconButtonProps> = ({ size = 'default', icon, label, ...props }) => {
   return (
-    <Button size={buttonSizes[size]} {...props}>
-      <Icon icon={icon} />
+    <Button size={buttonSizes[size]} aria-label={label} {...props}>
+      <Icon icon={icon} aria-hidden />
     </Button>
   );
 };

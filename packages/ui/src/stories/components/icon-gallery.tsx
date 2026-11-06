@@ -70,6 +70,7 @@ export const IconGallery: FC = () => {
           />
           <IconButton
             icon="x"
+            label="Clear search"
             variant="secondary"
             onClick={() => {
               setSearchFilter('');
