@@ -29,13 +29,6 @@
       "computedHash": "7a9fd8c5c956ad8672eef0592e83df89ce1fc78080a0af9cb853abfe2e549b16",
       "installMode": "copy"
     },
-    "migrate-radix-to-base": {
-      "source": "shadcn/ui",
-      "sourceType": "github",
-      "skillPath": "skills/migrate-radix-to-base/SKILL.md",
-      "computedHash": "e1f2030ee5059be3dff0812ca0e4b995ee9fa3132176f049ebe6c90346a6755e",
-      "installMode": "copy"
-    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
