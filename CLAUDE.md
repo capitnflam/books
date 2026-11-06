@@ -33,6 +33,7 @@ pnpm + Turborepo monorepo (workspaces in `apps/*` and `packages/*`).
 ## Testing
 
 - `packages/ui`: every story in `src/stories/` runs as a test in headless Chromium (Storybook Vitest addon). A new component needs a story; use `play` functions to test interactions. Run one file with `pnpm --filter @books/ui exec vitest run src/stories/button.stories.tsx`.
+- `packages/ui` stories are also checked with axe (`a11y.test: 'error'` in `packages/ui/.storybook/preview.tsx`), so an accessibility violation fails the test. Give icon-only buttons an accessible name (`IconButton` requires `label`) and don't lower the setting to get a story to pass.
 - `packages/shared` and `apps/webapp`: Vitest (`shared` also runs type tests with `--typecheck`). Run one file with `pnpm --filter <package-name> exec vitest run <path>`.
 - `pnpm test` from the root runs every package's tests.
 
