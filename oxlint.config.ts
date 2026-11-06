@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     vitest({ files: ['**/*.{test,spec}.ts', '**/*.e2e-spec.ts', '**/__tests__/**/*.ts'] }),
   ],
-  ignorePatterns: ['dist', 'node_modules', 'src/routeTree.gen.ts'],
+  ignorePatterns: ['dist', 'node_modules', 'src/routeTree.gen.ts', '**/.claude/skills'],
   overrides: [
     {
       files: ['**/*.ts{x,}'],
