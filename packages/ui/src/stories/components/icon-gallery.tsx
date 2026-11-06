@@ -79,7 +79,7 @@ export const IconGallery: FC = () => {
     <div className="flex w-lg flex-col gap-1">
       <Field>
         <FieldLabel htmlFor="search-input">Search</FieldLabel>
-        <div className="space-between flex flex-row items-center gap-1">
+        <div className="flex flex-row items-center justify-between gap-1">
           <Input
             id="search-input"
             value={searchFilter}
