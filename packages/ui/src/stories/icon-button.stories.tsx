@@ -1,24 +1,11 @@
-import { fn } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 
 import { iconNameList } from '#/components/icon';
 import { IconButton } from '#/components/icon-button';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import { buttonVariants, iconButtonSizes } from './components/button-options';
 
-const buttonVariants: React.ComponentProps<typeof IconButton>['variant'][] = [
-  'default',
-  'secondary',
-  'outline',
-  'ghost',
-  'destructive',
-  'link',
-];
-const iconButtonSizes: React.ComponentProps<typeof IconButton>['size'][] = [
-  'lg',
-  'default',
-  'sm',
-  'xs',
-];
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof IconButton> = {
   title: 'Components/IconButton',
@@ -27,11 +14,16 @@ const meta: Meta<typeof IconButton> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  args: { onClick: fn(), variant: 'default', size: 'default' },
+  args: { onClick: fn(), variant: 'default', size: 'default', icon: 'book', label: 'Book' },
   argTypes: {
     variant: {
-      options: buttonVariants.filter((v) => v !== undefined),
-      defaultValue: 'default',
+      options: buttonVariants,
+      control: {
+        type: 'radio',
+      },
+    },
+    size: {
+      options: iconButtonSizes,
       control: {
         type: 'radio',
       },
@@ -49,9 +41,21 @@ export default meta;
 type Story = StoryObj<typeof IconButton>;
 
 export const Default: Story = {
-  args: {
-    icon: 'book',
-    label: 'Book',
+  play: async ({ args, canvas, userEvent }) => {
+    // The label is the accessible name; there is no visible text.
+    const button = canvas.getByRole('button', { name: 'Book' });
+
+    await expect(button).not.toHaveTextContent(/./u);
+    await userEvent.click(button);
+    await expect(args.onClick).toHaveBeenCalledOnce();
+  },
+};
+
+export const Disabled: Story = {
+  args: { disabled: true },
+  play: async ({ args, canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Book' })).toBeDisabled();
+    await expect(args.onClick).not.toHaveBeenCalled();
   },
 };
 
@@ -62,7 +66,9 @@ export const AllIconButtons: Story = {
       <table className="border">
         <thead className="border">
           <tr>
-            <th />
+            <th className="border p-1">
+              <span className="sr-only">Size</span>
+            </th>
             {buttonVariants.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
@@ -73,7 +79,9 @@ export const AllIconButtons: Story = {
         <tbody>
           {iconButtonSizes.map((size) => (
             <tr key={size}>
-              <td className="border p-1">{size}</td>
+              <th scope="row" className="border p-1">
+                {size}
+              </th>
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
                   <IconButton variant={variant} size={size} icon="book" label="Book" />
@@ -84,5 +92,16 @@ export const AllIconButtons: Story = {
         </tbody>
       </table>
     );
+  },
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button', { name: 'Book' });
+
+    await expect(buttons).toHaveLength(buttonVariants.length * iconButtonSizes.length);
+
+    // Every size must render a square button.
+    for (const button of buttons) {
+      const { width, height } = button.getBoundingClientRect();
+      await expect(width).toBeCloseTo(height, 0);
+    }
   },
 };

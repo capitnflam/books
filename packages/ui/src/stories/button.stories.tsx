@@ -1,7 +1,9 @@
-import { fn } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 
 import { Button } from '#/components/button';
 import { Icon } from '#/components/icon';
+
+import { buttonIconSizes, buttonTextSizes, buttonVariants } from './components/button-options';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -12,14 +14,16 @@ const meta: Meta<typeof Button> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  args: { onClick: fn(), variant: 'default', size: 'default' },
+  args: { onClick: fn(), variant: 'default', size: 'default', children: 'Button' },
   argTypes: {
     variant: {
+      options: buttonVariants,
       control: {
         type: 'radio',
       },
     },
     size: {
+      options: [...buttonTextSizes, ...buttonIconSizes],
       control: {
         type: 'radio',
       },
@@ -31,33 +35,46 @@ export default meta;
 type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {
-  args: {
-    children: 'Button',
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Button' });
+
+    await userEvent.click(button);
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+
+    await userEvent.keyboard('{Enter}');
+    await expect(button).toHaveFocus();
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
   },
 };
 
-export const IconButton: Story = {
+export const Disabled: Story = {
+  args: { disabled: true },
+  play: async ({ args, canvas, userEvent }) => {
+    const button = canvas.getByRole('button', { name: 'Button' });
+
+    await expect(button).toBeDisabled();
+    await userEvent.tab();
+    await expect(button).not.toHaveFocus();
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+};
+
+export const Invalid: Story = {
+  args: { 'aria-invalid': true, variant: 'outline' },
+};
+
+export const IconOnly: Story = {
+  name: 'Icon Only',
   args: {
-    children: <Icon icon="book" />,
+    'aria-label': 'Book',
+    children: <Icon icon="book" aria-hidden />,
     size: 'icon',
   },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Book' }));
+    await expect(args.onClick).toHaveBeenCalledOnce();
+  },
 };
-
-const buttonVariants: React.ComponentProps<typeof Button>['variant'][] = [
-  'default',
-  'secondary',
-  'outline',
-  'ghost',
-  'destructive',
-  'link',
-];
-const buttonSizes: React.ComponentProps<typeof Button>['size'][] = ['lg', 'default', 'sm', 'xs'];
-const iconButtonSizes: React.ComponentProps<typeof Button>['size'][] = [
-  'icon-lg',
-  'icon',
-  'icon-sm',
-  'icon-xs',
-];
 
 export const AllTextButtons: Story = {
   name: 'All Text Buttons',
@@ -66,7 +83,9 @@ export const AllTextButtons: Story = {
       <table className="border">
         <thead className="border">
           <tr>
-            <th />
+            <th className="border p-1">
+              <span className="sr-only">Size</span>
+            </th>
             {buttonVariants.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
@@ -75,9 +94,11 @@ export const AllTextButtons: Story = {
           </tr>
         </thead>
         <tbody>
-          {buttonSizes.map((size) => (
+          {buttonTextSizes.map((size) => (
             <tr key={size}>
-              <td className="border p-1">{size}</td>
+              <th scope="row" className="border p-1">
+                {size}
+              </th>
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
                   <Button variant={variant} size={size}>
@@ -91,6 +112,11 @@ export const AllTextButtons: Story = {
       </table>
     );
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole('button')).toHaveLength(
+      buttonVariants.length * buttonTextSizes.length,
+    );
+  },
 };
 
 export const AllIconButtons: Story = {
@@ -100,7 +126,9 @@ export const AllIconButtons: Story = {
       <table className="border">
         <thead className="border">
           <tr>
-            <th />
+            <th className="border p-1">
+              <span className="sr-only">Size</span>
+            </th>
             {buttonVariants.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
@@ -109,13 +137,15 @@ export const AllIconButtons: Story = {
           </tr>
         </thead>
         <tbody>
-          {iconButtonSizes.map((size) => (
+          {buttonIconSizes.map((size) => (
             <tr key={size}>
-              <td className="border p-1">{size}</td>
+              <th scope="row" className="border p-1">
+                {size}
+              </th>
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
-                  <Button variant={variant} size={size}>
-                    <Icon icon="book" />
+                  <Button variant={variant} size={size} aria-label="Book">
+                    <Icon icon="book" aria-hidden />
                   </Button>
                 </td>
               ))}
@@ -123,6 +153,11 @@ export const AllIconButtons: Story = {
           ))}
         </tbody>
       </table>
+    );
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole('button', { name: 'Book' })).toHaveLength(
+      buttonVariants.length * buttonIconSizes.length,
     );
   },
 };
