@@ -10,6 +10,35 @@ import { defineConfig } from 'vite';
 
 const srcRoot = fileURLToPath(new URL('./src', import.meta.url));
 
+// Every story runs once per theme, so the a11y checks (e.g. color contrast) cover dark mode too.
+// `.storybook/preview.tsx` reads STORYBOOK_THEME to pick the theme a story renders in.
+const storybookProject = (theme: 'light' | 'dark') => ({
+  extends: true,
+  plugins: [
+    // The plugin will run tests for the stories defined in your Storybook config
+    // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
+    storybookTest({
+      configDir: path.join(import.meta.dirname, '.storybook'),
+    }),
+  ],
+  define: {
+    'import.meta.env.STORYBOOK_THEME': JSON.stringify(theme),
+  },
+  test: {
+    name: `storybook-${theme}`,
+    browser: {
+      enabled: true,
+      headless: true,
+      provider: playwright({}),
+      instances: [
+        {
+          browser: 'chromium' as const,
+        },
+      ],
+    },
+  },
+});
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -19,30 +48,6 @@ export default defineConfig({
   },
   plugins: [tailwindcss(), react({})],
   test: {
-    projects: [
-      {
-        extends: true,
-        plugins: [
-          // The plugin will run tests for the stories defined in your Storybook config
-          // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-          storybookTest({
-            configDir: path.join(import.meta.dirname, '.storybook'),
-          }),
-        ],
-        test: {
-          name: 'storybook',
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright({}),
-            instances: [
-              {
-                browser: 'chromium',
-              },
-            ],
-          },
-        },
-      },
-    ],
+    projects: [storybookProject('light'), storybookProject('dark')],
   },
 });

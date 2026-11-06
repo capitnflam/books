@@ -26,7 +26,9 @@ const preview: Preview = {
         light: '',
         dark: 'dark',
       },
-      defaultTheme: 'light',
+      // The vitest projects in vite.config.ts set STORYBOOK_THEME to test each theme;
+      // the Storybook UI leaves it unset and starts in light.
+      defaultTheme: import.meta.env.STORYBOOK_THEME ?? 'light',
     }),
   ],
 };
