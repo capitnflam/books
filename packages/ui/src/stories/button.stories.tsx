@@ -3,6 +3,8 @@ import { fn } from 'storybook/test';
 import { Button } from '#/components/button';
 import { Icon } from '#/components/icon';
 
+import { buttonIconSizes, buttonTextSizes, buttonVariants } from './components/button-options';
+
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Button> = {
@@ -12,14 +14,16 @@ const meta: Meta<typeof Button> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  args: { onClick: fn(), variant: 'default', size: 'default' },
+  args: { onClick: fn(), variant: 'default', size: 'default', children: 'Button' },
   argTypes: {
     variant: {
+      options: buttonVariants,
       control: {
         type: 'radio',
       },
     },
     size: {
+      options: [...buttonTextSizes, ...buttonIconSizes],
       control: {
         type: 'radio',
       },
@@ -30,35 +34,16 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Default: Story = {
-  args: {
-    children: 'Button',
-  },
-};
+export const Default: Story = {};
 
-export const IconButton: Story = {
+export const IconOnly: Story = {
+  name: 'Icon Only',
   args: {
     'aria-label': 'Book',
     children: <Icon icon="book" aria-hidden />,
     size: 'icon',
   },
 };
-
-const buttonVariants: React.ComponentProps<typeof Button>['variant'][] = [
-  'default',
-  'secondary',
-  'outline',
-  'ghost',
-  'destructive',
-  'link',
-];
-const buttonSizes: React.ComponentProps<typeof Button>['size'][] = ['lg', 'default', 'sm', 'xs'];
-const iconButtonSizes: React.ComponentProps<typeof Button>['size'][] = [
-  'icon-lg',
-  'icon',
-  'icon-sm',
-  'icon-xs',
-];
 
 export const AllTextButtons: Story = {
   name: 'All Text Buttons',
@@ -78,7 +63,7 @@ export const AllTextButtons: Story = {
           </tr>
         </thead>
         <tbody>
-          {buttonSizes.map((size) => (
+          {buttonTextSizes.map((size) => (
             <tr key={size}>
               <th scope="row" className="border p-1">
                 {size}
@@ -116,7 +101,7 @@ export const AllIconButtons: Story = {
           </tr>
         </thead>
         <tbody>
-          {iconButtonSizes.map((size) => (
+          {buttonIconSizes.map((size) => (
             <tr key={size}>
               <th scope="row" className="border p-1">
                 {size}
