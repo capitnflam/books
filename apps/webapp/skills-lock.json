@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "skills": {
+    "devtools-vite-plugin": {
+      "source": "@tanstack/devtools-vite",
+      "sourceType": "node_modules",
+      "skillPath": "skills/devtools-vite-plugin/SKILL.md",
+      "version": "0.8.6",
+      "computedHash": "243ab52746d0f3ab4062b108cff4f81e358d3787b8153f8ef84693c3f7c9fbd8"
+    },
+    "react-router": {
+      "source": "@tanstack/react-router",
+      "sourceType": "node_modules",
+      "skillPath": "skills/react-router/SKILL.md",
+      "version": "1.170.46",
+      "computedHash": "4a108fd017b8098d18258311ac598a26cbd6f53a43c306319093f841420cf7e7"
+    },
+    "react-start": {
+      "source": "@tanstack/react-start",
+      "sourceType": "node_modules",
+      "skillPath": "skills/react-start/SKILL.md",
+      "version": "1.169.4",
+      "computedHash": "2bdec68bf066fe3a9eef9670b1a0295e7c84cb686b4de04a22044958aea3180a"
+    }
+  }
+}

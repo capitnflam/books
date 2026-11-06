@@ -8,7 +8,7 @@ export default defineConfig({
   endOfLine: 'lf',
   experimentalOperatorPosition: 'start',
   htmlWhitespaceSensitivity: 'css',
-  ignorePatterns: ['dist', 'node_modules', 'routeTree.gen.ts', '.claude/skills'],
+  ignorePatterns: ['dist', 'node_modules', 'routeTree.gen.ts', '**/.claude/skills'],
   insertFinalNewline: true,
   jsdoc: false,
   jsxSingleQuote: false,

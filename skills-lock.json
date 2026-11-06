@@ -1,6 +1,34 @@
 {
   "version": 1,
   "skills": {
+    "clerk": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk/SKILL.md",
+      "computedHash": "61e33bfbc058da6c5924bfca7b2fedc57adf83d79a08014b15625c4b62b344e1",
+      "installMode": "copy"
+    },
+    "clerk-custom-ui": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-custom-ui/SKILL.md",
+      "computedHash": "41ab0b94e91986a7fe0b3f0902d9fc27d543e8e83b70b5b811208982ab997bb7",
+      "installMode": "copy"
+    },
+    "clerk-tanstack-patterns": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-tanstack-patterns/SKILL.md",
+      "computedHash": "f272287c5d116e1eae68a2eb4016545c51b8fe9f88d6bcfb8be5982d0d4021fc",
+      "installMode": "copy"
+    },
+    "clerk-webhooks": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-webhooks/SKILL.md",
+      "computedHash": "7a9fd8c5c956ad8672eef0592e83df89ce1fc78080a0af9cb853abfe2e549b16",
+      "installMode": "copy"
+    },
     "migrate-radix-to-base": {
       "source": "shadcn/ui",
       "sourceType": "github",
@@ -13,6 +41,20 @@
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
       "computedHash": "b864a958765563321f485a96f4d59c0bb6539f4286ab6d8b8b66895b7ebd302d",
+      "installMode": "copy"
+    },
+    "turborepo": {
+      "source": "vercel/turborepo",
+      "sourceType": "github",
+      "skillPath": "skills/turborepo/SKILL.md",
+      "computedHash": "c83a6ff75c62092f71da91408164ed3426f11749b032fd23ecc855e27c2fb538",
+      "installMode": "copy"
+    },
+    "vitest": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
+      "computedHash": "90f1cee9326269c91b46a601b3a575491505d8e771009dacff01329381d45291",
       "installMode": "copy"
     }
   }

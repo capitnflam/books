@@ -51,8 +51,18 @@ function computePackages(filenames: readonly string[]): string[] {
   return [...packages];
 }
 
+// Third-party agent skills are excluded from lint and format (see oxlint/oxfmt configs);
+// passing them through would make oxlint fail with "No files found".
+function withoutSkills(filenames: readonly string[]): string[] {
+  return filenames.filter((filename) => !/[/\\]\.claude[/\\]skills[/\\]/u.test(filename));
+}
+
 const lintStagedConfig: Configuration = {
-  '(apps|packages)/**/!(*.gen).{ts,tsx}': (filenames) => {
+  '(apps|packages)/**/!(*.gen).{ts,tsx}': (stagedFilenames) => {
+    const filenames = withoutSkills(stagedFilenames);
+    if (filenames.length === 0) {
+      return [];
+    }
     const packages = computePackages(filenames);
     return [
       `turbo run lint:fix -- ${filenames.join(' ')}`,
@@ -68,7 +78,11 @@ const lintStagedConfig: Configuration = {
     //   ];
     // });
   },
-  '(apps|packages)/**/*.{json,css,scss,html,yaml,yml,md}': (filenames) => {
+  '(apps|packages)/**/*.{json,css,scss,html,yaml,yml,md}': (stagedFilenames) => {
+    const filenames = withoutSkills(stagedFilenames);
+    if (filenames.length === 0) {
+      return [];
+    }
     // const packages = computePackages(filenames);
     return [`turbo run format:fix -- ${filenames.join(' ')}`];
     // const filesByPackage = computeFilesByPackage(filenames);
