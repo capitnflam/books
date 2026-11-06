@@ -22,6 +22,11 @@ const config: StorybookConfig = {
     getAbsolutePath('@storybook/addon-themes'),
   ],
   framework: getAbsolutePath('@storybook/react-vite'),
+  features: {
+    // The theme toolbar (addon-themes) toggles the `dark` class, and Tailwind's `bg-background`
+    // on <body> already follows it. A separate backgrounds control would have to be switched too.
+    backgrounds: false,
+  },
   viteFinal: async (viteConfig) => {
     const { default: tailwindcss } = await import('@tailwindcss/vite');
     viteConfig.plugins = [...(viteConfig.plugins || []), tailwindcss()];

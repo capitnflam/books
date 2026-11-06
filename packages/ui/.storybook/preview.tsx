@@ -4,6 +4,8 @@ import type { Preview, ReactRenderer } from '@storybook/react-vite';
 
 import '#/styles/globals.css';
 
+import './preview.css';
+
 const preview: Preview = {
   parameters: {
     controls: {
