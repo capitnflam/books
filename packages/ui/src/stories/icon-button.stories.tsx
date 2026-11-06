@@ -62,7 +62,9 @@ export const AllIconButtons: Story = {
       <table className="border">
         <thead className="border">
           <tr>
-            <th />
+            <th className="border p-1">
+              <span className="sr-only">Size</span>
+            </th>
             {buttonVariants.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
@@ -73,7 +75,9 @@ export const AllIconButtons: Story = {
         <tbody>
           {iconButtonSizes.map((size) => (
             <tr key={size}>
-              <td className="border p-1">{size}</td>
+              <th scope="row" className="border p-1">
+                {size}
+              </th>
               {buttonVariants.map((variant) => (
                 <td key={variant} className="border p-1">
                   <IconButton variant={variant} size={size} icon="book" label="Book" />
