@@ -26,6 +26,20 @@ pnpm + Turborepo monorepo (workspaces in `apps/*` and `packages/*`).
 - Within a package, use the `#/*` alias for `src/*` rather than long relative paths.
 - `packages/ui/components.json` configures the shadcn CLI for adding components to `ui`.
 
+### UI components (shadcn)
+
+shadcn copies component source into `packages/ui/src/components/`; the repo owns that code. It uses the `base-mira` style, built on Base UI (compose with the `render` prop, not Radix's `asChild`).
+
+- Add a component with `pnpm dlx shadcn@latest add <name>` from `packages/ui`, then adapt it to the repo's conventions (`FC`, exported `<Name>Props` type, `cva` + `cn`, `data-slot`) and add its story in the same PR.
+- Edit shadcn components in place. Don't create wrappers whose only job is to restyle or rename another component.
+- Make a change at the lowest level that covers it:
+  1. a design token (CSS variable in `src/styles/globals.css`, light and dark) when the change applies everywhere;
+  2. the component's `cva` variants or base classes when it applies to one component;
+  3. the component's markup or behaviour only when its structure must change.
+- A component that combines others behind a new API (like `IconButton` over `Button`) goes in its own file with its own story. It builds on the base component and never copies its classes.
+- To pull an upstream shadcn fix into a component that already exists, generate it somewhere temporary, compare, and copy over what you want. Never re-run `add` with overwrite on a component that has been customized.
+- Keep edits to copied components small and leave the rest of the file as it is, so later comparisons with upstream stay readable.
+
 ### Translations
 
 `webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` as the other one (`apps/webapp/project.inlang/settings.json`).
