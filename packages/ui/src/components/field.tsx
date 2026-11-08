@@ -4,6 +4,7 @@ import { cva } from 'class-variance-authority';
 import { cn } from 'cn';
 import { useMemo } from 'react';
 
+import { Icon } from './icon';
 import { Label } from './label';
 import { Separator } from './separator';
 
@@ -33,7 +34,7 @@ export const FieldLegend: FC<FieldLegendProps> = ({ className, variant = 'legend
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        'mb-2 font-medium data-[variant=label]:text-xs/relaxed data-[variant=legend]:text-sm',
+        'data-[variant=legend]:font-heading data-[variant=legend]:text-heading-3 data-[variant=legend]:border-rule mb-1.5 data-[variant=label]:text-base data-[variant=label]:font-semibold data-[variant=legend]:w-full data-[variant=legend]:border-b data-[variant=legend]:pb-1.5',
         className,
       )}
       {...props}
@@ -104,7 +105,7 @@ export const FieldLabel: FC<FieldLabelProps> = ({ className, ...props }) => {
     <Label
       data-slot="field-label"
       className={cn(
-        'group/field-label peer/field-label has-data-checked:bg-primary/5 has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-input/40 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/30 dark:has-data-checked:bg-primary/10 flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border has-[>[data-slot=field]]:has-[:focus-visible]:ring-2 *:data-[slot=field]:p-2',
+        'group/field-label peer/field-label has-data-checked:bg-primary/5 has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-input/40 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring dark:has-data-checked:bg-primary/10 flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border has-[>[data-slot=field]]:has-[:focus-visible]:ring-2 *:data-[slot=field]:p-2',
         'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
         className,
       )}
@@ -120,7 +121,7 @@ export const FieldTitle: FC<FieldTitleProps> = ({ className, ...props }) => {
     <div
       data-slot="field-label"
       className={cn(
-        'flex w-fit items-center gap-2 text-xs/relaxed font-medium group-data-[disabled=true]/field:opacity-50',
+        'flex w-fit items-center gap-2 text-base font-semibold group-data-[disabled=true]/field:opacity-50',
         className,
       )}
       {...props}
@@ -135,7 +136,7 @@ export const FieldDescription: FC<FieldDescriptionProps> = ({ className, ...prop
     <p
       data-slot="field-description"
       className={cn(
-        'text-muted-foreground text-left text-xs/relaxed leading-normal font-normal group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5',
+        'text-muted-foreground text-left text-sm leading-5 font-normal group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5',
         'last:mt-0 nth-last-2:-mt-1',
         '[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4',
         className,
@@ -207,10 +208,14 @@ export const FieldError: FC<FieldErrorProps> = ({ className, children, errors, .
     <div
       role="alert"
       data-slot="field-error"
-      className={cn('text-destructive text-xs/relaxed font-normal', className)}
+      className={cn(
+        'text-destructive flex items-start gap-1.5 text-sm leading-5 font-medium',
+        className,
+      )}
       {...props}
     >
-      {content}
+      <Icon icon="alert-circle" aria-hidden className="mt-0.5 size-4 shrink-0" />
+      <div>{content}</div>
     </div>
   );
 };

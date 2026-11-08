@@ -11,7 +11,7 @@ export const Input: FC<InputProps> = ({ className, type, ...props }) => {
       type={type}
       data-slot="input"
       className={cn(
-        'border-input bg-input/20 file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-7 w-full min-w-0 rounded-md border px-2 py-0.5 text-sm transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs/relaxed file:font-medium focus-visible:ring-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-2 md:text-xs/relaxed',
+        'border-input bg-card text-foreground file:text-foreground placeholder:text-muted-foreground hover:not-disabled:border-foreground focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-offset-background disabled:bg-background disabled:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-destructive h-11 w-full min-w-0 rounded-md border px-3 py-1 font-serif text-[17px] leading-6 transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:italic focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-dashed aria-invalid:ring-1',
         className,
       )}
       {...props}
