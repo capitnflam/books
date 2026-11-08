@@ -58,7 +58,11 @@ Every component you add with shadcn, or update from upstream, gets the theme bef
 
 ### Translations
 
-`webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` as the other one (`apps/webapp/project.inlang/settings.json`).
+`webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` and `fr` as the others (`apps/webapp/project.inlang/settings.json`).
+
+- A new or renamed message goes into every locale's file in the same change, with the same key.
+- To add a locale, add it to `locales` in `settings.json` and create `messages/<locale>.json` with every key from `en.json`. The locale switcher, the `/<locale>/...` URLs and `<html lang>` all read the list from the settings, so no code changes are needed.
+- In `fr.json`, put a non-breaking space (U+00A0) before `:`, `;`, `?` and `!`, as French typography requires.
 
 ## Testing
 
