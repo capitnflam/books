@@ -58,7 +58,7 @@ Every component you add with shadcn, or update from upstream, gets the theme bef
 
 ### Translations
 
-`webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` as the other one (`apps/webapp/project.inlang/settings.json`).
+`webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` and `fr` as the others (`apps/webapp/project.inlang/settings.json`).
 
 ## Testing
 
