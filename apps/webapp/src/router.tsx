@@ -2,6 +2,7 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
 
 import { getContext } from './integrations/tanstack-query/root-provider';
+import { deLocalizeUrl, localizeUrl } from './paraglide/runtime';
 import { routeTree } from './routeTree.gen';
 
 export function getRouter() {
@@ -13,6 +14,12 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
+    // Routes are defined without the locale prefix: strip it from incoming URLs
+    // (/de/me -> /me) and add it back to generated links for the current locale.
+    rewrite: {
+      input: ({ url }) => deLocalizeUrl(url),
+      output: ({ url }) => localizeUrl(url),
+    },
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
