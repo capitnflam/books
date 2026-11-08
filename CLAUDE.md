@@ -85,7 +85,8 @@ Env files are gitignored; never commit secrets or real values.
 
 The schema lives in `packages/database/src/db/schema.ts` (Drizzle ORM, PostgreSQL); migrations live in `packages/database/drizzle/`.
 
-- Fresh database: `pnpm db:migrate`, then `pnpm db:seed` for sample data.
+- Fresh database: `pnpm db:migrate`, then `pnpm db:seed` for sample data. The seed creates the `admin` role with every permission; export `ADMIN_AUTHENTICATION_ID` (a Clerk user ID) to assign it to that user, since the first admin can't be granted from the app.
+- Access control: users get permissions only through roles (`roles` → `role_permissions`, assigned by `user_roles`). Permissions are the fixed list in `packages/database/src/db/permissions.ts`; code checks permissions, never role names. Feature flags are granted per user (`user_feature_flags`) or to everyone (`feature_flags.enabled_for_all`).
 - Schema change: edit `schema.ts`, run `pnpm db:generate` to create a new migration, review the generated SQL, then `pnpm db:migrate`. Commit the migration together with the schema change.
 - `pnpm db:push` syncs the schema without a migration; use it only for throwaway local experiments.
 - `pnpm db:reset` wipes every table. Never run it, or `db:push`, against a shared or production database.
