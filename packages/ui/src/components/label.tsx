@@ -1,5 +1,3 @@
-'use client';
-
 import { cn } from 'cn';
 
 import type { ComponentProps, FC } from 'react';
