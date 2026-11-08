@@ -7,7 +7,11 @@ import type { FC } from 'react';
 
 export type SeparatorProps = SeparatorPrimitive.Props;
 
-const Separator: FC<SeparatorProps> = ({ className, orientation = 'horizontal', ...props }) => {
+export const Separator: FC<SeparatorProps> = ({
+  className,
+  orientation = 'horizontal',
+  ...props
+}) => {
   return (
     <SeparatorPrimitive
       data-slot="separator"
@@ -20,5 +24,3 @@ const Separator: FC<SeparatorProps> = ({ className, orientation = 'horizontal', 
     />
   );
 };
-
-export { Separator };
