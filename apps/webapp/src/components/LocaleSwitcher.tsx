@@ -24,16 +24,7 @@ export default function ParaglideLocaleSwitcher() {
             key={locale}
             onClick={() => setLocale(locale)}
             aria-pressed={locale === currentLocale}
-            style={{
-              cursor: 'pointer',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '999px',
-              border: '1px solid #d1d5db',
-              background: locale === currentLocale ? '#0f172a' : 'transparent',
-              color: locale === currentLocale ? '#f8fafc' : 'inherit',
-              fontWeight: locale === currentLocale ? 700 : 500,
-              letterSpacing: '0.01em',
-            }}
+            className="border-input hover:border-foreground hover:bg-card aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground focus-visible:ring-ring focus-visible:ring-offset-background cursor-pointer rounded-md border px-3 py-1 text-sm font-medium tracking-[0.01em] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 aria-pressed:font-semibold"
           >
             {locale.toUpperCase()}
           </button>
