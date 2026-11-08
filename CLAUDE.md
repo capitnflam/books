@@ -30,7 +30,7 @@ pnpm + Turborepo monorepo (workspaces in `apps/*` and `packages/*`).
 
 shadcn copies component source into `packages/ui/src/components/`; the repo owns that code. It uses the `base-mira` style, built on Base UI (compose with the `render` prop, not Radix's `asChild`).
 
-- Add a component with `pnpm dlx shadcn@latest add <name>` from `packages/ui`, then adapt it to the repo's conventions (`FC`, exported `<Name>Props` type, `cva` + `cn`, `data-slot`) and add its story in the same PR.
+- Add a component with `pnpm dlx shadcn@latest add <name>` from `packages/ui`, then adapt it to the repo's conventions (`FC`, exported `<Name>Props` type, `cva` + `cn`, `data-slot`), apply the Ex Libris theme to it (see below) and add its story in the same PR.
 - Edit shadcn components in place. Don't create wrappers whose only job is to restyle or rename another component.
 - Make a change at the lowest level that covers it:
   1. a design token (CSS variable in `src/styles/globals.css`, light and dark) when the change applies everywhere;
@@ -39,6 +39,22 @@ shadcn copies component source into `packages/ui/src/components/`; the repo owns
 - A component that combines others behind a new API (like `IconButton` over `Button`) goes in its own file with its own story. It builds on the base component and never copies its classes.
 - To pull an upstream shadcn fix into a component that already exists, generate it somewhere temporary, compare, and copy over what you want. Never re-run `add` with overwrite on a component that has been customized.
 - Keep edits to copied components small and leave the rest of the file as it is, so later comparisons with upstream stay readable.
+
+### Ex Libris theme
+
+The UI follows the Ex Libris design system: a classic reading room, with cream paper, burgundy leather, banker's-lamp green and serif type. Its source of truth is the **Ex Libris** design system artifact (https://claude.ai/artifact/G33dPDSkoivf3UKbPmUhRM): read its `project/README.md`, `project/tokens.json` and `project/components/<Name>/README.md` for a component's rules. Its tokens are implemented in `packages/ui/src/styles/globals.css`: the Day (light) palette on `:root`, Lamp (dark) on `.dark`, the shadcn roles mapped onto them, the Garamond fonts, radii, `shadow-page` and the text styles.
+
+Every component you add with shadcn, or update from upstream, gets the theme before it is merged; upstream's `base-mira` defaults are not finished styling.
+
+- Colours come only from tokens: the shadcn roles (`bg-primary`, `text-muted-foreground`, `border-input`…) or the Ex Libris colours (`bg-vellum`, `text-forest`, `border-rule`…). No hard-coded colours or Tailwind palette colours (`gray-*`, `red-*`).
+- Follow the system's roles: `burgundy` (`primary`) for the main action, links and active state, with one primary action per screen; `forest` (`secondary`) for success and secondary actions; `alert` (`destructive`) for errors, always with an icon; `gilt` only for ornaments, never text; `rule` for decorative dividers and `ink-muted` (`input`) for control borders.
+- Radii: `rounded-sm` (2px) for badges and labels, `rounded-md` (4px) for buttons, inputs and cards, `rounded-lg` (8px) for dialogs and panels. No pills; `rounded-full` only for things that are round by nature (radio dots, avatars).
+- Type: UI text is at least `text-sm`, because Garamond is hard to read at upstream's `text-xs/relaxed`. Use `text-xs` only for the `xs` size. Headings use `font-heading`.
+- Controls: 44px tall by default (`h-11`) and 32px for `sm` (`h-8`). Show keyboard focus as `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`, at full strength (no `ring-ring/30`).
+- Raised surfaces (menus, popovers, cards) use `bg-popover` or `bg-card` (vellum) with `shadow-page`, not grey shadows.
+- Inside `cn()`, don't combine a custom text style (`text-ui`, `text-body`, `text-heading-*`…) with a text colour: `cn` reads the style as a colour and drops the real one. Use a built-in size (`text-base/6` for `ui`) instead.
+- When an upstream update conflicts with themed classes, keep the theme's colours, sizes and type, and take upstream's structural or behavioural changes.
+- The component's story runs axe in light and dark, so contrast on its tokens must pass in both.
 
 ### Translations
 
