@@ -1,1 +1,6 @@
+# Regenerate the ERD when the schema changes, so it is committed with it.
+if git diff --cached --name-only | grep -qx 'packages/database/src/db/schema.ts'; then
+  pnpm --filter @books/database run db:erd && git add packages/database/ERD.md
+fi
+
 pnpm lint-staged

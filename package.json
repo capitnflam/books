@@ -11,6 +11,7 @@
     "clean:cache": "rimraf .turbo/cache",
     "clean:dist": "turbo run clean:dist",
     "db:check": "turbo run db:check",
+    "db:erd": "turbo run db:erd",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:pull": "turbo run db:pull",
