@@ -11,7 +11,7 @@ import { rolePermissions, roles, userRoles, users } from '../db/schema.ts';
 async function seedRoles() {
   return db.transaction(async (tx) => {
     const hasDefault = await tx.query.roles.findFirst({ where: eq(roles.isDefault, true) });
-    const roleIds = new Map<string, number>();
+    const roleIds = new Map<string, string>();
 
     for (const role of BUILT_IN_ROLES) {
       const isDefault = !hasDefault && role.isDefault;
@@ -61,7 +61,7 @@ async function backfillDefaultRole() {
  * Nobody can grant the first admin from the app, so the seed does it: set
  * ADMIN_AUTHENTICATION_ID to a Clerk user ID (`user_…`) to make that user an admin.
  */
-async function seedAdminUser(roleId: number) {
+async function seedAdminUser(roleId: string) {
   const authenticationId = process.env.ADMIN_AUTHENTICATION_ID;
 
   if (!authenticationId) {

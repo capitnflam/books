@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { displayNameSchema, mergeFeatureFlags } from './profile';
 
-const search = { id: 1, key: 'book-search', description: 'Search the catalogue.' };
-const covers = { id: 2, key: 'covers', description: null };
+const search = {
+  id: '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e01',
+  key: 'book-search',
+  description: 'Search the catalogue.',
+};
+const covers = { id: '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e02', key: 'covers', description: null };
 
 describe('mergeFeatureFlags', () => {
   it('lists flags granted to the reader and flags open to everyone, sorted by key', () => {
