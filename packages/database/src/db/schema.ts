@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
   integer,
@@ -7,6 +7,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 import type { Permission } from './permissions.ts';
@@ -30,12 +31,22 @@ export const users = booksSchema.table('users', {
 });
 
 /** A named bundle of permissions, assigned to users through `user_roles`. */
-export const roles = booksSchema.table('roles', {
-  id: serial().primaryKey(),
-  name: text().notNull().unique(),
-  description: text(),
-  ...timestamps,
-});
+export const roles = booksSchema.table(
+  'roles',
+  {
+    id: serial().primaryKey(),
+    name: text().notNull().unique(),
+    description: text(),
+    /** New users get this role when they first sign in. At most one role is the default. */
+    isDefault: boolean('is_default').default(false).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('roles_single_default')
+      .on(table.isDefault)
+      .where(sql`${table.isDefault}`),
+  ],
+);
 
 export const rolePermissions = booksSchema.table(
   'role_permissions',

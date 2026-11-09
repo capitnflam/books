@@ -29,6 +29,7 @@ erDiagram
     serial id PK
     text name UK
     text description "nullable"
+    boolean is_default "default false"
     timestamp created_at "default now()"
     timestamp updated_at "default now()"
   }

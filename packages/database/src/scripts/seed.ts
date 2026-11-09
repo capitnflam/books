@@ -1,23 +1,60 @@
+import { eq } from 'drizzle-orm';
+
 import { db } from '../db/index.ts';
-import { PERMISSIONS } from '../db/permissions.ts';
+import { ADMIN_ROLE_NAME, BUILT_IN_ROLES } from '../db/roles.ts';
 import { rolePermissions, roles, userRoles, users } from '../db/schema.ts';
 
-const ADMIN_ROLE_NAME = 'admin';
+/**
+ * Creates the built-in roles, or adds the permissions they are missing. Descriptions and
+ * permissions admins added are kept; the default role is set only when no role is the default.
+ */
+async function seedRoles() {
+  return db.transaction(async (tx) => {
+    const hasDefault = await tx.query.roles.findFirst({ where: eq(roles.isDefault, true) });
+    const roleIds = new Map<string, number>();
 
-/** Creates the `admin` role, or brings it up to date, with every permission. */
-async function seedAdminRole() {
-  const [adminRole] = await db
-    .insert(roles)
-    .values({ name: ADMIN_ROLE_NAME, description: 'Manages roles, user roles and feature flags.' })
-    .onConflictDoUpdate({ target: roles.name, set: { name: ADMIN_ROLE_NAME } })
-    .returning();
+    for (const role of BUILT_IN_ROLES) {
+      const isDefault = !hasDefault && role.isDefault;
+      const [row] = await tx
+        .insert(roles)
+        .values({ name: role.name, description: role.description, isDefault })
+        .onConflictDoUpdate({
+          target: roles.name,
+          set: isDefault ? { isDefault } : { name: role.name },
+        })
+        .returning();
 
-  await db
-    .insert(rolePermissions)
-    .values(PERMISSIONS.map((permission) => ({ roleId: adminRole!.id, permission })))
-    .onConflictDoNothing();
+      await tx
+        .insert(rolePermissions)
+        .values(role.permissions.map((permission) => ({ roleId: row!.id, permission })))
+        .onConflictDoNothing();
 
-  return adminRole!;
+      roleIds.set(role.name, row!.id);
+    }
+
+    return roleIds;
+  });
+}
+
+/** Gives the default role to every user who has no role, e.g. users created before it existed. */
+async function backfillDefaultRole() {
+  const defaultRole = await db.query.roles.findFirst({ where: eq(roles.isDefault, true) });
+
+  if (!defaultRole) {
+    return;
+  }
+
+  const usersWithoutRole = await db.query.users.findMany({ with: { roles: true } });
+  const values = usersWithoutRole
+    .filter((user) => user.roles.length === 0)
+    .map((user) => ({ userId: user.id, roleId: defaultRole.id }));
+
+  if (values.length > 0) {
+    await db.insert(userRoles).values(values).onConflictDoNothing();
+    console.log(
+      `Assigned the ${defaultRole.name} role to ${values.length} user(s) without a role.`,
+    );
+  }
 }
 
 /**
@@ -45,8 +82,8 @@ async function seedAdminUser(roleId: number) {
 async function main() {
   console.log('Seeding database...');
 
-  const adminRole = await seedAdminRole();
-  await seedAdminUser(adminRole.id);
+  const roleIds = await seedRoles();
+  await seedAdminUser(roleIds.get(ADMIN_ROLE_NAME)!);
 
   // Sample users with fake Clerk IDs: they can't sign in, but they give admin screens data.
   await db
@@ -57,6 +94,8 @@ async function main() {
       { authenticationId: 'seed_user_3', displayName: 'Mary Shelley' },
     ])
     .onConflictDoNothing();
+
+  await backfillDefaultRole();
 }
 
 await main();

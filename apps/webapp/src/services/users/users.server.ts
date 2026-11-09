@@ -15,11 +15,23 @@ async function getUserByIdServer(authenticationId: string) {
   }
 }
 
+/** Creates the local user and gives them the default role, if one is set. */
 async function insertUserServer(user: { authenticationId: string; displayName: string }) {
   try {
-    const insertedUser = await db.insert(schema.users).values(user).returning();
+    return await db.transaction(async (tx) => {
+      const [insertedUser] = await tx.insert(schema.users).values(user).returning();
+      const defaultRole = await tx.query.roles.findFirst({
+        where: orm.eq(schema.roles.isDefault, true),
+      });
 
-    return insertedUser[0];
+      if (insertedUser && defaultRole) {
+        await tx
+          .insert(schema.userRoles)
+          .values({ userId: insertedUser.id, roleId: defaultRole.id });
+      }
+
+      return insertedUser;
+    });
   } catch {
     return null;
   }
