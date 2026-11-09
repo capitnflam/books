@@ -15,6 +15,13 @@
       "when": 1794174028130,
       "tag": "0001_roles_and_feature_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794195439508,
+      "tag": "0002_default_role",
+      "breakpoints": true
     }
   ]
 }

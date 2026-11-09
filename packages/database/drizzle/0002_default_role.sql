@@ -1,0 +1,2 @@
+ALTER TABLE "books"."roles" ADD COLUMN "is_default" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "roles_single_default" ON "books"."roles" USING btree ("is_default") WHERE "books"."roles"."is_default";
