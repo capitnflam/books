@@ -21,7 +21,7 @@ export function mergeFeatureFlags(
   granted: Pick<SelectFeatureFlag, 'id' | 'key' | 'description'>[],
   forEveryone: Pick<SelectFeatureFlag, 'id' | 'key' | 'description'>[],
 ): ProfileFeatureFlag[] {
-  const flags = new Map<number, ProfileFeatureFlag>();
+  const flags = new Map<string, ProfileFeatureFlag>();
 
   for (const { id, key, description } of forEveryone) {
     flags.set(id, { id, key, description, grantedTo: 'everyone' });
