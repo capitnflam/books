@@ -1,5 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
+  "home_page": "Startseite",
   "about_page": "Über uns",
   "example_message": "Willkommen in deiner i18n-App.",
   "language_label": "Sprache",
@@ -51,5 +52,9 @@
   "user_menu_label": "Konto",
   "user_menu_profile": "Profil",
   "user_menu_sign_in": "Anmelden",
-  "user_menu_sign_out": "Abmelden"
+  "user_menu_sign_out": "Abmelden",
+  "home_welcome": "Willkommen, {name}",
+  "home_welcome_guest": "Willkommen im Lesesaal",
+  "home_intro": "Deine Bibliothek, geordnet wie ein Lesesaal.",
+  "home_sign_in_prompt": "Melde dich an, um deinen Katalog zu öffnen."
 }
