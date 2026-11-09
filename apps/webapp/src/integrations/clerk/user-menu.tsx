@@ -18,23 +18,9 @@ import { Link } from '@tanstack/react-router';
 
 import { m } from '#/paraglide/messages';
 import { getLocale, localizeHref, locales, setLocale } from '#/paraglide/runtime';
+import { initialsOf, localeName } from '#/utils/names';
 
 import type { Locale } from '#/paraglide/runtime';
-
-// Each language is named in itself ("Deutsch", "Français"), so it can be found whatever the current locale.
-const localeName = (locale: Locale) => {
-  const name = new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale;
-
-  return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1);
-};
-
-const initialsOf = (name: string) =>
-  name
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toLocaleUpperCase())
-    .join('');
 
 export default function UserMenu() {
   const { isLoaded, isSignedIn, user } = useUser();
