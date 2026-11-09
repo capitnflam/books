@@ -43,5 +43,18 @@
   "sample_form_shelf_hint": "Nicht bearbeitbar: wird von der Bibliothek vergeben.",
   "sample_form_submit": "Datensatz speichern",
   "sample_form_saved": "{title} wurde in den Katalog aufgenommen.",
-  "sample_form_untitled": "Das Buch"
+  "sample_form_untitled": "Das Buch",
+  "nav_label": "Hauptnavigation",
+  "nav_description": "Seiten der Bibliothek und dein Konto.",
+  "nav_toggle": "Navigation ein- oder ausblenden",
+  "nav_group_library": "Bibliothek",
+  "nav_home": "Startseite",
+  "user_menu_label": "Konto",
+  "user_menu_profile": "Profil",
+  "user_menu_sign_in": "Anmelden",
+  "user_menu_sign_out": "Abmelden",
+  "home_welcome": "Willkommen, {name}",
+  "home_welcome_guest": "Willkommen im Lesesaal",
+  "home_intro": "Deine Bibliothek, geordnet wie ein Lesesaal.",
+  "home_sign_in_prompt": "Melde dich an, um deinen Katalog zu öffnen."
 }

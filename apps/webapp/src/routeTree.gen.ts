@@ -9,26 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as MeRouteImport } from './routes/me'
-import { Route as SampleRouteImport } from './routes/sample'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppMeRouteImport } from './routes/_app/me'
+import { Route as AppSampleRouteImport } from './routes/_app/sample'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const MeRoute = MeRouteImport.update({
+const AppMeRoute = AppMeRouteImport.update({
   id: '/me',
   path: '/me',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const SampleRoute = SampleRouteImport.update({
+const AppSampleRoute = AppSampleRouteImport.update({
   id: '/sample',
   path: '/sample',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
@@ -42,65 +47,78 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/me': typeof MeRoute
-  '/sample': typeof SampleRoute
+  '/': typeof AppIndexRoute
+  '/me': typeof AppMeRoute
+  '/sample': typeof AppSampleRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/me': typeof MeRoute
-  '/sample': typeof SampleRoute
+  '/me': typeof AppMeRoute
+  '/sample': typeof AppSampleRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/me': typeof MeRoute
-  '/sample': typeof SampleRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/me': typeof AppMeRoute
+  '/_app/sample': typeof AppSampleRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/me' | '/sample' | '/sign-in/$' | '/sign-up/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/me' | '/sample' | '/sign-in/$' | '/sign-up/$'
-  id: '__root__' | '/' | '/me' | '/sample' | '/sign-in/$' | '/sign-up/$'
+  to: '/me' | '/sample' | '/sign-in/$' | '/sign-up/$' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/me'
+    | '/_app/sample'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  MeRoute: typeof MeRoute
-  SampleRoute: typeof SampleRoute
+  AppRoute: typeof AppRouteWithChildren
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/me': {
-      id: '/me'
+    '/_app/me': {
+      id: '/_app/me'
       path: '/me'
       fullPath: '/me'
-      preLoaderRoute: typeof MeRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppMeRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/sample': {
-      id: '/sample'
+    '/_app/sample': {
+      id: '/_app/sample'
       path: '/sample'
       fullPath: '/sample'
-      preLoaderRoute: typeof SampleRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppSampleRouteImport
+      parentRoute: typeof AppRoute
     }
     '/sign-in/$': {
       id: '/sign-in/$'
@@ -119,10 +137,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppRouteChildren {
+  AppMeRoute: typeof AppMeRoute
+  AppSampleRoute: typeof AppSampleRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppMeRoute: AppMeRoute,
+  AppSampleRoute: AppSampleRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  MeRoute: MeRoute,
-  SampleRoute: SampleRoute,
+  AppRoute: AppRouteWithChildren,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
 }

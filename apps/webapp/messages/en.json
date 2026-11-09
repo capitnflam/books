@@ -43,5 +43,18 @@
   "sample_form_shelf_hint": "Not editable: assigned by the library.",
   "sample_form_submit": "Save the record",
   "sample_form_saved": "{title} has been added to the catalogue.",
-  "sample_form_untitled": "The book"
+  "sample_form_untitled": "The book",
+  "nav_label": "Main navigation",
+  "nav_description": "Pages of the library and your account.",
+  "nav_toggle": "Show or hide the navigation",
+  "nav_group_library": "Library",
+  "nav_home": "Home",
+  "user_menu_label": "Account",
+  "user_menu_profile": "Profile",
+  "user_menu_sign_in": "Sign in",
+  "user_menu_sign_out": "Sign out",
+  "home_welcome": "Welcome, {name}",
+  "home_welcome_guest": "Welcome to the reading room",
+  "home_intro": "Your library, kept in order like a reading room.",
+  "home_sign_in_prompt": "Sign in to open your catalogue."
 }
