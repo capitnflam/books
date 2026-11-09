@@ -29,7 +29,7 @@ import { m } from '#/paraglide/messages';
 import type { IconName } from '@books/ui/components/icon';
 import type { FC, FormEvent, ReactNode } from 'react';
 
-export const Route = createFileRoute('/sample')({
+export const Route = createFileRoute('/_app/sample')({
   component: SamplePage,
   head: () => ({ meta: [{ title: m.sample_page_title() }] }),
 });
@@ -177,7 +177,7 @@ const BookForm: FC = () => {
 function SamplePage() {
   return (
     <TooltipProvider>
-      <main className="container mx-auto flex max-w-4xl flex-col gap-8 px-4 py-16">
+      <div className="container mx-auto flex max-w-4xl flex-col gap-8 px-4 py-16">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-overline text-muted-foreground uppercase">{m.sample_overline()}</p>
@@ -226,7 +226,7 @@ function SamplePage() {
         <Separator />
 
         <BookForm />
-      </main>
+      </div>
     </TooltipProvider>
   );
 }

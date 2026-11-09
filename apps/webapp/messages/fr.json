@@ -1,6 +1,5 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "home_page": "Accueil",
   "about_page": "À propos",
   "example_message": "Bienvenue dans votre application i18n.",
   "language_label": "Langue",
@@ -43,5 +42,14 @@
   "sample_form_shelf_hint": "Non modifiable : attribuée par la bibliothèque.",
   "sample_form_submit": "Enregistrer la notice",
   "sample_form_saved": "{title} a été ajouté au catalogue.",
-  "sample_form_untitled": "Le livre"
+  "sample_form_untitled": "Le livre",
+  "nav_label": "Navigation principale",
+  "nav_description": "Les pages de la bibliothèque et votre compte.",
+  "nav_toggle": "Afficher ou masquer la navigation",
+  "nav_group_library": "Bibliothèque",
+  "nav_home": "Accueil",
+  "user_menu_label": "Compte",
+  "user_menu_profile": "Profil",
+  "user_menu_sign_in": "Se connecter",
+  "user_menu_sign_out": "Se déconnecter"
 }
