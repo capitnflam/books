@@ -14,7 +14,7 @@ erDiagram
   roles ||--o{ user_roles : "role_id (on delete cascade)"
   users |o--o{ user_roles : "granted_by (on delete set null)"
   feature_flags {
-    serial id PK
+    uuid id PK "default gen_random_uuid()"
     text key UK
     text description "nullable"
     boolean enabled_for_all "default false"
@@ -22,11 +22,11 @@ erDiagram
     timestamp updated_at "default now()"
   }
   role_permissions {
-    integer role_id PK,FK
+    uuid role_id PK,FK
     text permission PK
   }
   roles {
-    serial id PK
+    uuid id PK "default gen_random_uuid()"
     text name UK
     text description "nullable"
     boolean is_default "default false"
@@ -34,19 +34,19 @@ erDiagram
     timestamp updated_at "default now()"
   }
   user_feature_flags {
-    integer user_id PK,FK
-    integer feature_flag_id PK,FK
-    integer granted_by FK "nullable"
+    uuid user_id PK,FK
+    uuid feature_flag_id PK,FK
+    uuid granted_by FK "nullable"
     timestamp created_at "default now()"
   }
   user_roles {
-    integer user_id PK,FK
-    integer role_id PK,FK
-    integer granted_by FK "nullable"
+    uuid user_id PK,FK
+    uuid role_id PK,FK
+    uuid granted_by FK "nullable"
     timestamp created_at "default now()"
   }
   users {
-    serial id PK
+    uuid id PK "default gen_random_uuid()"
     text authentication_id UK
     text display_name "nullable"
     timestamp created_at "default now()"

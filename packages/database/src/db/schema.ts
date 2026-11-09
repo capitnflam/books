@@ -1,13 +1,12 @@
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
-  integer,
   pgSchema,
   primaryKey,
-  serial,
   text,
   timestamp,
   uniqueIndex,
+  uuid,
 } from 'drizzle-orm/pg-core';
 
 import type { Permission } from './permissions.ts';
@@ -24,7 +23,7 @@ const timestamps = {
 
 /** Local copy of a Clerk user; `authentication_id` is the Clerk user ID. */
 export const users = booksSchema.table('users', {
-  id: serial().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   authenticationId: text('authentication_id').notNull().unique(),
   displayName: text('display_name'),
   ...timestamps,
@@ -34,7 +33,7 @@ export const users = booksSchema.table('users', {
 export const roles = booksSchema.table(
   'roles',
   {
-    id: serial().primaryKey(),
+    id: uuid().primaryKey().defaultRandom(),
     name: text().notNull().unique(),
     description: text(),
     /** New users get this role when they first sign in. At most one role is the default. */
@@ -51,7 +50,7 @@ export const roles = booksSchema.table(
 export const rolePermissions = booksSchema.table(
   'role_permissions',
   {
-    roleId: integer('role_id')
+    roleId: uuid('role_id')
       .notNull()
       .references(() => roles.id, { onDelete: 'cascade' }),
     permission: text().$type<Permission>().notNull(),
@@ -62,14 +61,14 @@ export const rolePermissions = booksSchema.table(
 export const userRoles = booksSchema.table(
   'user_roles',
   {
-    userId: integer('user_id')
+    userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    roleId: integer('role_id')
+    roleId: uuid('role_id')
       .notNull()
       .references(() => roles.id, { onDelete: 'cascade' }),
     /** The admin who assigned the role; null when seeded or when that user was deleted. */
-    grantedBy: integer('granted_by').references(() => users.id, { onDelete: 'set null' }),
+    grantedBy: uuid('granted_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.roleId] })],
@@ -80,7 +79,7 @@ export const userRoles = booksSchema.table(
  * `user_feature_flags` row grants it to them.
  */
 export const featureFlags = booksSchema.table('feature_flags', {
-  id: serial().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   /** The identifier code checks, e.g. `book-search`. */
   key: text().notNull().unique(),
   description: text(),
@@ -91,14 +90,14 @@ export const featureFlags = booksSchema.table('feature_flags', {
 export const userFeatureFlags = booksSchema.table(
   'user_feature_flags',
   {
-    userId: integer('user_id')
+    userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    featureFlagId: integer('feature_flag_id')
+    featureFlagId: uuid('feature_flag_id')
       .notNull()
       .references(() => featureFlags.id, { onDelete: 'cascade' }),
     /** The admin who granted the flag; null when seeded or when that user was deleted. */
-    grantedBy: integer('granted_by').references(() => users.id, { onDelete: 'set null' }),
+    grantedBy: uuid('granted_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.featureFlagId] })],
