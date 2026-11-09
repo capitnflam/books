@@ -79,7 +79,7 @@ Env files are gitignored; never commit secrets or real values.
 
 - `apps/webapp/.env.local`: copy `apps/webapp/.env.example` and fill in `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` and `DATABASE_URL` (validated in `apps/webapp/src/config/env.ts`).
 - `packages/database/.env.local` (or `.env`): `DATABASE_URL`, a PostgreSQL connection string. `drizzle.config.ts` loads it for the `drizzle-kit` commands.
-- `db:seed` and `db:reset` run through `tsx` and do not load env files: export `DATABASE_URL` in the shell before running them.
+- `db:seed` and `db:reset` load the same files through Node's `--env-file-if-exists` (`.env.local` overrides `.env`; variables exported in the shell override both).
 
 ### Database
 

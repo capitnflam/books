@@ -54,6 +54,7 @@
       "persistent": true
     },
     "db:seed": {
+      "env": ["ADMIN_AUTHENTICATION_ID"],
       "cache": false,
       "persistent": true
     },
