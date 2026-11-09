@@ -38,6 +38,9 @@
       "cache": false,
       "persistent": true
     },
+    "db:erd": {
+      "cache": false
+    },
     "db:migrate": {
       "cache": false,
       "persistent": true

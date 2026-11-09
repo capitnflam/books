@@ -12,6 +12,7 @@
     "build": "vite build",
     "clean:dist": "rimraf dist",
     "db:check": "drizzle-kit check",
+    "db:erd": "tsx ./src/scripts/erd.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:pull": "drizzle-kit pull",
@@ -21,6 +22,7 @@
     "db:studio": "drizzle-kit studio",
     "dev": "vite build --watch",
     "start": "vite build",
+    "test": "vitest run",
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
@@ -36,6 +38,7 @@
     "@types/pg": "8.23.1",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
-    "vite": "8.3.5"
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   }
 }
