@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@books/ui/compone
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 
 import AppSidebar from '#/components/AppSidebar';
+import ThemeMenu from '#/components/ThemeMenu';
 import { m } from '#/paraglide/messages';
 import { getSidebarOpenFn } from '#/services/preferences/preferences.functions';
 
@@ -22,6 +23,9 @@ function AppLayout() {
       <SidebarInset>
         <header className="border-border bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger label={m.nav_toggle()} />
+          <div className="ml-auto">
+            <ThemeMenu />
+          </div>
         </header>
         <Outlet />
       </SidebarInset>

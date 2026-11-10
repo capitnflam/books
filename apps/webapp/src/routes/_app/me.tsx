@@ -16,6 +16,7 @@ import { useClerk, useUser } from '@clerk/tanstack-react-start';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { themeOptions, useTheme } from '#/components/ThemeProvider';
 import { m } from '#/paraglide/messages';
 import { getLocale, localizeHref, locales, setLocale } from '#/paraglide/runtime';
 import { checkIsAuthenticatedFn } from '#/services/authentication/authentication.functions';
@@ -174,6 +175,7 @@ function ProfilePage() {
   const { profile } = Route.useLoaderData();
   const { user: clerkUser } = useUser();
   const { openUserProfile, signOut } = useClerk();
+  const { theme, setTheme } = useTheme();
 
   // beforeLoad has already sent anyone signed out to the sign-in page.
   if (!profile) {
@@ -245,6 +247,27 @@ function ProfilePage() {
                 >
                   {isCurrent && <Icon icon="check" aria-hidden data-icon="inline-start" />}
                   {localeName(locale)}
+                </Button>
+              );
+            })}
+          </div>
+        </Field>
+        <Field aria-labelledby="profile-theme">
+          <FieldTitle id="profile-theme">{m.theme_label()}</FieldTitle>
+          <div className="flex flex-wrap gap-2">
+            {themeOptions.map(({ value, icon, label }) => {
+              const isCurrent = value === theme;
+
+              return (
+                <Button
+                  key={value}
+                  variant="outline"
+                  aria-pressed={isCurrent}
+                  className="aria-pressed:border-primary aria-pressed:bg-accent"
+                  onClick={() => setTheme(value)}
+                >
+                  <Icon icon={isCurrent ? 'check' : icon} aria-hidden data-icon="inline-start" />
+                  {label()}
                 </Button>
               );
             })}
