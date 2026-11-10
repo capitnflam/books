@@ -8,6 +8,7 @@
   "theme_light": "Clair",
   "theme_dark": "Sombre",
   "theme_system": "Comme l’appareil",
+  "theme_menu_label": "Apparence : {theme}",
   "current_locale": "Langue actuelle : {locale}",
   "learn_router": "Découvrir Paraglide JS",
   "sample_page_title": "Exemple de composants",

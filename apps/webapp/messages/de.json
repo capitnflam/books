@@ -8,6 +8,7 @@
   "theme_light": "Hell",
   "theme_dark": "Dunkel",
   "theme_system": "Wie das Gerät",
+  "theme_menu_label": "Darstellung: {theme}",
   "current_locale": "Aktuelle Sprache: {locale}",
   "learn_router": "Paraglide JS lernen",
   "sample_page_title": "Komponentenbeispiel",
