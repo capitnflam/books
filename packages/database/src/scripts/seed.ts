@@ -44,9 +44,9 @@ async function backfillDefaultRole() {
     return;
   }
 
-  const usersWithoutRole = await db.query.users.findMany({ with: { roles: true } });
+  const usersWithoutRole = await db.query.users.findMany({ with: { role: true } });
   const values = usersWithoutRole
-    .filter((user) => user.roles.length === 0)
+    .filter((user) => !user.role)
     .map((user) => ({ userId: user.id, roleId: defaultRole.id }));
 
   if (values.length > 0) {
@@ -75,7 +75,11 @@ async function seedAdminUser(roleId: string) {
     .onConflictDoUpdate({ target: users.authenticationId, set: { authenticationId } })
     .returning();
 
-  await db.insert(userRoles).values({ userId: adminUser!.id, roleId }).onConflictDoNothing();
+  // A user has one role: admin replaces whichever they had.
+  await db
+    .insert(userRoles)
+    .values({ userId: adminUser!.id, roleId })
+    .onConflictDoUpdate({ target: userRoles.userId, set: { roleId, grantedBy: null } });
   console.log(`Assigned the ${ADMIN_ROLE_NAME} role to ${authenticationId}.`);
 }
 

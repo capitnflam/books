@@ -29,7 +29,7 @@ export const users = booksSchema.table('users', {
   ...timestamps,
 });
 
-/** A named bundle of permissions, assigned to users through `user_roles`. */
+/** A named bundle of permissions, assigned to users through `user_roles` (one role per user). */
 export const roles = booksSchema.table(
   'roles',
   {
@@ -58,21 +58,23 @@ export const rolePermissions = booksSchema.table(
   (table) => [primaryKey({ columns: [table.roleId, table.permission] })],
 );
 
-export const userRoles = booksSchema.table(
-  'user_roles',
-  {
-    userId: uuid('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    roleId: uuid('role_id')
-      .notNull()
-      .references(() => roles.id, { onDelete: 'cascade' }),
-    /** The admin who assigned the role; null when seeded or when that user was deleted. */
-    grantedBy: uuid('granted_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.userId, table.roleId] })],
-);
+/**
+ * The role of each user: exactly one, so their permissions never overlap. A user gets the
+ * default role at first sign-in, and can then only be switched to another role.
+ */
+export const userRoles = booksSchema.table('user_roles', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  // A role someone holds can't be deleted: move its users to another role first.
+  roleId: uuid('role_id')
+    .notNull()
+    .references(() => roles.id, { onDelete: 'restrict' }),
+  /** The admin who assigned the role; null when seeded or when that user was deleted. */
+  grantedBy: uuid('granted_by').references(() => users.id, { onDelete: 'set null' }),
+  /** When the user got this role. */
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 /**
  * A not-yet-released feature. A user has it when `enabled_for_all` is set or a
@@ -103,8 +105,12 @@ export const userFeatureFlags = booksSchema.table(
   (table) => [primaryKey({ columns: [table.userId, table.featureFlagId] })],
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
-  roles: many(userRoles, { relationName: 'userRoles' }),
+export const usersRelations = relations(users, ({ one, many }) => ({
+  role: one(userRoles, {
+    fields: [users.id],
+    references: [userRoles.userId],
+    relationName: 'userRoles',
+  }),
   featureFlags: many(userFeatureFlags, { relationName: 'userFeatureFlags' }),
 }));
 

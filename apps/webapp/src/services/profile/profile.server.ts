@@ -8,8 +8,8 @@ import { sortPermissions } from './permissions';
 import { mergeFeatureFlags } from './profile';
 
 /**
- * Everything the profile page shows from the database: the reader, their roles with
- * their permissions, and the feature flags open to them. Null when nobody is signed in.
+ * Everything the profile page shows from the database: the reader, their role with its
+ * permissions, and the feature flags open to them. Null when nobody is signed in.
  */
 export async function getProfileServer() {
   const user = await getAuthenticatedUserServer();
@@ -22,12 +22,11 @@ export async function getProfileServer() {
 
   // The Clerk account is fetched here too, so the email and picture are in the server render
   // instead of appearing once Clerk loads in the browser.
-  const [account, userRoles, grantedFlags, flagsForAll] = await Promise.all([
+  const [account, userRole, grantedFlags, flagsForAll] = await Promise.all([
     clerk.users.getUser(user.authenticationId),
-    db.query.userRoles.findMany({
+    db.query.userRoles.findFirst({
       where: orm.eq(schema.userRoles.userId, user.id),
       with: { role: { with: { permissions: true } } },
-      orderBy: orm.asc(schema.userRoles.createdAt),
     }),
     db.query.userFeatureFlags.findMany({
       where: orm.eq(schema.userFeatureFlags.userId, user.id),
@@ -45,13 +44,13 @@ export async function getProfileServer() {
       email: account.primaryEmailAddress?.emailAddress ?? '',
       imageUrl: account.imageUrl,
     },
-    roles: userRoles.map(({ role, createdAt }) => ({
-      id: role.id,
-      name: role.name,
-      description: role.description,
-      permissions: sortPermissions(role.permissions.map(({ permission }) => permission)),
-      grantedAt: createdAt,
-    })),
+    role: userRole && {
+      id: userRole.role.id,
+      name: userRole.role.name,
+      description: userRole.role.description,
+      permissions: sortPermissions(userRole.role.permissions.map(({ permission }) => permission)),
+      grantedAt: userRole.createdAt,
+    },
     featureFlags: mergeFeatureFlags(
       grantedFlags.map(({ featureFlag }) => featureFlag),
       flagsForAll,

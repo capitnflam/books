@@ -149,7 +149,7 @@ function ProfilePage() {
     return null;
   }
 
-  const { user, account, roles, featureFlags } = profile;
+  const { user, account, role, featureFlags } = profile;
   // Clerk's values once it has loaded, so a new picture shows without a reload; the server's before.
   const email = clerkUser?.primaryEmailAddress?.emailAddress ?? account.email;
   const fullName = clerkUser?.fullName ?? account.fullName;
@@ -171,17 +171,13 @@ function ProfilePage() {
             {email && <>{email} · </>}
             {m.profile_reader_since({ date: formatDate(user.createdAt) })}
           </p>
-          {roles.length > 0 && (
-            <ul aria-label={m.profile_roles_heading()} className="mt-1 flex flex-wrap gap-2">
-              {roles.map((role) => (
-                <li
-                  key={role.id}
-                  className="bg-accent text-accent-foreground rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase"
-                >
-                  {role.name}
-                </li>
-              ))}
-            </ul>
+          {role && (
+            <p className="mt-1 flex">
+              <span className="sr-only">{m.profile_role_label()} </span>
+              <span className="bg-accent text-accent-foreground inline-block rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase">
+                {role.name}
+              </span>
+            </p>
           )}
         </div>
         <Button variant="outline" size="sm" onClick={() => openUserProfile()}>
@@ -243,44 +239,37 @@ function ProfilePage() {
       </PageSection>
 
       <PageSection
-        id="profile-roles"
-        title={m.profile_roles_heading()}
-        description={m.profile_roles_description()}
+        id="profile-role"
+        title={m.role_heading()}
+        description={m.profile_role_description()}
       >
-        {roles.length === 0 ? (
-          <p className="text-muted-foreground text-base/6">{m.profile_roles_empty()}</p>
-        ) : (
-          <ul className="flex flex-col gap-4">
-            {roles.map((role) => (
-              <li
-                key={role.id}
-                className="bg-card shadow-page border-border flex flex-col gap-3 rounded-md border px-5 py-4"
+        {role ? (
+          <div className="bg-card shadow-page border-border flex flex-col gap-3 rounded-md border px-5 py-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="first-letter:uppercase">{role.name}</h3>
+              <p className="text-muted-foreground text-sm">
+                {m.profile_role_granted_on({ date: formatDate(role.grantedAt) })}
+              </p>
+            </div>
+            {role.description && (
+              <p className="text-muted-foreground text-base/6">{role.description}</p>
+            )}
+            {role.permissions.length > 0 && (
+              <ul
+                aria-label={m.profile_role_permissions({ role: role.name })}
+                className="grid gap-x-6 gap-y-2 text-base/6 sm:grid-cols-2"
               >
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="first-letter:uppercase">{role.name}</h3>
-                  <p className="text-muted-foreground text-sm">
-                    {m.profile_role_granted_on({ date: formatDate(role.grantedAt) })}
-                  </p>
-                </div>
-                {role.description && (
-                  <p className="text-muted-foreground text-base/6">{role.description}</p>
-                )}
-                {role.permissions.length > 0 && (
-                  <ul
-                    aria-label={m.profile_role_permissions({ role: role.name })}
-                    className="grid gap-x-6 gap-y-2 text-base/6 sm:grid-cols-2"
-                  >
-                    {role.permissions.map((permission) => (
-                      <li key={permission} className="flex items-center gap-2">
-                        <Icon icon="check" aria-hidden className="text-forest size-4.5 shrink-0" />
-                        {permissionLabel(permission)}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
+                {role.permissions.map((permission) => (
+                  <li key={permission} className="flex items-center gap-2">
+                    <Icon icon="check" aria-hidden className="text-forest size-4.5 shrink-0" />
+                    {permissionLabel(permission)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-base/6">{m.profile_role_empty()}</p>
         )}
       </PageSection>
 
