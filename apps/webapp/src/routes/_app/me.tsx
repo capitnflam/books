@@ -16,16 +16,18 @@ import { useClerk, useUser } from '@clerk/tanstack-react-start';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import PageSection from '#/components/PageSection';
 import { themeOptions, useTheme } from '#/components/ThemeProvider';
 import { m } from '#/paraglide/messages';
 import { getLocale, localizeHref, locales, setLocale } from '#/paraglide/runtime';
 import { checkIsAuthenticatedFn } from '#/services/authentication/authentication.functions';
 import { DISPLAY_NAME_MAX_LENGTH, displayNameSchema } from '#/services/profile/profile';
 import { getProfileFn, updateDisplayNameFn } from '#/services/profile/profile.functions';
+import { formatDate } from '#/utils/dates';
 import { initialsOf, localeName } from '#/utils/names';
+import { permissionLabel } from '#/utils/permission-labels';
 
-import type { Permission } from '@books/database';
-import type { FC, FormEvent, ReactNode } from 'react';
+import type { FC, FormEvent } from 'react';
 
 export const Route = createFileRoute('/_app/me')({
   beforeLoad: async ({ location }) => {
@@ -37,41 +39,6 @@ export const Route = createFileRoute('/_app/me')({
   head: () => ({ meta: [{ title: m.profile_title() }] }),
   component: ProfilePage,
 });
-
-// A Record over Permission, so adding a permission fails the type check until it has a label.
-const permissionLabels: Record<Permission, () => string> = {
-  'collection:manage': m.permission_collection_manage,
-  'catalog:manage': m.permission_catalog_manage,
-  'users:read': m.permission_users_read,
-  'users:manage': m.permission_users_manage,
-  'roles:manage': m.permission_roles_manage,
-  'user-roles:manage': m.permission_user_roles_manage,
-  'feature-flags:manage': m.permission_feature_flags_manage,
-};
-
-// Rows may still hold a permission removed from the code: show its identifier rather than fail.
-const permissionLabel = (permission: string) =>
-  Object.hasOwn(permissionLabels, permission)
-    ? permissionLabels[permission as Permission]()
-    : permission;
-
-const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat(getLocale(), { dateStyle: 'long' }).format(date);
-
-type SectionProps = { id: string; title: string; description?: string; children: ReactNode };
-
-/** A read-only section, titled like a form legend: heading-3 over a rule. */
-const Section: FC<SectionProps> = ({ id, title, description, children }) => (
-  <section aria-labelledby={id} className="flex flex-col gap-4">
-    <div className="flex flex-col gap-2.5">
-      <h2 id={id} className="text-heading-3 border-rule border-b pb-1.5">
-        {title}
-      </h2>
-      {description && <p className="text-muted-foreground text-base/6">{description}</p>}
-    </div>
-    {children}
-  </section>
-);
 
 type DisplayNameFormProps = { displayName: string; email: string };
 
@@ -225,7 +192,7 @@ function ProfilePage() {
 
       <DisplayNameForm displayName={user.displayName ?? fullName ?? ''} email={email} />
 
-      <Section
+      <PageSection
         id="profile-reading-room"
         title={m.profile_reading_room_heading()}
         description={m.profile_reading_room_description()}
@@ -273,9 +240,9 @@ function ProfilePage() {
             })}
           </div>
         </Field>
-      </Section>
+      </PageSection>
 
-      <Section
+      <PageSection
         id="profile-roles"
         title={m.profile_roles_heading()}
         description={m.profile_roles_description()}
@@ -315,9 +282,9 @@ function ProfilePage() {
             ))}
           </ul>
         )}
-      </Section>
+      </PageSection>
 
-      <Section
+      <PageSection
         id="profile-early-access"
         title={m.profile_early_access_heading()}
         description={m.profile_early_access_description()}
@@ -351,9 +318,9 @@ function ProfilePage() {
             ))}
           </ul>
         )}
-      </Section>
+      </PageSection>
 
-      <Section
+      <PageSection
         id="profile-security"
         title={m.profile_security_heading()}
         description={m.profile_security_description()}
@@ -371,7 +338,7 @@ function ProfilePage() {
             {m.user_menu_sign_out()}
           </Button>
         </div>
-      </Section>
+      </PageSection>
     </div>
   );
 }
