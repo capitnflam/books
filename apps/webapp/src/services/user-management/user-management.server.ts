@@ -33,6 +33,39 @@ async function findUserServer(userId: string) {
 const isNotFound = (error: unknown) =>
   typeof error === 'object' && error !== null && 'status' in error && error.status === 404;
 
+/**
+ * The Clerk accounts of up to one page of users, by Clerk user ID: emails and pictures live
+ * in Clerk. `loaded` is false when Clerk could not be reached, so the users show without them.
+ */
+export async function loadAccountsServer(authenticationIds: string[]) {
+  const accounts = new Map<string, { email: string; imageUrl: string; banned: boolean }>();
+
+  if (authenticationIds.length === 0) {
+    return { loaded: true, accounts };
+  }
+
+  try {
+    const { data } = await getClerk().users.getUserList({
+      userId: authenticationIds,
+      limit: authenticationIds.length,
+    });
+
+    for (const account of data) {
+      accounts.set(account.id, {
+        email: account.primaryEmailAddress?.emailAddress ?? '',
+        imageUrl: account.imageUrl,
+        banned: account.banned,
+      });
+    }
+
+    return { loaded: true, accounts };
+  } catch (error) {
+    console.error('Could not load the Clerk accounts of a user list', error);
+
+    return { loaded: false, accounts };
+  }
+}
+
 /** One page of users, sorted by name, with their roles and their Clerk account. */
 export async function listUsersServer({ q, page = 1 }: UserListSearch) {
   await requirePermissionServer('users:read');
@@ -53,30 +86,9 @@ export async function listUsersServer({ q, page = 1 }: UserListSearch) {
     db.select({ total: orm.count() }).from(schema.users).where(where),
   ]);
 
-  // Emails and pictures live in Clerk. If it cannot be reached, list the users without them.
-  const accounts = new Map<string, { email: string; imageUrl: string; banned: boolean }>();
-  let accountsLoaded = users.length === 0;
-
-  if (users.length > 0) {
-    try {
-      const { data } = await getClerk().users.getUserList({
-        userId: users.map(({ authenticationId }) => authenticationId),
-        limit: users.length,
-      });
-
-      for (const account of data) {
-        accounts.set(account.id, {
-          email: account.primaryEmailAddress?.emailAddress ?? '',
-          imageUrl: account.imageUrl,
-          banned: account.banned,
-        });
-      }
-
-      accountsLoaded = true;
-    } catch (error) {
-      console.error('Could not load the Clerk accounts of the user list', error);
-    }
-  }
+  const { loaded, accounts } = await loadAccountsServer(
+    users.map(({ authenticationId }) => authenticationId),
+  );
 
   return {
     total: counted?.total ?? 0,
@@ -88,7 +100,7 @@ export async function listUsersServer({ q, page = 1 }: UserListSearch) {
         displayName: user.displayName,
         email: account?.email ?? '',
         imageUrl: account?.imageUrl ?? '',
-        status: accountStatus(accountsLoaded, account),
+        status: accountStatus(loaded, account),
         createdAt: user.createdAt,
         role: user.role ? { id: user.role.role.id, name: user.role.role.name } : null,
       };

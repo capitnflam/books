@@ -4,7 +4,7 @@ import { displayNameSchema, mergeFeatureFlags } from './profile';
 
 const search = {
   id: '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e01',
-  key: 'book-search',
+  key: 'BOOK_SEARCH',
   description: 'Search the catalogue.',
 };
 const covers = { id: '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e02', key: 'covers', description: null };

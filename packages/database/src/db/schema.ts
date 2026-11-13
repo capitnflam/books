@@ -82,7 +82,7 @@ export const userRoles = booksSchema.table('user_roles', {
  */
 export const featureFlags = booksSchema.table('feature_flags', {
   id: uuid().primaryKey().defaultRandom(),
-  /** The identifier code checks, e.g. `book-search`. */
+  /** The identifier code checks, e.g. `BOOK_SEARCH`. */
   key: text().notNull().unique(),
   description: text(),
   enabledForAll: boolean('enabled_for_all').default(false).notNull(),
