@@ -76,16 +76,12 @@ export const userRoles = booksSchema.table('user_roles', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-/**
- * A not-yet-released feature. A user has it when `enabled_for_all` is set or a
- * `user_feature_flags` row grants it to them.
- */
+/** A not-yet-released feature. A user has it when a `user_feature_flags` row grants it to them. */
 export const featureFlags = booksSchema.table('feature_flags', {
   id: uuid().primaryKey().defaultRandom(),
   /** The identifier code checks, e.g. `BOOK_SEARCH`. */
   key: text().notNull().unique(),
   description: text(),
-  enabledForAll: boolean('enabled_for_all').default(false).notNull(),
   ...timestamps,
 });
 

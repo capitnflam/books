@@ -294,15 +294,6 @@ function ProfilePage() {
                     <span className="text-muted-foreground text-sm">{flag.key}</span>
                   )}
                 </div>
-                {flag.grantedTo === 'user' ? (
-                  <span className="bg-secondary text-foreground rounded-sm px-2 py-0.5 text-sm font-medium">
-                    {m.profile_flag_granted_to_you()}
-                  </span>
-                ) : (
-                  <span className="border-border text-foreground rounded-sm border px-2 py-0.5 text-sm font-medium">
-                    {m.profile_flag_everyone()}
-                  </span>
-                )}
               </li>
             ))}
           </ul>

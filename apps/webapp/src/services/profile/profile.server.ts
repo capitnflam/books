@@ -5,11 +5,10 @@ import { getServerEnv } from '#/config/env';
 import { getAuthenticatedUserServer } from '#/services/users/users.server';
 
 import { sortPermissions } from './permissions';
-import { mergeFeatureFlags } from './profile';
 
 /**
  * Everything the profile page shows from the database: the reader, their role with its
- * permissions, and the feature flags open to them. Null when nobody is signed in.
+ * permissions, and the feature flags granted to them. Null when nobody is signed in.
  */
 export async function getProfileServer() {
   const user = await getAuthenticatedUserServer();
@@ -22,7 +21,7 @@ export async function getProfileServer() {
 
   // The Clerk account is fetched here too, so the email and picture are in the server render
   // instead of appearing once Clerk loads in the browser.
-  const [account, userRole, grantedFlags, flagsForAll] = await Promise.all([
+  const [account, userRole, grantedFlags] = await Promise.all([
     clerk.users.getUser(user.authenticationId),
     db.query.userRoles.findFirst({
       where: orm.eq(schema.userRoles.userId, user.id),
@@ -31,9 +30,6 @@ export async function getProfileServer() {
     db.query.userFeatureFlags.findMany({
       where: orm.eq(schema.userFeatureFlags.userId, user.id),
       with: { featureFlag: true },
-    }),
-    db.query.featureFlags.findMany({
-      where: orm.eq(schema.featureFlags.enabledForAll, true),
     }),
   ]);
 
@@ -51,10 +47,9 @@ export async function getProfileServer() {
       permissions: sortPermissions(userRole.role.permissions.map(({ permission }) => permission)),
       grantedAt: userRole.createdAt,
     },
-    featureFlags: mergeFeatureFlags(
-      grantedFlags.map(({ featureFlag }) => featureFlag),
-      flagsForAll,
-    ),
+    featureFlags: grantedFlags
+      .map(({ featureFlag: { id, key, description } }) => ({ id, key, description }))
+      .toSorted((a, b) => a.key.localeCompare(b.key)),
   };
 }
 
