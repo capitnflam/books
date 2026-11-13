@@ -11,10 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppForbiddenRouteImport } from './routes/_app/forbidden'
 import { Route as AppMeRouteImport } from './routes/_app/me'
 import { Route as AppSampleRouteImport } from './routes/_app/sample'
+import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
+import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -23,6 +27,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppForbiddenRoute = AppForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMeRoute = AppMeRouteImport.update({
@@ -35,6 +44,11 @@ const AppSampleRoute = AppSampleRouteImport.update({
   path: '/sample',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
   path: '/sign-in/$',
@@ -45,43 +59,85 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppUsersRoute,
+} as any)
+const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => AppUsersRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
   '/sample': typeof AppSampleRoute
+  '/users': typeof AppUsersRouteWithChildren
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/users/$userId': typeof AppUsersUserIdRoute
+  '/users/': typeof AppUsersIndexRoute
 }
 export interface FileRoutesByTo {
+  '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
   '/sample': typeof AppSampleRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
+  '/users/$userId': typeof AppUsersUserIdRoute
+  '/users': typeof AppUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/forbidden': typeof AppForbiddenRoute
   '/_app/me': typeof AppMeRoute
   '/_app/sample': typeof AppSampleRoute
+  '/_app/users': typeof AppUsersRouteWithChildren
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/users/$userId': typeof AppUsersUserIdRoute
+  '/_app/users/': typeof AppUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/me' | '/sample' | '/sign-in/$' | '/sign-up/$'
+  fullPaths:
+    | '/'
+    | '/forbidden'
+    | '/me'
+    | '/sample'
+    | '/users'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/users/$userId'
+    | '/users/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/me' | '/sample' | '/sign-in/$' | '/sign-up/$' | '/'
+  to:
+    | '/forbidden'
+    | '/me'
+    | '/sample'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/'
+    | '/users/$userId'
+    | '/users'
   id:
     | '__root__'
     | '/_app'
+    | '/_app/forbidden'
     | '/_app/me'
     | '/_app/sample'
+    | '/_app/users'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
+    | '/_app/users/$userId'
+    | '/_app/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +162,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/forbidden': {
+      id: '/_app/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof AppForbiddenRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/me': {
       id: '/_app/me'
       path: '/me'
@@ -118,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/sample'
       fullPath: '/sample'
       preLoaderRoute: typeof AppSampleRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
       parentRoute: typeof AppRoute
     }
     '/sign-in/$': {
@@ -134,18 +204,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/users/': {
+      id: '/_app/users/'
+      path: '/'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AppUsersIndexRouteImport
+      parentRoute: typeof AppUsersRoute
+    }
+    '/_app/users/$userId': {
+      id: '/_app/users/$userId'
+      path: '/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof AppUsersUserIdRouteImport
+      parentRoute: typeof AppUsersRoute
+    }
   }
 }
 
+interface AppUsersRouteChildren {
+  AppUsersUserIdRoute: typeof AppUsersUserIdRoute
+  AppUsersIndexRoute: typeof AppUsersIndexRoute
+}
+
+const AppUsersRouteChildren: AppUsersRouteChildren = {
+  AppUsersUserIdRoute: AppUsersUserIdRoute,
+  AppUsersIndexRoute: AppUsersIndexRoute,
+}
+
+const AppUsersRouteWithChildren = AppUsersRoute._addFileChildren(
+  AppUsersRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppForbiddenRoute: typeof AppForbiddenRoute
   AppMeRoute: typeof AppMeRoute
   AppSampleRoute: typeof AppSampleRoute
+  AppUsersRoute: typeof AppUsersRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppForbiddenRoute: AppForbiddenRoute,
   AppMeRoute: AppMeRoute,
   AppSampleRoute: AppSampleRoute,
+  AppUsersRoute: AppUsersRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
 }
 

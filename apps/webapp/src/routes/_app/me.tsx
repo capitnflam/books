@@ -16,16 +16,18 @@ import { useClerk, useUser } from '@clerk/tanstack-react-start';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import PageSection from '#/components/PageSection';
 import { themeOptions, useTheme } from '#/components/ThemeProvider';
 import { m } from '#/paraglide/messages';
 import { getLocale, localizeHref, locales, setLocale } from '#/paraglide/runtime';
 import { checkIsAuthenticatedFn } from '#/services/authentication/authentication.functions';
 import { DISPLAY_NAME_MAX_LENGTH, displayNameSchema } from '#/services/profile/profile';
 import { getProfileFn, updateDisplayNameFn } from '#/services/profile/profile.functions';
+import { formatDate } from '#/utils/dates';
 import { initialsOf, localeName } from '#/utils/names';
+import { permissionLabel } from '#/utils/permission-labels';
 
-import type { Permission } from '@books/database';
-import type { FC, FormEvent, ReactNode } from 'react';
+import type { FC, FormEvent } from 'react';
 
 export const Route = createFileRoute('/_app/me')({
   beforeLoad: async ({ location }) => {
@@ -37,41 +39,6 @@ export const Route = createFileRoute('/_app/me')({
   head: () => ({ meta: [{ title: m.profile_title() }] }),
   component: ProfilePage,
 });
-
-// A Record over Permission, so adding a permission fails the type check until it has a label.
-const permissionLabels: Record<Permission, () => string> = {
-  'collection:manage': m.permission_collection_manage,
-  'catalog:manage': m.permission_catalog_manage,
-  'users:read': m.permission_users_read,
-  'users:manage': m.permission_users_manage,
-  'roles:manage': m.permission_roles_manage,
-  'user-roles:manage': m.permission_user_roles_manage,
-  'feature-flags:manage': m.permission_feature_flags_manage,
-};
-
-// Rows may still hold a permission removed from the code: show its identifier rather than fail.
-const permissionLabel = (permission: string) =>
-  Object.hasOwn(permissionLabels, permission)
-    ? permissionLabels[permission as Permission]()
-    : permission;
-
-const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat(getLocale(), { dateStyle: 'long' }).format(date);
-
-type SectionProps = { id: string; title: string; description?: string; children: ReactNode };
-
-/** A read-only section, titled like a form legend: heading-3 over a rule. */
-const Section: FC<SectionProps> = ({ id, title, description, children }) => (
-  <section aria-labelledby={id} className="flex flex-col gap-4">
-    <div className="flex flex-col gap-2.5">
-      <h2 id={id} className="text-heading-3 border-rule border-b pb-1.5">
-        {title}
-      </h2>
-      {description && <p className="text-muted-foreground text-base/6">{description}</p>}
-    </div>
-    {children}
-  </section>
-);
 
 type DisplayNameFormProps = { displayName: string; email: string };
 
@@ -182,7 +149,7 @@ function ProfilePage() {
     return null;
   }
 
-  const { user, account, roles, featureFlags } = profile;
+  const { user, account, role, featureFlags } = profile;
   // Clerk's values once it has loaded, so a new picture shows without a reload; the server's before.
   const email = clerkUser?.primaryEmailAddress?.emailAddress ?? account.email;
   const fullName = clerkUser?.fullName ?? account.fullName;
@@ -204,17 +171,13 @@ function ProfilePage() {
             {email && <>{email} · </>}
             {m.profile_reader_since({ date: formatDate(user.createdAt) })}
           </p>
-          {roles.length > 0 && (
-            <ul aria-label={m.profile_roles_heading()} className="mt-1 flex flex-wrap gap-2">
-              {roles.map((role) => (
-                <li
-                  key={role.id}
-                  className="bg-accent text-accent-foreground rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase"
-                >
-                  {role.name}
-                </li>
-              ))}
-            </ul>
+          {role && (
+            <p className="mt-1 flex">
+              <span className="sr-only">{m.profile_role_label()} </span>
+              <span className="bg-accent text-accent-foreground inline-block rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase">
+                {role.name}
+              </span>
+            </p>
           )}
         </div>
         <Button variant="outline" size="sm" onClick={() => openUserProfile()}>
@@ -225,7 +188,7 @@ function ProfilePage() {
 
       <DisplayNameForm displayName={user.displayName ?? fullName ?? ''} email={email} />
 
-      <Section
+      <PageSection
         id="profile-reading-room"
         title={m.profile_reading_room_heading()}
         description={m.profile_reading_room_description()}
@@ -273,51 +236,44 @@ function ProfilePage() {
             })}
           </div>
         </Field>
-      </Section>
+      </PageSection>
 
-      <Section
-        id="profile-roles"
-        title={m.profile_roles_heading()}
-        description={m.profile_roles_description()}
+      <PageSection
+        id="profile-role"
+        title={m.role_heading()}
+        description={m.profile_role_description()}
       >
-        {roles.length === 0 ? (
-          <p className="text-muted-foreground text-base/6">{m.profile_roles_empty()}</p>
-        ) : (
-          <ul className="flex flex-col gap-4">
-            {roles.map((role) => (
-              <li
-                key={role.id}
-                className="bg-card shadow-page border-border flex flex-col gap-3 rounded-md border px-5 py-4"
+        {role ? (
+          <div className="bg-card shadow-page border-border flex flex-col gap-3 rounded-md border px-5 py-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="first-letter:uppercase">{role.name}</h3>
+              <p className="text-muted-foreground text-sm">
+                {m.profile_role_granted_on({ date: formatDate(role.grantedAt) })}
+              </p>
+            </div>
+            {role.description && (
+              <p className="text-muted-foreground text-base/6">{role.description}</p>
+            )}
+            {role.permissions.length > 0 && (
+              <ul
+                aria-label={m.profile_role_permissions({ role: role.name })}
+                className="grid gap-x-6 gap-y-2 text-base/6 sm:grid-cols-2"
               >
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="first-letter:uppercase">{role.name}</h3>
-                  <p className="text-muted-foreground text-sm">
-                    {m.profile_role_granted_on({ date: formatDate(role.grantedAt) })}
-                  </p>
-                </div>
-                {role.description && (
-                  <p className="text-muted-foreground text-base/6">{role.description}</p>
-                )}
-                {role.permissions.length > 0 && (
-                  <ul
-                    aria-label={m.profile_role_permissions({ role: role.name })}
-                    className="grid gap-x-6 gap-y-2 text-base/6 sm:grid-cols-2"
-                  >
-                    {role.permissions.map((permission) => (
-                      <li key={permission} className="flex items-center gap-2">
-                        <Icon icon="check" aria-hidden className="text-forest size-4.5 shrink-0" />
-                        {permissionLabel(permission)}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
+                {role.permissions.map((permission) => (
+                  <li key={permission} className="flex items-center gap-2">
+                    <Icon icon="check" aria-hidden className="text-forest size-4.5 shrink-0" />
+                    {permissionLabel(permission)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-base/6">{m.profile_role_empty()}</p>
         )}
-      </Section>
+      </PageSection>
 
-      <Section
+      <PageSection
         id="profile-early-access"
         title={m.profile_early_access_heading()}
         description={m.profile_early_access_description()}
@@ -351,9 +307,9 @@ function ProfilePage() {
             ))}
           </ul>
         )}
-      </Section>
+      </PageSection>
 
-      <Section
+      <PageSection
         id="profile-security"
         title={m.profile_security_heading()}
         description={m.profile_security_description()}
@@ -371,7 +327,7 @@ function ProfilePage() {
             {m.user_menu_sign_out()}
           </Button>
         </div>
-      </Section>
+      </PageSection>
     </div>
   );
 }
