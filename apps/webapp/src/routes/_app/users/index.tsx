@@ -1,24 +1,37 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@books/ui/components/avatar';
 import { Button } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
 import { Label } from '@books/ui/components/label';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 
-import Pagination from '#/components/Pagination';
+import UserCell from '#/components/UserCell';
+import { VirtualTable } from '#/components/VirtualTable';
 import { m } from '#/paraglide/messages';
-import { pageCount, parseUserListSearch } from '#/services/user-management/user-management';
+import { nextPage, parseUserListSearch } from '#/services/user-management/user-management';
 import { listUsersFn } from '#/services/user-management/user-management.functions';
 import { formatDate } from '#/utils/dates';
-import { initialsOf } from '#/utils/names';
 
+import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { IconName } from '@books/ui/components/icon';
-import type { FC, FormEvent } from 'react';
+import type { FormEvent } from 'react';
+
+/** The user list, loaded a page at a time as it scrolls. */
+const usersQuery = (q: string | undefined) =>
+  infiniteQueryOptions({
+    queryKey: ['users', { q }],
+    queryFn: ({ pageParam }) => listUsersFn({ data: { q, page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: (last, pages) => nextPage(pages.length, last.total),
+  });
 
 export const Route = createFileRoute('/_app/users/')({
   validateSearch: parseUserListSearch,
   loaderDeps: ({ search }) => search,
-  loader: async ({ deps }) => listUsersFn({ data: deps }),
+  // The first page renders on the server; the rest load in the browser as the list scrolls.
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureInfiniteQueryData(usersQuery(deps.q));
+  },
   head: () => ({ meta: [{ title: m.users_title() }] }),
   component: UsersPage,
 });
@@ -32,61 +45,48 @@ const statusDisplay: Record<ListedUser['status'], { icon: IconName; label: () =>
   unknown: { icon: 'help-circle', label: m.users_status_unknown },
 };
 
-const UserRow: FC<{ user: ListedUser }> = ({ user }) => {
-  const name = user.displayName || user.email || m.users_unnamed();
-
-  return (
-    <tr className="border-border border-b">
-      <td className="py-3 pr-4">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={user.imageUrl || undefined} alt="" />
-            <AvatarFallback>{initialsOf(name)}</AvatarFallback>
-          </Avatar>
-          <div className="flex min-w-0 flex-col">
-            <Link
-              to="/users/$userId"
-              params={{ userId: user.id }}
-              className="text-link focus-visible:ring-ring focus-visible:ring-offset-background truncate rounded-sm font-semibold underline-offset-3 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
-            >
-              {name}
-            </Link>
-            {user.email && user.email !== name && (
-              <span className="text-muted-foreground truncate text-sm">{user.email}</span>
-            )}
-          </div>
-        </div>
-      </td>
-      <td className="py-3 pr-4">
-        {user.role ? (
-          <span className="bg-accent text-accent-foreground inline-block rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase">
-            {user.role.name}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">{m.users_no_role()}</span>
-        )}
-      </td>
-      <td className="py-3 pr-4">
-        <span
-          className="data-[status=active]:text-forest data-[status=blocked]:text-destructive text-muted-foreground flex items-center gap-1.5 text-sm font-medium"
-          data-status={user.status}
-        >
-          <Icon icon={statusDisplay[user.status].icon} aria-hidden className="size-4 shrink-0" />
-          {statusDisplay[user.status].label()}
+const columns: VirtualTableColumn<ListedUser>[] = [
+  { id: 'user', header: m.users_column_user, cell: (user) => <UserCell user={user} /> },
+  {
+    id: 'role',
+    header: m.users_column_role,
+    cell: (user) =>
+      user.role ? (
+        <span className="bg-accent text-accent-foreground inline-block rounded-sm px-2 py-0.5 text-sm font-medium first-letter:uppercase">
+          {user.role.name}
         </span>
-      </td>
-      <td className="text-muted-foreground py-3 text-sm whitespace-nowrap">
-        {formatDate(user.createdAt)}
-      </td>
-    </tr>
-  );
-};
+      ) : (
+        <span className="text-muted-foreground">{m.users_no_role()}</span>
+      ),
+  },
+  {
+    id: 'status',
+    header: m.users_column_status,
+    cell: (user) => (
+      <span
+        className="data-[status=active]:text-forest data-[status=blocked]:text-destructive text-muted-foreground flex items-center gap-1.5 text-sm font-medium"
+        data-status={user.status}
+      >
+        <Icon icon={statusDisplay[user.status].icon} aria-hidden className="size-4 shrink-0" />
+        {statusDisplay[user.status].label()}
+      </span>
+    ),
+  },
+  {
+    id: 'joined',
+    header: m.users_column_joined,
+    cell: (user) => formatDate(user.createdAt),
+    className: 'text-muted-foreground text-sm whitespace-nowrap',
+  },
+];
 
 function UsersPage() {
-  const { users, total } = Route.useLoaderData();
-  const { q, page = 1 } = Route.useSearch();
+  const { q } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const pages = pageCount(total);
+  const { data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
+    useInfiniteQuery(usersQuery(q));
+  const users = data?.pages.flatMap((page) => page.users) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -131,39 +131,17 @@ function UsersPage() {
             {q ? m.users_empty_search({ query: q }) : m.users_empty()}
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-xl text-left text-base/6">
-              <thead className="border-rule border-b">
-                <tr>
-                  <th scope="col" className="text-muted-foreground py-2 pr-4 text-sm font-semibold">
-                    {m.users_column_user()}
-                  </th>
-                  <th scope="col" className="text-muted-foreground py-2 pr-4 text-sm font-semibold">
-                    {m.users_column_role()}
-                  </th>
-                  <th scope="col" className="text-muted-foreground py-2 pr-4 text-sm font-semibold">
-                    {m.users_column_status()}
-                  </th>
-                  <th scope="col" className="text-muted-foreground py-2 text-sm font-semibold">
-                    {m.users_column_joined()}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <UserRow key={user.id} user={user} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <VirtualTable
+            label={m.users_title()}
+            rows={users}
+            total={total}
+            columns={columns}
+            hasMore={hasNextPage}
+            loadingMore={isFetchingNextPage}
+            loadFailed={isFetchNextPageError}
+            loadMore={() => void fetchNextPage()}
+          />
         )}
-
-        <Pagination
-          label={m.users_pagination()}
-          page={page}
-          pages={pages}
-          linkTo={(target) => ({ to: '/users', search: { q, page: target } })}
-        />
       </section>
     </div>
   );

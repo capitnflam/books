@@ -4,26 +4,21 @@ import {
   USERS_PAGE_SIZE,
   accountStatus,
   escapeLike,
-  pageCount,
+  nextPage,
   parseUserListSearch,
   userListSearchSchema,
   userRoleSchema,
 } from './user-management';
 
 describe('parseUserListSearch', () => {
-  it('keeps a trimmed query and a page after the first', () => {
-    expect(parseUserListSearch({ q: '  Ada ', page: 3 })).toEqual({ q: 'Ada', page: 3 });
+  it('keeps a trimmed query', () => {
+    expect(parseUserListSearch({ q: '  Ada ' })).toEqual({ q: 'Ada' });
   });
 
-  it('leaves out the defaults, so plain links need no search', () => {
-    expect(parseUserListSearch({})).toEqual({ q: undefined, page: undefined });
-    expect(parseUserListSearch({ q: '   ', page: 1 })).toEqual({ q: undefined, page: undefined });
-  });
-
-  it('drops malformed values instead of failing', () => {
-    expect(parseUserListSearch({ q: 42, page: 'two' })).toEqual({ q: undefined, page: undefined });
-    expect(parseUserListSearch({ page: 2.5 })).toEqual({ q: undefined, page: undefined });
-    expect(parseUserListSearch({ page: -4 })).toEqual({ q: undefined, page: undefined });
+  it('leaves out an empty or malformed query, so plain links need no search', () => {
+    expect(parseUserListSearch({})).toEqual({ q: undefined });
+    expect(parseUserListSearch({ q: '   ' })).toEqual({ q: undefined });
+    expect(parseUserListSearch({ q: 42 })).toEqual({ q: undefined });
   });
 
   it('shortens a very long query to one the server accepts', () => {
@@ -64,10 +59,11 @@ describe('accountStatus', () => {
   });
 });
 
-describe('pageCount', () => {
-  it('counts full and partial pages, with at least one', () => {
-    expect(pageCount(0)).toBe(1);
-    expect(pageCount(USERS_PAGE_SIZE)).toBe(1);
-    expect(pageCount(USERS_PAGE_SIZE + 1)).toBe(2);
+describe('nextPage', () => {
+  it('asks for the next page until every user is loaded', () => {
+    expect(nextPage(1, USERS_PAGE_SIZE + 1)).toBe(2);
+    expect(nextPage(1, USERS_PAGE_SIZE)).toBeUndefined();
+    expect(nextPage(1, 0)).toBeUndefined();
+    expect(nextPage(2, 3 * USERS_PAGE_SIZE)).toBe(3);
   });
 });

@@ -1,12 +1,17 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import type { QueryKey } from '@tanstack/react-query';
+
 /**
- * Runs a change on the server, then reloads the page's data. Tracks whether a change is
- * running, so the buttons wait for it, and whether the last one failed.
+ * Runs a change on the server, then reloads the page's data, and the queries under
+ * `queryKey` when given. Tracks whether a change is running, so the buttons wait for it,
+ * and whether the last one failed.
  */
-export function useServerAction() {
+export function useServerAction(queryKey?: QueryKey) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -16,7 +21,10 @@ export function useServerAction() {
 
     try {
       await action();
-      await router.invalidate();
+      await Promise.all([
+        router.invalidate(),
+        queryKey && queryClient.invalidateQueries({ queryKey }),
+      ]);
 
       return true;
     } catch {

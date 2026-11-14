@@ -4,8 +4,6 @@ import { requirePermissionServer } from '#/services/access/access.server';
 import { USERS_PAGE_SIZE, escapeLike } from '#/services/user-management/user-management';
 import { loadAccountsServer } from '#/services/user-management/user-management.server';
 
-import type { FlagDetailsSearch } from './feature-flags';
-
 /** Every flag, sorted by key, with how many users it is granted to. */
 export async function listFeatureFlagsServer() {
   await requirePermissionServer('feature-flags:manage');
@@ -53,39 +51,25 @@ async function withAccountsServer<T extends { authenticationId: string }>(users:
   }));
 }
 
-/**
- * Everything the flag page shows: the flag, one page of the users who have it (latest grants
- * first), and one page of the users it can still be granted to, found by name. Null when
- * the flag does not exist.
- */
-export async function getFeatureFlagDetailsServer({
-  flagId,
-  page = 1,
-  find,
-  findPage = 1,
-}: FlagDetailsSearch & { flagId: string }) {
+/** The flag the flag page shows; null when it does not exist. */
+export async function getFeatureFlagServer(flagId: string) {
   await requirePermissionServer('feature-flags:manage');
 
   const flag = await db.query.featureFlags.findFirst({
     where: orm.eq(schema.featureFlags.id, flagId),
   });
 
-  if (!flag) {
-    return null;
-  }
+  return flag
+    ? { id: flag.id, key: flag.key, description: flag.description, createdAt: flag.createdAt }
+    : null;
+}
+
+/** One page of the users who have a flag, latest grants first, and how many have it. */
+export async function listFlagHoldersServer({ flagId, page }: { flagId: string; page: number }) {
+  await requirePermissionServer('feature-flags:manage');
 
   const granted = orm.eq(schema.userFeatureFlags.featureFlagId, flagId);
-  const candidates = orm.and(
-    orm.notExists(
-      db
-        .select({ userId: schema.userFeatureFlags.userId })
-        .from(schema.userFeatureFlags)
-        .where(orm.and(granted, orm.eq(schema.userFeatureFlags.userId, schema.users.id))),
-    ),
-    find ? orm.ilike(schema.users.displayName, `%${escapeLike(find)}%`) : undefined,
-  );
-
-  const [grants, [holderCount], candidateUsers, [candidateCount]] = await Promise.all([
+  const [grants, [counted]] = await Promise.all([
     db.query.userFeatureFlags.findMany({
       where: granted,
       with: { user: true, grantedByUser: true },
@@ -97,6 +81,53 @@ export async function getFeatureFlagDetailsServer({
       offset: (page - 1) * USERS_PAGE_SIZE,
     }),
     db.select({ total: orm.count() }).from(schema.userFeatureFlags).where(granted),
+  ]);
+
+  return {
+    total: counted?.total ?? 0,
+    users: await withAccountsServer(
+      grants.map(({ user, createdAt, grantedByUser }) => ({
+        id: user.id,
+        authenticationId: user.authenticationId,
+        displayName: user.displayName,
+        grantedAt: createdAt,
+        grantedBy: grantedByUser?.displayName ?? null,
+      })),
+    ),
+  };
+}
+
+/**
+ * One page of the users a flag can still be granted to, found by name and sorted by it, and
+ * how many there are.
+ */
+export async function listFlagCandidatesServer({
+  flagId,
+  q,
+  page,
+}: {
+  flagId: string;
+  q?: string;
+  page: number;
+}) {
+  await requirePermissionServer('feature-flags:manage');
+
+  const candidates = orm.and(
+    orm.notExists(
+      db
+        .select({ userId: schema.userFeatureFlags.userId })
+        .from(schema.userFeatureFlags)
+        .where(
+          orm.and(
+            orm.eq(schema.userFeatureFlags.featureFlagId, flagId),
+            orm.eq(schema.userFeatureFlags.userId, schema.users.id),
+          ),
+        ),
+    ),
+    q ? orm.ilike(schema.users.displayName, `%${escapeLike(q)}%`) : undefined,
+  );
+
+  const [users, [counted]] = await Promise.all([
     // A plain select, not db.query: the relational API aliases the table, which the
     // `not exists` subquery's reference to `books.users.id` would no longer match.
     db
@@ -112,33 +143,11 @@ export async function getFeatureFlagDetailsServer({
         orm.asc(schema.users.createdAt),
       )
       .limit(USERS_PAGE_SIZE)
-      .offset((findPage - 1) * USERS_PAGE_SIZE),
+      .offset((page - 1) * USERS_PAGE_SIZE),
     db.select({ total: orm.count() }).from(schema.users).where(candidates),
   ]);
 
-  const [holders, others] = await Promise.all([
-    withAccountsServer(
-      grants.map(({ user, createdAt, grantedByUser }) => ({
-        id: user.id,
-        authenticationId: user.authenticationId,
-        displayName: user.displayName,
-        grantedAt: createdAt,
-        grantedBy: grantedByUser?.displayName ?? null,
-      })),
-    ),
-    withAccountsServer(candidateUsers),
-  ]);
-
-  return {
-    flag: {
-      id: flag.id,
-      key: flag.key,
-      description: flag.description,
-      createdAt: flag.createdAt,
-    },
-    holders: { total: holderCount?.total ?? 0, users: holders },
-    candidates: { total: candidateCount?.total ?? 0, users: others },
-  };
+  return { total: counted?.total ?? 0, users: await withAccountsServer(users) };
 }
 
 /** Changes a flag's description. */

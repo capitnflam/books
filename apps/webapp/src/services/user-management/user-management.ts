@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 import { displayNameSchema } from '#/services/profile/profile';
 
-/** Users shown on one page of the list. */
+/** Users loaded at a time as a list scrolls. */
 export const USERS_PAGE_SIZE = 25;
 
 const SEARCH_MAX_LENGTH = 100;
 
-/** The user list's search: a name to look for and a page, both optional. */
+/** One page of the user list: a name to look for (optional) and the page, from 1. */
 export const userListSearchSchema = z.object({
   q: z.string().trim().min(1).max(SEARCH_MAX_LENGTH).optional(),
   page: z.number().int().min(1).optional(),
@@ -16,17 +16,13 @@ export const userListSearchSchema = z.object({
 export type UserListSearch = z.infer<typeof userListSearchSchema>;
 
 /**
- * Reads the user list's search params from the URL. A malformed value is dropped rather
- * than failing the page, and defaults are left out so plain links to `/users` need none.
+ * Reads the user list's search param from the URL. A malformed value is dropped rather than
+ * failing the page, and an empty one is left out so plain links to `/users` need none.
  */
-export function parseUserListSearch(search: Record<string, unknown>): UserListSearch {
+export function parseUserListSearch(search: Record<string, unknown>): { q?: string } {
   const q = typeof search.q === 'string' ? search.q.trim().slice(0, SEARCH_MAX_LENGTH) : '';
-  const { page } = search;
 
-  return {
-    q: q || undefined,
-    page: typeof page === 'number' && Number.isInteger(page) && page > 1 ? page : undefined,
-  };
+  return { q: q || undefined };
 }
 
 export const userIdSchema = z.object({ userId: z.uuid() });
@@ -60,5 +56,6 @@ export const accountStatus = (
   return account.banned ? 'blocked' : 'active';
 };
 
-/** How many pages `total` users fill; at least one, so an empty list still has a page. */
-export const pageCount = (total: number) => Math.max(1, Math.ceil(total / USERS_PAGE_SIZE));
+/** The page to load after `loadedPages` pages of a `total`-user list, or none when all are in. */
+export const nextPage = (loadedPages: number, total: number) =>
+  loadedPages * USERS_PAGE_SIZE < total ? loadedPages + 1 : undefined;
