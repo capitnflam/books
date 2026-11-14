@@ -43,7 +43,15 @@ const navGroups: NavGroup[] = [
   },
   {
     label: m.nav_group_admin,
-    items: [{ to: '/users', icon: 'users', label: m.users_title, permission: 'users:read' }],
+    items: [
+      { to: '/users', icon: 'users', label: m.users_title, permission: 'users:read' },
+      {
+        to: '/feature-flags',
+        icon: 'flag',
+        label: m.flags_title,
+        permission: 'feature-flags:manage',
+      },
+    ],
   },
 ];
 

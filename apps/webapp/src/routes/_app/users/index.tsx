@@ -5,6 +5,7 @@ import { Input } from '@books/ui/components/input';
 import { Label } from '@books/ui/components/label';
 import { Link, createFileRoute } from '@tanstack/react-router';
 
+import Pagination from '#/components/Pagination';
 import { m } from '#/paraglide/messages';
 import { pageCount, parseUserListSearch } from '#/services/user-management/user-management';
 import { listUsersFn } from '#/services/user-management/user-management.functions';
@@ -157,48 +158,12 @@ function UsersPage() {
           </div>
         )}
 
-        {pages > 1 && (
-          <nav
-            aria-label={m.users_pagination()}
-            className="flex flex-wrap items-center justify-between gap-4"
-          >
-            <p className="text-muted-foreground text-sm">{m.users_page_of({ page, pages })}</p>
-            <div className="flex gap-2">
-              {page > 1 ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  nativeButton={false}
-                  render={<Link to="/users" search={{ q, page: page - 1 }} />}
-                >
-                  <Icon icon="chevron-left" aria-hidden data-icon="inline-start" />
-                  {m.users_previous_page()}
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" disabled>
-                  <Icon icon="chevron-left" aria-hidden data-icon="inline-start" />
-                  {m.users_previous_page()}
-                </Button>
-              )}
-              {page < pages ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  nativeButton={false}
-                  render={<Link to="/users" search={{ q, page: page + 1 }} />}
-                >
-                  {m.users_next_page()}
-                  <Icon icon="chevron-right" aria-hidden data-icon="inline-end" />
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" disabled>
-                  {m.users_next_page()}
-                  <Icon icon="chevron-right" aria-hidden data-icon="inline-end" />
-                </Button>
-              )}
-            </div>
-          </nav>
-        )}
+        <Pagination
+          label={m.users_pagination()}
+          page={page}
+          pages={pages}
+          linkTo={(target) => ({ to: '/users', search: { q, page: target } })}
+        />
       </section>
     </div>
   );

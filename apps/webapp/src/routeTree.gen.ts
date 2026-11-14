@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppFeatureFlagsRouteImport } from './routes/_app/feature-flags'
 import { Route as AppForbiddenRouteImport } from './routes/_app/forbidden'
 import { Route as AppMeRouteImport } from './routes/_app/me'
 import { Route as AppSampleRouteImport } from './routes/_app/sample'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as AppFeatureFlagsIndexRouteImport } from './routes/_app/feature-flags/index'
+import { Route as AppFeatureFlagsFlagIdRouteImport } from './routes/_app/feature-flags/$flagId'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 
@@ -27,6 +30,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeatureFlagsRoute = AppFeatureFlagsRouteImport.update({
+  id: '/feature-flags',
+  path: '/feature-flags',
   getParentRoute: () => AppRoute,
 } as any)
 const AppForbiddenRoute = AppForbiddenRouteImport.update({
@@ -59,6 +67,16 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppFeatureFlagsIndexRoute = AppFeatureFlagsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppFeatureFlagsRoute,
+} as any)
+const AppFeatureFlagsFlagIdRoute = AppFeatureFlagsFlagIdRouteImport.update({
+  id: '/$flagId',
+  path: '/$flagId',
+  getParentRoute: () => AppFeatureFlagsRoute,
+} as any)
 const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -72,13 +90,16 @@ const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
   '/sample': typeof AppSampleRoute
   '/users': typeof AppUsersRouteWithChildren
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
+  '/feature-flags/': typeof AppFeatureFlagsIndexRoute
   '/users/': typeof AppUsersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -88,12 +109,15 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
+  '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
+  '/feature-flags': typeof AppFeatureFlagsIndexRoute
   '/users': typeof AppUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/_app/forbidden': typeof AppForbiddenRoute
   '/_app/me': typeof AppMeRoute
   '/_app/sample': typeof AppSampleRoute
@@ -101,20 +125,25 @@ export interface FileRoutesById {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
+  '/_app/feature-flags/': typeof AppFeatureFlagsIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/feature-flags'
     | '/forbidden'
     | '/me'
     | '/sample'
     | '/users'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/feature-flags/$flagId'
     | '/users/$userId'
+    | '/feature-flags/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -124,11 +153,14 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/'
+    | '/feature-flags/$flagId'
     | '/users/$userId'
+    | '/feature-flags'
     | '/users'
   id:
     | '__root__'
     | '/_app'
+    | '/_app/feature-flags'
     | '/_app/forbidden'
     | '/_app/me'
     | '/_app/sample'
@@ -136,7 +168,9 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
+    | '/_app/feature-flags/$flagId'
     | '/_app/users/$userId'
+    | '/_app/feature-flags/'
     | '/_app/users/'
   fileRoutesById: FileRoutesById
 }
@@ -160,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/feature-flags': {
+      id: '/_app/feature-flags'
+      path: '/feature-flags'
+      fullPath: '/feature-flags'
+      preLoaderRoute: typeof AppFeatureFlagsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/forbidden': {
@@ -204,6 +245,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/feature-flags/': {
+      id: '/_app/feature-flags/'
+      path: '/'
+      fullPath: '/feature-flags/'
+      preLoaderRoute: typeof AppFeatureFlagsIndexRouteImport
+      parentRoute: typeof AppFeatureFlagsRoute
+    }
+    '/_app/feature-flags/$flagId': {
+      id: '/_app/feature-flags/$flagId'
+      path: '/$flagId'
+      fullPath: '/feature-flags/$flagId'
+      preLoaderRoute: typeof AppFeatureFlagsFlagIdRouteImport
+      parentRoute: typeof AppFeatureFlagsRoute
+    }
     '/_app/users/': {
       id: '/_app/users/'
       path: '/'
@@ -221,6 +276,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppFeatureFlagsRouteChildren {
+  AppFeatureFlagsFlagIdRoute: typeof AppFeatureFlagsFlagIdRoute
+  AppFeatureFlagsIndexRoute: typeof AppFeatureFlagsIndexRoute
+}
+
+const AppFeatureFlagsRouteChildren: AppFeatureFlagsRouteChildren = {
+  AppFeatureFlagsFlagIdRoute: AppFeatureFlagsFlagIdRoute,
+  AppFeatureFlagsIndexRoute: AppFeatureFlagsIndexRoute,
+}
+
+const AppFeatureFlagsRouteWithChildren = AppFeatureFlagsRoute._addFileChildren(
+  AppFeatureFlagsRouteChildren,
+)
+
 interface AppUsersRouteChildren {
   AppUsersUserIdRoute: typeof AppUsersUserIdRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
@@ -236,6 +305,7 @@ const AppUsersRouteWithChildren = AppUsersRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppFeatureFlagsRoute: typeof AppFeatureFlagsRouteWithChildren
   AppForbiddenRoute: typeof AppForbiddenRoute
   AppMeRoute: typeof AppMeRoute
   AppSampleRoute: typeof AppSampleRoute
@@ -244,6 +314,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFeatureFlagsRoute: AppFeatureFlagsRouteWithChildren,
   AppForbiddenRoute: AppForbiddenRoute,
   AppMeRoute: AppMeRoute,
   AppSampleRoute: AppSampleRoute,

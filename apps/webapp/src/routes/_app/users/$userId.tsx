@@ -14,7 +14,9 @@ import { Input } from '@books/ui/components/input';
 import { Link, createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
+import { useServerAction } from '#/hooks/use-server-action';
 import { m } from '#/paraglide/messages';
 import { DISPLAY_NAME_MAX_LENGTH, displayNameSchema } from '#/services/profile/profile';
 import { userIdSchema } from '#/services/user-management/user-management';
@@ -29,7 +31,7 @@ import { formatDate } from '#/utils/dates';
 import { initialsOf } from '#/utils/names';
 import { permissionLabel } from '#/utils/permission-labels';
 
-import type { FC, FormEvent, ReactNode } from 'react';
+import type { FC, FormEvent } from 'react';
 
 export const Route = createFileRoute('/_app/users/$userId')({
   loader: async ({ params }) => {
@@ -56,43 +58,6 @@ type UserDetails = NonNullable<Awaited<ReturnType<typeof getUserDetailsFn>>>;
 function nameOf({ user, account }: UserDetails) {
   return user.displayName || account?.fullName || account?.email || m.users_unnamed();
 }
-
-/**
- * Runs a change on the server, then reloads the page's data. Tracks whether a change is
- * running, so the buttons wait for it, and whether the last one failed.
- */
-function useServerAction() {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  const run = async (action: () => Promise<unknown>) => {
-    setPending(true);
-    setFailed(false);
-
-    try {
-      await action();
-      await router.invalidate();
-
-      return true;
-    } catch {
-      setFailed(true);
-
-      return false;
-    } finally {
-      setPending(false);
-    }
-  };
-
-  return { pending, failed, run };
-}
-
-const ErrorMessage: FC<{ children: ReactNode }> = ({ children }) => (
-  <p role="alert" className="text-destructive flex items-center gap-2 text-base/6">
-    <Icon icon="alert-circle" aria-hidden className="size-5 shrink-0" />
-    {children}
-  </p>
-);
 
 const BackLink: FC = () => (
   <Link

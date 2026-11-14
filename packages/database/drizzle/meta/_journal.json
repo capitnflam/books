@@ -43,6 +43,13 @@
       "when": 1794526786257,
       "tag": "0005_user_role_required",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794600641768,
+      "tag": "0006_drop_feature_flag_enabled_for_all",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,6 @@ erDiagram
     uuid id PK "default gen_random_uuid()"
     text key UK
     text description "nullable"
-    boolean enabled_for_all "default false"
     timestamp created_at "default now()"
     timestamp updated_at "default now()"
   }

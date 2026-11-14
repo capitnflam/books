@@ -1,0 +1,1 @@
+ALTER TABLE "books"."feature_flags" DROP COLUMN "enabled_for_all";
