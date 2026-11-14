@@ -2,7 +2,8 @@ import { createServerFn } from '@tanstack/react-start';
 
 import {
   createFeatureFlagSchema,
-  flagDetailsSearchSchema,
+  flagCandidatesSchema,
+  flagHoldersSchema,
   flagIdSchema,
   flagUsersSchema,
   updateFeatureFlagSchema,
@@ -10,9 +11,11 @@ import {
 import {
   createFeatureFlagServer,
   deleteFeatureFlagServer,
-  getFeatureFlagDetailsServer,
+  getFeatureFlagServer,
   grantFeatureFlagServer,
   listFeatureFlagsServer,
+  listFlagCandidatesServer,
+  listFlagHoldersServer,
   revokeFeatureFlagServer,
   updateFeatureFlagServer,
 } from './feature-flags.server';
@@ -23,9 +26,17 @@ export const listFeatureFlagsFn = createServerFn({ method: 'GET' }).handler(asyn
   listFeatureFlagsServer(),
 );
 
-export const getFeatureFlagDetailsFn = createServerFn({ method: 'GET' })
-  .validator(flagDetailsSearchSchema.extend(flagIdSchema.shape))
-  .handler(async ({ data }) => getFeatureFlagDetailsServer(data));
+export const getFeatureFlagFn = createServerFn({ method: 'GET' })
+  .validator(flagIdSchema)
+  .handler(async ({ data }) => getFeatureFlagServer(data.flagId));
+
+export const listFlagHoldersFn = createServerFn({ method: 'GET' })
+  .validator(flagHoldersSchema)
+  .handler(async ({ data }) => listFlagHoldersServer(data));
+
+export const listFlagCandidatesFn = createServerFn({ method: 'GET' })
+  .validator(flagCandidatesSchema)
+  .handler(async ({ data }) => listFlagCandidatesServer(data));
 
 export const createFeatureFlagFn = createServerFn({ method: 'POST' })
   .validator(createFeatureFlagSchema)

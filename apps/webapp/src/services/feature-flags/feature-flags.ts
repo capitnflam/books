@@ -5,7 +5,7 @@ import { parseUserListSearch } from '#/services/user-management/user-management'
 export const FLAG_KEY_MAX_LENGTH = 64;
 export const FLAG_DESCRIPTION_MAX_LENGTH = 500;
 
-/** Users granted or revoked in one go: a page of the list, and then some. */
+/** Users granted or revoked in one call; a bigger selection goes in several. */
 const BULK_MAX_USERS = 100;
 
 /** Uppercase words joined by underscores, like `BOOK_SEARCH`: what code checks. */
@@ -54,24 +54,32 @@ export const flagUsersSchema = z.object({
   userIds: z.array(z.uuid()).min(1).max(BULK_MAX_USERS),
 });
 
-/**
- * The flag page's two lists: who has the flag (`page`), and the users it can be granted to,
- * found by name (`find`, `findPage`).
- */
-export const flagDetailsSearchSchema = z.object({
-  page: z.number().int().min(1).optional(),
-  find: z.string().trim().min(1).max(100).optional(),
-  findPage: z.number().int().min(1).optional(),
+const pageSchema = z.number().int().min(1);
+
+/** One page of the users who have a flag, latest grants first. */
+export const flagHoldersSchema = z.object({ flagId: z.uuid(), page: pageSchema });
+
+/** One page of the users a flag can still be granted to, found by name. */
+export const flagCandidatesSchema = z.object({
+  flagId: z.uuid(),
+  q: z.string().trim().min(1).max(100).optional(),
+  page: pageSchema,
 });
 
-export type FlagDetailsSearch = z.infer<typeof flagDetailsSearchSchema>;
+/** Reads the flag page's search param from the URL: the name to find users by. */
+export function parseFlagDetailsSearch(search: Record<string, unknown>): { find?: string } {
+  return { find: parseUserListSearch({ q: search.find }).q };
+}
 
-/** Reads the flag page's search params from the URL, dropping malformed values. */
-export function parseFlagDetailsSearch(search: Record<string, unknown>): FlagDetailsSearch {
-  const holders = parseUserListSearch({ page: search.page });
-  const candidates = parseUserListSearch({ q: search.find, page: search.findPage });
+/** `ids` in batches the bulk server functions accept. */
+export function inBulkBatches(ids: readonly string[]): string[][] {
+  const batches: string[][] = [];
 
-  return { page: holders.page, find: candidates.q, findPage: candidates.page };
+  for (let start = 0; start < ids.length; start += BULK_MAX_USERS) {
+    batches.push(ids.slice(start, start + BULK_MAX_USERS));
+  }
+
+  return batches;
 }
 
 /**

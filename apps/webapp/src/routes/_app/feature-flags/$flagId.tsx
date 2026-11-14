@@ -1,62 +1,128 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@books/ui/components/avatar';
 import { Button } from '@books/ui/components/button';
-import { Checkbox } from '@books/ui/components/checkbox';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
 import { Label } from '@books/ui/components/label';
+import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
-import Pagination from '#/components/Pagination';
+import UserCell from '#/components/UserCell';
+import { VirtualTable } from '#/components/VirtualTable';
 import { useServerAction } from '#/hooks/use-server-action';
 import { m } from '#/paraglide/messages';
 import {
   FLAG_DESCRIPTION_MAX_LENGTH,
   flagIdSchema,
+  inBulkBatches,
   parseFlagDetailsSearch,
-  selectionState,
 } from '#/services/feature-flags/feature-flags';
 import {
   deleteFeatureFlagFn,
-  getFeatureFlagDetailsFn,
+  getFeatureFlagFn,
   grantFeatureFlagFn,
+  listFlagCandidatesFn,
+  listFlagHoldersFn,
   revokeFeatureFlagFn,
   updateFeatureFlagFn,
 } from '#/services/feature-flags/feature-flags.functions';
-import { pageCount } from '#/services/user-management/user-management';
+import { nextPage } from '#/services/user-management/user-management';
 import { formatDate } from '#/utils/dates';
-import { initialsOf } from '#/utils/names';
 
-import type { FC, FormEvent, ReactNode } from 'react';
+import type { VirtualTableColumn } from '#/components/VirtualTable';
+import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
+import type { FC, FormEvent } from 'react';
+
+/** Every query of a flag's lists, refreshed together after a grant or a take-back. */
+const flagListsKey = (flagId: string) => ['feature-flag-users', flagId] as const;
+
+/** The users who have the flag, loaded a page at a time as the list scrolls. */
+const holdersQuery = (flagId: string) =>
+  infiniteQueryOptions({
+    queryKey: [...flagListsKey(flagId), 'holders'],
+    queryFn: ({ pageParam }) => listFlagHoldersFn({ data: { flagId, page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: (last, pages) => nextPage(pages.length, last.total),
+  });
+
+/** The users the flag can be granted to, found by name, loaded as the list scrolls. */
+const candidatesQuery = (flagId: string, q: string | undefined) =>
+  infiniteQueryOptions({
+    queryKey: [...flagListsKey(flagId), 'candidates', { q }],
+    queryFn: ({ pageParam }) => listFlagCandidatesFn({ data: { flagId, q, page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: (last, pages) => nextPage(pages.length, last.total),
+  });
 
 export const Route = createFileRoute('/_app/feature-flags/$flagId')({
   validateSearch: parseFlagDetailsSearch,
   loaderDeps: ({ search }) => search,
-  loader: async ({ params, deps }) => {
+  loader: async ({ context, params, deps }) => {
     // Not a flag id at all: no such flag, rather than a validation error.
-    const details = flagIdSchema.safeParse(params).success
-      ? await getFeatureFlagDetailsFn({ data: { flagId: params.flagId, ...deps } })
+    const flag = flagIdSchema.safeParse(params).success
+      ? await getFeatureFlagFn({ data: { flagId: params.flagId } })
       : null;
 
-    if (!details) {
+    if (!flag) {
       throw notFound();
     }
 
-    return details;
+    // The first page of each list renders on the server; the rest load as they scroll.
+    await Promise.all([
+      context.queryClient.ensureInfiniteQueryData(holdersQuery(flag.id)),
+      context.queryClient.ensureInfiniteQueryData(candidatesQuery(flag.id, deps.find)),
+    ]);
+
+    return flag;
   },
-  head: ({ loaderData }) => ({ meta: [{ title: loaderData?.flag.key ?? m.flags_title() }] }),
+  head: ({ loaderData }) => ({ meta: [{ title: loaderData?.key ?? m.flags_title() }] }),
   notFoundComponent: FlagNotFound,
   component: FlagPage,
 });
 
-type FlagDetails = NonNullable<Awaited<ReturnType<typeof getFeatureFlagDetailsFn>>>;
+type Flag = NonNullable<Awaited<ReturnType<typeof getFeatureFlagFn>>>;
 
-type ListedUser = { id: string; displayName: string | null; email: string; imageUrl: string };
+type Holder = Awaited<ReturnType<typeof listFlagHoldersFn>>['users'][number];
 
-const nameOf = (user: ListedUser) => user.displayName || user.email || m.users_unnamed();
+type Candidate = Awaited<ReturnType<typeof listFlagCandidatesFn>>['users'][number];
+
+const nameOf = (user: Candidate | undefined) =>
+  user?.displayName || user?.email || m.users_unnamed();
+
+const holderColumns: VirtualTableColumn<Holder>[] = [
+  { id: 'user', header: m.users_column_user, cell: (user) => <UserCell user={user} /> },
+  {
+    id: 'granted',
+    header: m.flag_column_granted,
+    cell: (user) =>
+      user.grantedBy
+        ? m.flag_granted_by({ date: formatDate(user.grantedAt), name: user.grantedBy })
+        : formatDate(user.grantedAt),
+    className: 'text-muted-foreground text-sm',
+  },
+];
+
+const candidateColumns: VirtualTableColumn<Candidate>[] = [
+  { id: 'user', header: m.users_column_user, cell: (user) => <UserCell user={user} /> },
+];
+
+/** The rows an infinite list has loaded so far, how many there are, and how to load more. */
+function loadedRows<Row>(
+  query: UseInfiniteQueryResult<InfiniteData<{ total: number; users: Row[] }>>,
+) {
+  const { data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
+
+  return {
+    rows: data?.pages.flatMap((page) => page.users) ?? [],
+    total: data?.pages[0]?.total ?? 0,
+    hasMore: hasNextPage,
+    loadingMore: isFetchingNextPage,
+    loadFailed: isFetchNextPageError,
+    loadMore: () => void fetchNextPage(),
+  };
+}
 
 const BackLink: FC = () => (
   <Link
@@ -68,109 +134,7 @@ const BackLink: FC = () => (
   </Link>
 );
 
-type UserSelectionTableProps<User extends ListedUser> = {
-  users: User[];
-  selected: ReadonlySet<string>;
-  onSelectedChange: (selected: Set<string>) => void;
-  disabled: boolean;
-  /** A second column, such as when the user was granted the flag. */
-  detail?: { heading: string; render: (user: User) => ReactNode };
-};
-
-/** Users with a checkbox each, and one in the header that selects the whole page. */
-function UserSelectionTable<User extends ListedUser>({
-  users,
-  selected,
-  onSelectedChange,
-  disabled,
-  detail,
-}: UserSelectionTableProps<User>) {
-  const ids = users.map(({ id }) => id);
-  const all = selectionState(selected, ids);
-
-  const toggle = (id: string, checked: boolean) => {
-    const next = new Set(selected);
-
-    if (checked) {
-      next.add(id);
-    } else {
-      next.delete(id);
-    }
-
-    onSelectedChange(next);
-  };
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-md text-left text-base/6">
-        <thead className="border-rule border-b">
-          <tr>
-            <th scope="col" className="w-12 py-2 pr-4">
-              <Checkbox
-                aria-label={m.flag_select_all()}
-                checked={all === true}
-                indeterminate={all === 'some'}
-                disabled={disabled}
-                onCheckedChange={(checked) => onSelectedChange(checked ? new Set(ids) : new Set())}
-              />
-            </th>
-            <th scope="col" className="text-muted-foreground py-2 pr-4 text-sm font-semibold">
-              {m.users_column_user()}
-            </th>
-            {detail && (
-              <th scope="col" className="text-muted-foreground py-2 text-sm font-semibold">
-                {detail.heading}
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => {
-            const name = nameOf(user);
-
-            return (
-              <tr key={user.id} className="border-border border-b">
-                <td className="py-3 pr-4">
-                  <Checkbox
-                    aria-label={m.flag_select_user({ name })}
-                    checked={selected.has(user.id)}
-                    disabled={disabled}
-                    onCheckedChange={(checked) => toggle(user.id, checked)}
-                  />
-                </td>
-                <td className="py-3 pr-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={user.imageUrl || undefined} alt="" />
-                      <AvatarFallback>{initialsOf(name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex min-w-0 flex-col">
-                      <Link
-                        to="/users/$userId"
-                        params={{ userId: user.id }}
-                        className="text-link focus-visible:ring-ring focus-visible:ring-offset-background truncate rounded-sm font-semibold underline-offset-3 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
-                      >
-                        {name}
-                      </Link>
-                      {user.email && user.email !== name && (
-                        <span className="text-muted-foreground truncate text-sm">{user.email}</span>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                {detail && (
-                  <td className="text-muted-foreground py-3 text-sm">{detail.render(user)}</td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-const SettingsSection: FC<{ flag: FlagDetails['flag'] }> = ({ flag }) => {
+const SettingsSection: FC<{ flag: Flag }> = ({ flag }) => {
   const { pending, failed, run } = useServerAction();
   const [description, setDescription] = useState(flag.description ?? '');
   const [tooLong, setTooLong] = useState(false);
@@ -236,16 +200,21 @@ const SettingsSection: FC<{ flag: FlagDetails['flag'] }> = ({ flag }) => {
   );
 };
 
-const HoldersSection: FC<{ details: FlagDetails }> = ({ details }) => {
-  const { flag, holders } = details;
-  const { page = 1, find, findPage } = Route.useSearch();
-  const { pending, failed, run } = useServerAction();
+const HoldersSection: FC<{ flag: Flag }> = ({ flag }) => {
+  const list = loadedRows(useInfiniteQuery(holdersQuery(flag.id)));
+  const { pending, failed, run } = useServerAction(flagListsKey(flag.id));
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const byId = new Map(list.rows.map((user) => [user.id, user]));
 
   const revoke = async () => {
-    const userIds = [...selected];
+    const batches = inBulkBatches([...selected]);
+    const done = await run(async () => {
+      for (const userIds of batches) {
+        await revokeFeatureFlagFn({ data: { flagId: flag.id, userIds } });
+      }
+    });
 
-    if (await run(() => revokeFeatureFlagFn({ data: { flagId: flag.id, userIds } }))) {
+    if (done) {
       setSelected(new Set());
     }
   };
@@ -253,25 +222,23 @@ const HoldersSection: FC<{ details: FlagDetails }> = ({ details }) => {
   return (
     <PageSection
       id="flag-holders"
-      title={m.flag_holders_heading({ count: holders.total })}
+      title={m.flag_holders_heading({ count: list.total })}
       description={m.flag_holders_description()}
     >
       {failed && <ErrorMessage>{m.user_action_failed()}</ErrorMessage>}
-      {holders.users.length === 0 ? (
+      {list.rows.length === 0 ? (
         <p className="text-muted-foreground text-base/6">{m.flag_holders_empty()}</p>
       ) : (
         <>
-          <UserSelectionTable
-            users={holders.users}
-            selected={selected}
-            onSelectedChange={setSelected}
-            disabled={pending}
-            detail={{
-              heading: m.flag_column_granted(),
-              render: (user) =>
-                user.grantedBy
-                  ? m.flag_granted_by({ date: formatDate(user.grantedAt), name: user.grantedBy })
-                  : formatDate(user.grantedAt),
+          <VirtualTable
+            label={m.flag_holders_label()}
+            columns={holderColumns}
+            {...list}
+            selection={{
+              selected,
+              onSelectedChange: setSelected,
+              disabled: pending,
+              rowLabel: (id) => m.flag_select_user({ name: nameOf(byId.get(id)) }),
             }}
           />
           <Button
@@ -285,39 +252,36 @@ const HoldersSection: FC<{ details: FlagDetails }> = ({ details }) => {
           </Button>
         </>
       )}
-      <Pagination
-        label={m.flag_holders_pagination()}
-        page={page}
-        pages={pageCount(holders.total)}
-        linkTo={(target) => ({
-          to: '/feature-flags/$flagId',
-          params: { flagId: flag.id },
-          search: { page: target, find, findPage },
-        })}
-      />
     </PageSection>
   );
 };
 
-const GrantSection: FC<{ details: FlagDetails }> = ({ details }) => {
-  const { flag, candidates } = details;
-  const { page, find, findPage = 1 } = Route.useSearch();
+const GrantSection: FC<{ flag: Flag }> = ({ flag }) => {
+  const { find } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { pending, failed, run } = useServerAction();
+  const list = loadedRows(useInfiniteQuery(candidatesQuery(flag.id, find)));
+  const { pending, failed, run } = useServerAction(flagListsKey(flag.id));
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const byId = new Map(list.rows.map((user) => [user.id, user]));
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = new FormData(event.currentTarget).get('find');
     const query = typeof value === 'string' ? value.trim() : '';
 
-    void navigate({ search: { page, find: query || undefined } });
+    // Searching keeps the scroll where it is: the list is further down the page.
+    void navigate({ search: { find: query || undefined }, resetScroll: false });
   };
 
   const grant = async () => {
-    const userIds = [...selected];
+    const batches = inBulkBatches([...selected]);
+    const done = await run(async () => {
+      for (const userIds of batches) {
+        await grantFeatureFlagFn({ data: { flagId: flag.id, userIds } });
+      }
+    });
 
-    if (await run(() => grantFeatureFlagFn({ data: { flagId: flag.id, userIds } }))) {
+    if (done) {
       setSelected(new Set());
     }
   };
@@ -351,19 +315,24 @@ const GrantSection: FC<{ details: FlagDetails }> = ({ details }) => {
       </search>
       <h3 className="text-base/6 font-semibold">
         {find
-          ? m.flag_grant_results_matching({ count: candidates.total, query: find })
-          : m.flag_grant_results({ count: candidates.total })}
+          ? m.flag_grant_results_matching({ count: list.total, query: find })
+          : m.flag_grant_results({ count: list.total })}
       </h3>
       {failed && <ErrorMessage>{m.user_action_failed()}</ErrorMessage>}
-      {candidates.users.length === 0 ? (
+      {list.rows.length === 0 ? (
         <p className="text-muted-foreground text-base/6">{empty}</p>
       ) : (
         <>
-          <UserSelectionTable
-            users={candidates.users}
-            selected={selected}
-            onSelectedChange={setSelected}
-            disabled={pending}
+          <VirtualTable
+            label={m.flag_grant_label()}
+            columns={candidateColumns}
+            {...list}
+            selection={{
+              selected,
+              onSelectedChange: setSelected,
+              disabled: pending,
+              rowLabel: (id) => m.flag_select_user({ name: nameOf(byId.get(id)) }),
+            }}
           />
           <Button
             variant="secondary"
@@ -376,21 +345,11 @@ const GrantSection: FC<{ details: FlagDetails }> = ({ details }) => {
           </Button>
         </>
       )}
-      <Pagination
-        label={m.flag_grant_pagination()}
-        page={findPage}
-        pages={pageCount(candidates.total)}
-        linkTo={(target) => ({
-          to: '/feature-flags/$flagId',
-          params: { flagId: flag.id },
-          search: { page, find, findPage: target },
-        })}
-      />
     </PageSection>
   );
 };
 
-const DeleteSection: FC<{ flag: FlagDetails['flag'] }> = ({ flag }) => {
+const DeleteSection: FC<{ flag: Flag }> = ({ flag }) => {
   const navigate = useNavigate();
   const { pending, failed, run } = useServerAction();
   const [confirming, setConfirming] = useState(false);
@@ -455,9 +414,8 @@ function FlagNotFound() {
 }
 
 function FlagPage() {
-  const details = Route.useLoaderData();
-  const { page, find, findPage } = Route.useSearch();
-  const { flag } = details;
+  const flag = Route.useLoaderData();
+  const { find } = Route.useSearch();
 
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-12 px-4 py-16">
@@ -476,9 +434,9 @@ function FlagPage() {
 
       {/* Keyed by the flag, so the form starts from its saved description on another flag. */}
       <SettingsSection key={flag.id} flag={flag} />
-      {/* Keyed by the list's page, so a selection never covers users no longer shown. */}
-      <HoldersSection key={`${flag.id}:${page ?? 1}`} details={details} />
-      <GrantSection key={`${flag.id}:${find ?? ''}:${findPage ?? 1}`} details={details} />
+      <HoldersSection key={flag.id} flag={flag} />
+      {/* Keyed by the search, so a selection never covers users the search no longer shows. */}
+      <GrantSection key={`${flag.id}:${find ?? ''}`} flag={flag} />
       <DeleteSection flag={flag} />
     </div>
   );

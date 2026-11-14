@@ -4,6 +4,7 @@ import {
   createFeatureFlagSchema,
   flagKeyError,
   flagUsersSchema,
+  inBulkBatches,
   parseFlagDetailsSearch,
   selectionState,
 } from './feature-flags';
@@ -57,17 +58,23 @@ describe('flagUsersSchema', () => {
 });
 
 describe('parseFlagDetailsSearch', () => {
-  it('keeps valid params and drops defaults and malformed ones', () => {
-    expect(parseFlagDetailsSearch({ page: 2, find: ' ada ', findPage: 3 })).toEqual({
-      page: 2,
-      find: 'ada',
-      findPage: 3,
-    });
-    expect(parseFlagDetailsSearch({ page: 1, find: '', findPage: 'x' })).toEqual({
-      page: undefined,
-      find: undefined,
-      findPage: undefined,
-    });
+  it('keeps a trimmed name to find and drops an empty or malformed one', () => {
+    expect(parseFlagDetailsSearch({ find: ' ada ' })).toEqual({ find: 'ada' });
+    expect(parseFlagDetailsSearch({ find: '' })).toEqual({ find: undefined });
+    expect(parseFlagDetailsSearch({ find: 3 })).toEqual({ find: undefined });
+  });
+});
+
+describe('inBulkBatches', () => {
+  it('splits a selection into batches of at most a hundred', () => {
+    const ids = Array.from({ length: 230 }, (_, index) => String(index));
+
+    expect(inBulkBatches(ids).map((batch) => batch.length)).toEqual([100, 100, 30]);
+    expect(inBulkBatches(ids).flat()).toEqual(ids);
+  });
+
+  it('returns no batch for no ids', () => {
+    expect(inBulkBatches([])).toEqual([]);
   });
 });
 
