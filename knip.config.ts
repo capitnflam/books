@@ -6,7 +6,8 @@ const config: KnipConfig = {
   ignoreBinaries: ['actionlint'],
   // Third-party agent skills installed via `skills add`, tracked by skills-lock.json.
   ignore: ['**/.claude/skills/**'],
-  // `database` and `shared` declare the `#/*` alias every package has, though their files don't use it yet.
+  // Every package declares the `#/*` alias, but `database` can't use it (its explicit `.ts`
+  // import extensions raise TS2877 on non-relative paths) and `shared` doesn't need it yet.
   ignoreIssues: {
     'packages/database/package.json': ['subpaths'],
     'packages/shared/package.json': ['subpaths'],
