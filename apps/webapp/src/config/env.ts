@@ -4,6 +4,11 @@ const envSchema = z.object({
   DATABASE_URL: z.url(),
   NODE_ENV: z.enum(['development', 'production', 'test']),
   CLERK_SECRET_KEY: z.string(),
+  /** Lets the ISBN lookup also ask Google Books, which refuses anonymous requests. */
+  GOOGLE_BOOKS_API_KEY: z
+    .string()
+    .optional()
+    .transform((key) => key || undefined),
 });
 
 // const clientEnvSchema = z.object({

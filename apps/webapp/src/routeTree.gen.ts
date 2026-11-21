@@ -18,6 +18,7 @@ import { Route as AppSampleRouteImport } from './routes/_app/sample'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as AppBooksNewRouteImport } from './routes/_app/books/new'
 import { Route as AppFeatureFlagsIndexRouteImport } from './routes/_app/feature-flags/index'
 import { Route as AppFeatureFlagsFlagIdRouteImport } from './routes/_app/feature-flags/$flagId'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
@@ -67,6 +68,11 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppBooksNewRoute = AppBooksNewRouteImport.update({
+  id: '/books/new',
+  path: '/books/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFeatureFlagsIndexRoute = AppFeatureFlagsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AppUsersRouteWithChildren
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/books/new': typeof AppBooksNewRoute
   '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/feature-flags/': typeof AppFeatureFlagsIndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
+  '/books/new': typeof AppBooksNewRoute
   '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/feature-flags': typeof AppFeatureFlagsIndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/books/new': typeof AppBooksNewRoute
   '/_app/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/_app/feature-flags/': typeof AppFeatureFlagsIndexRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/books/new'
     | '/feature-flags/$flagId'
     | '/users/$userId'
     | '/feature-flags/'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/'
+    | '/books/new'
     | '/feature-flags/$flagId'
     | '/users/$userId'
     | '/feature-flags'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
+    | '/_app/books/new'
     | '/_app/feature-flags/$flagId'
     | '/_app/users/$userId'
     | '/_app/feature-flags/'
@@ -245,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/books/new': {
+      id: '/_app/books/new'
+      path: '/books/new'
+      fullPath: '/books/new'
+      preLoaderRoute: typeof AppBooksNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/feature-flags/': {
       id: '/_app/feature-flags/'
       path: '/'
@@ -311,6 +330,7 @@ interface AppRouteChildren {
   AppSampleRoute: typeof AppSampleRoute
   AppUsersRoute: typeof AppUsersRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
+  AppBooksNewRoute: typeof AppBooksNewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -320,6 +340,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSampleRoute: AppSampleRoute,
   AppUsersRoute: AppUsersRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
+  AppBooksNewRoute: AppBooksNewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
