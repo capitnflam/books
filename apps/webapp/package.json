@@ -20,7 +20,7 @@
   "dependencies": {
     "@books/database": "workspace:*",
     "@books/ui": "workspace:*",
-    "@clerk/tanstack-react-start": "1.7.8",
+    "@clerk/tanstack-react-start": "1.7.18",
     "@tanstack/react-devtools": "0.10.15",
     "@tanstack/react-query": "5.108.2",
     "@tanstack/react-query-devtools": "5.108.2",
