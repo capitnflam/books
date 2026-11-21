@@ -26,6 +26,8 @@ const ICON_NAME_MAP: Record<IconName, TablerIconName> = Object.keys(icons).reduc
 export const iconNameList = Object.keys(ICON_NAME_MAP) as IconName[];
 
 export const Icon: FC<IconProps> = ({ icon, ...props }) => {
+  // `icons` is a namespace re-export, looked up by name at runtime by design.
+  // oxlint-disable-next-line import/namespace
   const IconComponent = icons[ICON_NAME_MAP[icon]];
 
   return <IconComponent {...props} />;
