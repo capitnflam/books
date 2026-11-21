@@ -23,7 +23,7 @@ pnpm + Turborepo monorepo (workspaces in `apps/*` and `packages/*`).
 ### Imports
 
 - Between packages, import by workspace name: `@books/database`, `@books/shared`, and `@books/ui/components/<name>`, `@books/ui/hooks/<name>`, `@books/ui/lib/<name>` (see `exports` in `packages/ui/package.json`). Never import another package's files by relative path.
-- Within a package, use the `#/*` alias for `src/*` rather than long relative paths.
+- Within a package, use the `#/*` alias for `src/*` rather than long relative paths. The exception is `packages/database`, which keeps relative imports: its imports carry explicit `.ts` extensions, and TypeScript rejects those on non-relative paths (TS2877).
 - `packages/ui/components.json` configures the shadcn CLI for adding components to `ui`.
 
 ### UI components (shadcn)
