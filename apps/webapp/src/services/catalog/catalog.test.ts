@@ -7,6 +7,7 @@ import type { BookForm } from './catalog';
 const form = (changes: Partial<BookForm>): BookForm => ({
   ...emptyBookForm(),
   title: 'The Hobbit',
+  genres: ['fantasy'],
   ...changes,
 });
 
@@ -64,6 +65,7 @@ describe('createBookSchema', () => {
           firstPublishedYear: '1937',
           series: 'Middle-earth',
           seriesPosition: '0,5',
+          genres: ['fantasy', 'children', 'fantasy'],
           subjects: 'Fantasy, fantasy ,  Dragons ,,',
           published: '1991-09-21',
           language: 'en',
@@ -82,6 +84,7 @@ describe('createBookSchema', () => {
       firstPublishedYear: 1937,
       series: 'Middle-earth',
       seriesPosition: 0.5,
+      genres: ['fantasy', 'children'],
       subjects: ['Fantasy', 'Dragons'],
       editionStatement: null,
       publisher: null,
@@ -126,6 +129,7 @@ describe('bookFormErrors', () => {
           contributors: [{ name: 'a'.repeat(201), role: 'author' }],
           firstPublishedYear: '19th century',
           seriesPosition: '2',
+          genres: [],
           published: '1937-02-30',
           language: 'English',
           pageCount: '0',
@@ -143,6 +147,7 @@ describe('bookFormErrors', () => {
         'pageCount',
         'coverImageUrl',
         'seriesPosition',
+        'genres',
       ]),
     );
   });

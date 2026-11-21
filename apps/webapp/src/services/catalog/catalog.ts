@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
+import { GENRES } from './genres';
 import { parseIsbn } from './isbn';
 
-import type { ContributorRole, EditionFormat } from '@books/database';
+import type { ContributorRole, EditionFormat, Genre } from '@books/database';
 
 /** Credits offered on the form, in the order the role menu lists them. */
 export const CONTRIBUTOR_ROLES = [
@@ -75,6 +76,8 @@ export type BookForm = {
   firstPublishedYear: string;
   series: string;
   seriesPosition: string;
+  /** At least one. */
+  genres: Genre[];
   /** Comma-separated. */
   subjects: string;
   editionStatement: string;
@@ -101,6 +104,7 @@ export function emptyBookForm(): BookForm {
     firstPublishedYear: '',
     series: '',
     seriesPosition: '',
+    genres: [],
     subjects: '',
     editionStatement: '',
     publisher: '',
@@ -269,6 +273,10 @@ export const createBookSchema = z
       .trim()
       .regex(/^(?:\d{1,4}(?:[.,]\d{1,2})?)?$/u)
       .transform((value) => (value ? Number(value.replace(',', '.')) : null)),
+    genres: z
+      .array(z.enum(GENRES))
+      .min(1)
+      .transform((genres) => [...new Set(genres)]),
     subjects: z
       .string()
       .transform((value) => {

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { genresFromSubjects } from './genres';
+
 import type { BookForm, ContributorForm } from './catalog';
 import type { Isbns } from './isbn';
 import type { EditionFormat } from '@books/database';
@@ -361,6 +363,7 @@ async function fromOpenLibrary({ isbn13 }: Isbns): Promise<BookDraft | null> {
     description: cleanDescription(data.description ?? work?.description),
     firstPublishedYear: firstYear === undefined ? undefined : String(firstYear).slice(0, 4),
     ...seriesFromText(data.series?.[0]),
+    genres: genresFromSubjects([...(work?.subjects ?? []), ...(data.subjects ?? [])]),
     subjects: cleanSubjects(work?.subjects ?? data.subjects ?? []).join(', '),
     editionStatement: data.edition_name,
     publisher: data.publishers?.[0],
@@ -392,6 +395,7 @@ async function fromGoogleBooks({ isbn13 }: Isbns, apiKey: string): Promise<BookD
       ?.slice(0, AUTHORS_MAX)
       .map((name) => ({ name: cleanName(name), role: 'author' })),
     description: cleanDescription(volume.description),
+    genres: genresFromSubjects(volume.categories ?? []),
     subjects: cleanSubjects(
       volume.categories?.flatMap((category) => category.split(' / ')) ?? [],
     ).join(', '),

@@ -60,7 +60,12 @@ const insertsInto = (table: unknown) =>
   mocks.inserts.filter((insert) => insert.table === table).map(({ values }) => values);
 
 const book = (changes: Partial<BookForm>) =>
-  createBookSchema.parse({ ...emptyBookForm(), title: 'The Hobbit', ...changes });
+  createBookSchema.parse({
+    ...emptyBookForm(),
+    title: 'The Hobbit',
+    genres: ['fantasy'],
+    ...changes,
+  });
 
 beforeEach(() => {
   mocks.permissions = ['catalog:manage'];
@@ -139,6 +144,7 @@ describe('creating a book', () => {
         firstPublishedYear: '1937',
         series: 'The Lord of the Rings',
         seriesPosition: '0',
+        genres: ['fantasy', 'humour'],
         subjects: 'Fantasy, Dragons',
         publisher: 'HarperCollins',
         published: '2009',
@@ -194,6 +200,12 @@ describe('creating a book', () => {
     expect(insertsInto(schema.bookSeries)).toEqual([
       { bookId: 'id-1', seriesId: 'id-8', position: 0 },
     ]);
+    expect(insertsInto(schema.bookGenres)).toEqual([
+      [
+        { bookId: 'id-1', genre: 'fantasy' },
+        { bookId: 'id-1', genre: 'humour' },
+      ],
+    ]);
     expect(insertsInto(schema.bookSubjects)).toEqual([
       [
         { bookId: 'id-1', subjectId: 'fantasy' },
@@ -202,9 +214,13 @@ describe('creating a book', () => {
     ]);
   });
 
-  it('saves a book with only a title, and nothing else', async () => {
+  it('saves a book with only a title and a genre, and nothing else', async () => {
     await expect(createBookServer(book({}))).resolves.toMatchObject({ error: null });
-    expect(mocks.inserts.map(({ table }) => table)).toEqual([schema.books, schema.editions]);
+    expect(mocks.inserts.map(({ table }) => table)).toEqual([
+      schema.books,
+      schema.editions,
+      schema.bookGenres,
+    ]);
   });
 
   it('refuses an ISBN another edition has', async () => {

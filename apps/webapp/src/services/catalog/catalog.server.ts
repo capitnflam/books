@@ -130,8 +130,8 @@ const isUniqueViolation = (error: unknown) =>
     || (error.cause as { code?: unknown } | undefined)?.code === '23505');
 
 /**
- * Adds a book and its edition to the catalogue, with their credits, publisher, series and
- * subjects; reuses the authors, publisher, series and subjects that already exist by name.
+ * Adds a book and its edition to the catalogue, with their credits, publisher, series, genres
+ * and subjects; reuses the authors, publisher, series and subjects that already exist by name.
  * Refuses an ISBN another edition already has.
  */
 export async function createBookServer(book: CreateBookInput) {
@@ -232,6 +232,11 @@ export async function createBookServer(book: CreateBookInput) {
           position: book.seriesPosition,
         });
       }
+
+      // `createBookSchema` requires at least one genre.
+      await tx
+        .insert(schema.bookGenres)
+        .values(book.genres.map((genre) => ({ bookId: id, genre })));
 
       const subjectIds = await findOrCreateNamed(tx, schema.subjects, book.subjects);
 

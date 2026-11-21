@@ -1,4 +1,5 @@
 import { Button } from '@books/ui/components/button';
+import { Checkbox } from '@books/ui/components/checkbox';
 import {
   Field,
   FieldDescription,
@@ -32,9 +33,10 @@ import {
   emptyContributor,
 } from '#/services/catalog/catalog';
 import { createBookFn, lookupIsbnFn } from '#/services/catalog/catalog.functions';
+import { GENRES, genreLabel } from '#/services/catalog/genres';
 
 import type { BookForm, ContributorForm } from '#/services/catalog/catalog';
-import type { ContributorRole, EditionFormat } from '@books/database';
+import type { ContributorRole, EditionFormat, Genre } from '@books/database';
 import type { NativeSelectProps } from '@books/ui/components/native-select';
 import type { ChangeEvent, FC, FormEvent, ReactNode } from 'react';
 
@@ -142,6 +144,55 @@ const LanguageSelect: FC<LanguageSelectProps> = ({ value, onChange, ...props }) 
     ))}
   </NativeSelect>
 );
+
+/** One checkbox per genre, sorted by name in the page's language; at least one is required. */
+const GenresField: FC<{
+  genres: Genre[];
+  invalid: boolean;
+  onChange: (genres: Genre[]) => void;
+}> = ({ genres, invalid, onChange }) => {
+  const options = GENRES.map((genre) => ({ genre, label: genreLabel(genre) })).toSorted((a, b) =>
+    a.label.localeCompare(b.label, getLocale()),
+  );
+
+  return (
+    <FieldSet
+      aria-describedby={invalid ? 'book-genres-hint book-genres-error' : 'book-genres-hint'}
+      data-invalid={invalid ? true : undefined}
+    >
+      <FieldLegend variant="label">{m.book_genres_legend()}</FieldLegend>
+      <FieldDescription id="book-genres-hint">{m.book_genres_hint()}</FieldDescription>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3">
+        {options.map(({ genre, label }) => (
+          <Field key={genre} orientation="horizontal">
+            <Checkbox
+              id={`book-genre-${genre}`}
+              // Base UI moves the id to its hidden input, so the label alone names only that.
+              aria-labelledby={`book-genre-${genre}-label`}
+              checked={genres.includes(genre)}
+              aria-invalid={invalid ? true : undefined}
+              onCheckedChange={(checked) =>
+                onChange(
+                  checked
+                    ? GENRES.filter((each) => each === genre || genres.includes(each))
+                    : genres.filter((each) => each !== genre),
+                )
+              }
+            />
+            <FieldLabel
+              id={`book-genre-${genre}-label`}
+              htmlFor={`book-genre-${genre}`}
+              className="font-normal"
+            >
+              {label}
+            </FieldLabel>
+          </Field>
+        ))}
+      </div>
+      {invalid && <FieldError id="book-genres-error">{m.book_genres_error()}</FieldError>}
+    </FieldSet>
+  );
+};
 
 const ContributorsField: FC<{
   contributors: ContributorForm[];
@@ -572,6 +623,11 @@ function NewBookPage() {
                     )}
                   </FormField>
                 </div>
+                <GenresField
+                  genres={form.genres}
+                  invalid={errors.has('genres')}
+                  onChange={(genres) => setForm((current) => ({ ...current, genres }))}
+                />
                 <FormField
                   name="subjects"
                   label={m.book_subjects_label()}

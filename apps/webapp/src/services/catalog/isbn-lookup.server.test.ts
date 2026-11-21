@@ -82,6 +82,7 @@ describe('lookupIsbnOnline', () => {
         ],
         description: 'A tale of high adventure.',
         firstPublishedYear: '1937',
+        genres: ['fantasy', 'children'],
         subjects: 'Fantasy fiction, Dragons',
         publisher: 'HarperCollins',
         published: '2009',
@@ -152,6 +153,7 @@ describe('lookupIsbnOnline', () => {
         coverImageUrl: 'https://covers.openlibrary.org/b/id/12649317-L.jpg',
         // …and Google Books fills what it lacks.
         description: 'Bilbo goes there.',
+        genres: ['fantasy'],
         subjects: 'Fiction, Fantasy, Epic',
       },
     });
