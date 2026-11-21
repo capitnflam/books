@@ -8,6 +8,7 @@ Tables of the `books` PostgreSQL schema. `PK` primary key, `FK` foreign key, `UK
 erDiagram
   books ||--o{ book_contributors : "book_id (on delete cascade)"
   authors ||--o{ book_contributors : "author_id (on delete restrict)"
+  books ||--o{ book_genres : "book_id (on delete cascade)"
   books ||--o{ book_series : "book_id (on delete cascade)"
   series ||--o{ book_series : "series_id (on delete cascade)"
   books ||--o{ book_subjects : "book_id (on delete cascade)"
@@ -39,6 +40,10 @@ erDiagram
     uuid author_id PK,FK
     contributor_role role PK "default 'author'"
     smallint position "default 0"
+  }
+  book_genres {
+    uuid book_id PK,FK
+    text genre PK
   }
   book_series {
     uuid book_id PK,FK
