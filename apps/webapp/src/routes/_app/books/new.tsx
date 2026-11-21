@@ -1,5 +1,16 @@
 import { Button } from '@books/ui/components/button';
-import { Checkbox } from '@books/ui/components/checkbox';
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@books/ui/components/combobox';
 import {
   Field,
   FieldDescription,
@@ -145,52 +156,73 @@ const LanguageSelect: FC<LanguageSelectProps> = ({ value, onChange, ...props }) 
   </NativeSelect>
 );
 
-/** One checkbox per genre, sorted by name in the page's language; at least one is required. */
+/**
+ * The book's genres as chips, chosen from a list sorted by name in the page's language that
+ * typing filters; at least one is required.
+ */
 const GenresField: FC<{
   genres: Genre[];
   invalid: boolean;
   onChange: (genres: Genre[]) => void;
 }> = ({ genres, invalid, onChange }) => {
-  const options = GENRES.map((genre) => ({ genre, label: genreLabel(genre) })).toSorted((a, b) =>
-    a.label.localeCompare(b.label, getLocale()),
+  const anchor = useComboboxAnchor();
+  const options = GENRES.toSorted((a, b) =>
+    genreLabel(a).localeCompare(genreLabel(b), getLocale()),
   );
 
   return (
-    <FieldSet
-      aria-describedby={invalid ? 'book-genres-hint book-genres-error' : 'book-genres-hint'}
-      data-invalid={invalid ? true : undefined}
-    >
-      <FieldLegend variant="label">{m.book_genres_legend()}</FieldLegend>
+    <Field data-invalid={invalid ? true : undefined}>
+      <FieldLabel id="book-genres-label" htmlFor="book-genres">
+        {m.book_genres_legend()}
+      </FieldLabel>
+      <Combobox
+        multiple
+        autoHighlight
+        items={options}
+        value={genres}
+        itemToStringLabel={genreLabel}
+        onValueChange={onChange}
+      >
+        <ComboboxChips ref={anchor}>
+          <ComboboxValue>
+            {(chosen: Genre[]) => (
+              <>
+                {chosen.map((genre) => (
+                  <ComboboxChip
+                    key={genre}
+                    removeLabel={m.book_genre_remove({ genre: genreLabel(genre) })}
+                  >
+                    {genreLabel(genre)}
+                  </ComboboxChip>
+                ))}
+                <ComboboxChipsInput
+                  id="book-genres"
+                  // Base UI also renders a hidden input, so name this one from the label directly.
+                  aria-labelledby="book-genres-label"
+                  aria-describedby={
+                    invalid ? 'book-genres-hint book-genres-error' : 'book-genres-hint'
+                  }
+                  aria-invalid={invalid ? true : undefined}
+                  placeholder={chosen.length === 0 ? m.book_genres_placeholder() : undefined}
+                />
+              </>
+            )}
+          </ComboboxValue>
+        </ComboboxChips>
+        <ComboboxContent anchor={anchor}>
+          <ComboboxEmpty>{m.book_genres_empty()}</ComboboxEmpty>
+          <ComboboxList aria-labelledby="book-genres-label">
+            {(genre: Genre) => (
+              <ComboboxItem key={genre} value={genre}>
+                {genreLabel(genre)}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
       <FieldDescription id="book-genres-hint">{m.book_genres_hint()}</FieldDescription>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3">
-        {options.map(({ genre, label }) => (
-          <Field key={genre} orientation="horizontal">
-            <Checkbox
-              id={`book-genre-${genre}`}
-              // Base UI moves the id to its hidden input, so the label alone names only that.
-              aria-labelledby={`book-genre-${genre}-label`}
-              checked={genres.includes(genre)}
-              aria-invalid={invalid ? true : undefined}
-              onCheckedChange={(checked) =>
-                onChange(
-                  checked
-                    ? GENRES.filter((each) => each === genre || genres.includes(each))
-                    : genres.filter((each) => each !== genre),
-                )
-              }
-            />
-            <FieldLabel
-              id={`book-genre-${genre}-label`}
-              htmlFor={`book-genre-${genre}`}
-              className="font-normal"
-            >
-              {label}
-            </FieldLabel>
-          </Field>
-        ))}
-      </div>
       {invalid && <FieldError id="book-genres-error">{m.book_genres_error()}</FieldError>}
-    </FieldSet>
+    </Field>
   );
 };
 
