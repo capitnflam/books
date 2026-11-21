@@ -77,9 +77,17 @@ export const WithLabel: Story = {
     </Field>
   ),
   play: async ({ canvas, userEvent }) => {
+    // Base UI puts the `id` on its hidden input; it names the visible control by pointing
+    // `aria-labelledby` at that input's label, so `htmlFor` is all a caller needs.
     const checkbox = canvas.getByRole('checkbox', { name: 'Reference only' });
+    const label = canvas.getByText('Reference only');
 
-    await userEvent.click(canvas.getByText('Reference only'));
+    await expect(checkbox).toHaveAttribute('data-slot', 'checkbox');
+    await expect(checkbox).toHaveAttribute('aria-labelledby', label.id);
+    await expect(checkbox).not.toBeChecked();
+    await userEvent.click(label);
     await expect(checkbox).toBeChecked();
+    await userEvent.click(label);
+    await expect(checkbox).not.toBeChecked();
   },
 };
