@@ -45,6 +45,7 @@ import {
 } from '#/services/catalog/catalog';
 import { createBookFn, lookupIsbnFn } from '#/services/catalog/catalog.functions';
 import { GENRES, genreLabel } from '#/services/catalog/genres';
+import { fuzzyFilter } from '#/utils/fuzzy-search';
 
 import type { BookForm, ContributorForm } from '#/services/catalog/catalog';
 import type { ContributorRole, EditionFormat, Genre } from '@books/database';
@@ -157,8 +158,8 @@ const LanguageSelect: FC<LanguageSelectProps> = ({ value, onChange, ...props }) 
 );
 
 /**
- * The book's genres as chips, chosen from a list sorted by name in the page's language that
- * typing filters; at least one is required.
+ * The book's genres as chips, chosen from a list sorted by name in the page's language. Typing
+ * searches it forgivingly (`mistery`, `theatre`), best matches first; at least one is required.
  */
 const GenresField: FC<{
   genres: Genre[];
@@ -166,6 +167,7 @@ const GenresField: FC<{
   onChange: (genres: Genre[]) => void;
 }> = ({ genres, invalid, onChange }) => {
   const anchor = useComboboxAnchor();
+  const [query, setQuery] = useState('');
   const options = GENRES.toSorted((a, b) =>
     genreLabel(a).localeCompare(genreLabel(b), getLocale()),
   );
@@ -179,6 +181,10 @@ const GenresField: FC<{
         multiple
         autoHighlight
         items={options}
+        // Ranked by the fuzzy search instead of Base UI's own substring filter.
+        filteredItems={fuzzyFilter(options, query, genreLabel)}
+        inputValue={query}
+        onInputValueChange={setQuery}
         value={genres}
         itemToStringLabel={genreLabel}
         onValueChange={onChange}
