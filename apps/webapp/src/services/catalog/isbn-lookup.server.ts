@@ -244,7 +244,7 @@ export function seriesFromText(
   }
 
   const match =
-    /^(.*?)[\s,;:(-]*(?:#|no\.?|vol\.?|volume|book|tome|band)?\s*(\d{1,4}(?:\.\d{1,2})?)\)?\s*$/iu.exec(
+    /^(.*?)[\s,;:(-]*(?:#|no\.?|vol\.?|volume|book|bk\.?|tome|band)?\s*(\d{1,4}(?:\.\d{1,2})?)\)?\s*$/iu.exec(
       value.trim(),
     );
 

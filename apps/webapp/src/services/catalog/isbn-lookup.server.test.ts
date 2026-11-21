@@ -223,6 +223,11 @@ describe('seriesFromText', () => {
       series: 'Discworld',
       seriesPosition: '4.5',
     });
+    // Open Library's own wording for Dune.
+    expect(seriesFromText('Dune chronicles -- bk. 1')).toEqual({
+      series: 'Dune chronicles',
+      seriesPosition: '1',
+    });
     expect(seriesFromText('Penguin Classics')).toEqual({
       series: 'Penguin Classics',
       seriesPosition: '',
