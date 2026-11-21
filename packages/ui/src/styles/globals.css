@@ -203,6 +203,11 @@
   a {
     @apply text-link underline-offset-3;
   }
+  /* Tailwind 4's preflight resets buttons to `cursor: default`; restore the pointer. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
   ::selection {
     @apply bg-burgundy-soft text-ink;
   }
