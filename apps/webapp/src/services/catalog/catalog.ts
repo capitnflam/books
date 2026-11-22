@@ -91,7 +91,36 @@ export type BookForm = {
   coverImageUrl: string;
 };
 
-export const emptyContributor = (): ContributorForm => ({ name: '', role: 'author' });
+/** The fields about the work that the add and edit forms share. */
+export type WorkValues = Pick<
+  BookForm,
+  | 'title'
+  | 'subtitle'
+  | 'contributors'
+  | 'description'
+  | 'originalLanguage'
+  | 'firstPublishedYear'
+  | 'genres'
+  | 'subjects'
+>;
+
+/** The fields about one edition that the add and edit forms share. */
+export type EditionValues = Pick<
+  BookForm,
+  | 'editionStatement'
+  | 'publisher'
+  | 'published'
+  | 'language'
+  | 'format'
+  | 'pageCount'
+  | 'durationMinutes'
+  | 'coverImageUrl'
+>;
+
+export const emptyContributor = (role: ContributorRole = 'author'): ContributorForm => ({
+  name: '',
+  role,
+});
 
 export function emptyBookForm(): BookForm {
   return {
