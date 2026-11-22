@@ -1,10 +1,8 @@
-import { Button } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
-import { Input } from '@books/ui/components/input';
-import { Label } from '@books/ui/components/label';
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
+import ListSearchForm from '#/components/ListSearchForm';
 import UserCell from '#/components/UserCell';
 import { VirtualTable } from '#/components/VirtualTable';
 import { m } from '#/paraglide/messages';
@@ -14,7 +12,6 @@ import { nextPage, parseListSearch } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { IconName } from '@books/ui/components/icon';
-import type { FormEvent } from 'react';
 
 /** The user list, loaded a page at a time as it scrolls. */
 const usersQuery = (q: string | undefined) =>
@@ -88,14 +85,6 @@ function UsersPage() {
   const users = data?.pages.flatMap((page) => page.users) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
-  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const value = new FormData(event.currentTarget).get('q');
-    const query = typeof value === 'string' ? value.trim() : '';
-
-    void navigate({ search: { q: query || undefined } });
-  };
-
   return (
     <div className="container mx-auto flex max-w-5xl flex-col gap-8 px-4 py-16">
       <header className="flex flex-col gap-2">
@@ -105,19 +94,13 @@ function UsersPage() {
         <p className="text-muted-foreground mt-1">{m.users_intro()}</p>
       </header>
 
-      <search>
-        <form className="flex flex-col gap-2" onSubmit={handleSearch}>
-          <Label htmlFor="users-search">{m.users_search_label()}</Label>
-          <div className="flex max-w-lg gap-2">
-            {/* Keyed by the query, so going back in history shows the matching text. */}
-            <Input key={q} id="users-search" name="q" type="search" defaultValue={q ?? ''} />
-            <Button type="submit" variant="outline">
-              <Icon icon="search" aria-hidden data-icon="inline-start" />
-              {m.users_search_submit()}
-            </Button>
-          </div>
-        </form>
-      </search>
+      <ListSearchForm
+        id="users-search"
+        label={m.users_search_label()}
+        submitLabel={m.users_search_submit()}
+        query={q}
+        onSearch={(query) => void navigate({ search: { q: query } })}
+      />
 
       <section aria-labelledby="users-results" className="flex flex-col gap-4">
         <h2 id="users-results" className="text-heading-3 border-rule border-b pb-1.5">

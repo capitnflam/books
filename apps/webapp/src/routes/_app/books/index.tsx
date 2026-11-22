@@ -101,7 +101,6 @@ function BooksPage() {
       </header>
 
       <ListSearchForm
-        key={q}
         id="books-search"
         label={m.books_search_label()}
         submitLabel={m.books_search_submit()}
