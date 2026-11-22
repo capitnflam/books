@@ -217,6 +217,7 @@
   "book_isbn_heading": "Nach ISBN suchen",
   "book_isbn_label": "ISBN",
   "book_isbn_hint": "10 oder 13 Ziffern; Bindestriche und Leerzeichen sind erlaubt.",
+  "book_isbn_sources": "Die Angaben stammen von Open Library, Google Books, der Bibliothèque nationale de France (Licence Ouverte) und der NDL Search API.",
   "book_isbn_lookup": "Suchen",
   "book_isbn_looking_up": "ISBN wird gesucht …",
   "book_isbn_found": "Angaben gefunden und ausgefüllt. Prüfen und ergänzen Sie sie, bevor Sie das Buch hinzufügen.",
