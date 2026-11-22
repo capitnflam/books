@@ -12,10 +12,10 @@ import TakenIsbnMessage from './TakenIsbnMessage';
 import type { SaveProblem } from '#/hooks/use-save-book';
 import type { FC } from 'react';
 
-type EditFormActionsProps = { bookId: string; problem: SaveProblem | null };
+type FormActionsProps = { bookId: string; problem: SaveProblem | null };
 
-/** The end of an edit form: why it was not saved, and the buttons to save or leave. */
-const EditFormActions: FC<EditFormActionsProps> = ({ bookId, problem }) => (
+/** The end of a form opened from a book: why it was not saved, and the buttons to save or leave. */
+const FormActions: FC<FormActionsProps> = ({ bookId, problem }) => (
   <div className="flex flex-wrap-reverse items-center justify-end gap-4">
     <FormStatus>
       {problem?.error === 'isbn-taken' && (
@@ -40,4 +40,4 @@ const EditFormActions: FC<EditFormActionsProps> = ({ bookId, problem }) => (
   </div>
 );
 
-export default EditFormActions;
+export default FormActions;

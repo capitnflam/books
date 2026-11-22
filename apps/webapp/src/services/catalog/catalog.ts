@@ -23,7 +23,7 @@ export const isEditionRole = (role: ContributorRole) => EDITION_ROLES.has(role);
 /** Credits offered when editing a work. */
 export const WORK_CREDIT_ROLES = CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role));
 
-/** Credits offered when editing an edition: an illustrator can be one edition's too. */
+/** Credits offered on an edition's form: an illustrator can be one edition's too. */
 export const EDITION_CREDIT_ROLES = [
   ...CONTRIBUTOR_ROLES.filter((role) => isEditionRole(role)),
   ...CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role) && role !== 'author'),
@@ -139,7 +139,7 @@ export const emptySeries = (): SeriesForm => ({ name: '', position: '' });
 /** What the edit-book form holds. A book can be in several series, though it is added to one. */
 export type WorkForm = WorkValues & { series: SeriesForm[] };
 
-/** What the edit-edition form holds; its title and subtitle only when they differ from the book's. */
+/** What the edition forms hold; its title and subtitle only when they differ from the book's. */
 export type EditionForm = EditionValues
   & Pick<BookForm, 'isbn' | 'title' | 'subtitle' | 'contributors'>;
 
@@ -173,25 +173,35 @@ export const emptyBookForm = (): BookForm => ({
   ...emptyEditionValues(),
 });
 
+export const emptyEditionForm = (): EditionForm => ({
+  isbn: '',
+  title: '',
+  subtitle: '',
+  contributors: [emptyContributor(EDITION_CREDIT_ROLES[0])],
+  ...emptyEditionValues(),
+});
+
+type Draft<Form> = Partial<Omit<Form, 'isbn'>>;
+
 /** What an ISBN lookup found to prefill the form with; fields it found nothing for are left out. */
-export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
+export type BookDraft = Draft<BookForm>;
 
 /**
  * The form once a lookup for `isbn` returned `draft`. Fields the `previous` lookup filled, and
- * that still hold what it put there, are emptied first: looking up a second book must not keep
- * the first one's series or cover. Fields the reader typed or changed are kept, unless the new
- * draft has a value for them.
+ * that still hold what it put there, go back to what the `empty` form has first: looking up a
+ * second book must not keep the first one's series or cover. Fields the reader typed or changed
+ * are kept, unless the new draft has a value for them.
  */
-export function applyLookup(
-  form: BookForm,
-  previous: BookDraft | null,
-  draft: BookDraft,
+export function applyLookup<Form extends { isbn: string }>(
+  form: Form,
+  empty: Form,
+  previous: Draft<Form> | null,
+  draft: Draft<Form>,
   isbn: string,
-): BookForm {
-  const empty = emptyBookForm();
-  const next: BookForm = { ...form };
+): Form {
+  const next = { ...form };
 
-  for (const key of Object.keys(previous ?? {}) as (keyof BookDraft)[]) {
+  for (const key of Object.keys(previous ?? {}) as (keyof Draft<Form>)[]) {
     if (JSON.stringify(form[key]) === JSON.stringify(previous?.[key])) {
       Object.assign(next, { [key]: empty[key] });
     }
@@ -483,7 +493,7 @@ export const bookFormErrors = (form: BookForm) => fieldErrors(createBookSchema, 
 /** The same for the edit-book form. */
 export const workFormErrors = (form: WorkForm) => fieldErrors(workFormSchema, form);
 
-/** The same for the edit-edition form. */
+/** The same for the edition forms. */
 export const editionFormErrors = (form: EditionForm) =>
   fieldErrors(z.preprocess(dropHiddenLength, editionFormSchema), form);
 

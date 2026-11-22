@@ -233,15 +233,23 @@ describe('applyLookup', () => {
   };
 
   it('fills the form with what the lookup found, with the ISBN-13', () => {
-    expect(applyLookup(emptyBookForm(), null, discworld, '9780552166591')).toMatchObject({
+    expect(
+      applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591'),
+    ).toMatchObject({
       ...discworld,
       isbn: '9780552166591',
     });
   });
 
   it('empties what the previous lookup filled when another book is looked up', () => {
-    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
-    const second = applyLookup(first, discworld, { title: 'Ficciones' }, '9780802130303');
+    const first = applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591');
+    const second = applyLookup(
+      first,
+      emptyBookForm(),
+      discworld,
+      { title: 'Ficciones' },
+      '9780802130303',
+    );
 
     expect(second).toMatchObject({
       title: 'Ficciones',
@@ -253,9 +261,9 @@ describe('applyLookup', () => {
   });
 
   it('keeps what the reader changed or typed since', () => {
-    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
+    const first = applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591');
     const edited = { ...first, series: 'The Discworld', description: 'My notes' };
-    const second = applyLookup(edited, discworld, {}, '9780802130303');
+    const second = applyLookup(edited, emptyBookForm(), discworld, {}, '9780802130303');
 
     expect(second).toMatchObject({
       title: '',
