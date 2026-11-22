@@ -424,10 +424,10 @@ function FlagPage() {
       </div>
 
       {/* Keyed by the flag, so the form starts from its saved description on another flag. */}
-      <SettingsSection key={flag.id} flag={flag} />
-      <HoldersSection key={flag.id} flag={flag} />
+      <SettingsSection key={`settings:${flag.id}`} flag={flag} />
+      <HoldersSection key={`holders:${flag.id}`} flag={flag} />
       {/* Keyed by the search, so a selection never covers users the search no longer shows. */}
-      <GrantSection key={`${flag.id}:${find ?? ''}`} flag={flag} />
+      <GrantSection key={`grant:${flag.id}:${find ?? ''}`} flag={flag} />
       <DeleteSection flag={flag} />
     </div>
   );
