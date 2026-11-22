@@ -1,4 +1,4 @@
-import { Button } from '@books/ui/components/button';
+import { buttonVariants } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { Link, createFileRoute } from '@tanstack/react-router';
 
@@ -19,10 +19,10 @@ function ForbiddenPage() {
         <span aria-hidden className="bg-gilt h-0.5 w-16" />
       </header>
       <p className="text-muted-foreground">{m.forbidden_description()}</p>
-      <Button nativeButton={false} render={<Link to="/" />}>
+      <Link to="/" className={buttonVariants()}>
         <Icon icon="home" aria-hidden data-icon="inline-start" />
         {m.forbidden_home()}
-      </Button>
+      </Link>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Button } from '@books/ui/components/button';
+import { buttonVariants } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { Link, createFileRoute } from '@tanstack/react-router';
 
@@ -91,21 +91,15 @@ const EditionCard: FC<EditionCardProps> = ({ book, edition, canEdit }) => {
             {edition.subtitle && <p className="text-muted-foreground">{edition.subtitle}</p>}
           </div>
           {canEdit && (
-            <Button
-              variant="outline"
-              size="sm"
+            <Link
+              to="/books/$bookId/editions/$editionId/edit"
+              params={{ bookId: book.id, editionId: edition.id }}
               aria-describedby={headingId}
-              nativeButton={false}
-              render={
-                <Link
-                  to="/books/$bookId/editions/$editionId/edit"
-                  params={{ bookId: book.id, editionId: edition.id }}
-                />
-              }
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
             >
               <Icon icon="pencil" aria-hidden data-icon="inline-start" />
               {m.book_edition_edit()}
-            </Button>
+            </Link>
           )}
         </div>
         <Facts
@@ -180,14 +174,14 @@ function BookPage() {
               </ul>
             )}
             {can.edit && (
-              <Button
-                className="mt-4 self-start"
-                nativeButton={false}
-                render={<Link to="/books/$bookId/edit" params={{ bookId: book.id }} />}
+              <Link
+                to="/books/$bookId/edit"
+                params={{ bookId: book.id }}
+                className={buttonVariants({ className: 'mt-4 self-start' })}
               >
                 <Icon icon="pencil" aria-hidden data-icon="inline-start" />
                 {m.book_edit()}
-              </Button>
+              </Link>
             )}
           </div>
         </header>

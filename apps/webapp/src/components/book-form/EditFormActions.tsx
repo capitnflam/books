@@ -1,4 +1,4 @@
-import { Button } from '@books/ui/components/button';
+import { buttonVariants } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { Link } from '@tanstack/react-router';
 
@@ -25,13 +25,13 @@ const EditFormActions: FC<EditFormActionsProps> = ({ bookId, problem }) => (
       {problem?.error === 'not-found' && <ErrorMessage>{m.book_gone()}</ErrorMessage>}
     </FormStatus>
     <div className="flex gap-3">
-      <Button
-        variant="outline"
-        nativeButton={false}
-        render={<Link to="/books/$bookId" params={{ bookId }} />}
+      <Link
+        to="/books/$bookId"
+        params={{ bookId }}
+        className={buttonVariants({ variant: 'outline' })}
       >
         {m.book_cancel()}
-      </Button>
+      </Link>
       <SubmitButton>
         <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
         {m.book_save()}
