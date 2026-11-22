@@ -12,7 +12,7 @@ export type ButtonProps = ButtonPrimitive.Props & {
   size?: ButtonSize;
 };
 
-const buttonVariants = cva<{
+const buttonClasses = cva<{
   variant: Record<ButtonVariant, string>;
   size: Record<ButtonSize, string>;
 }>(
@@ -49,6 +49,14 @@ const buttonVariants = cva<{
     },
   },
 );
+
+/**
+ * The classes of a button, for a link that looks like one. Put them on the link itself: rendering
+ * it with `Button` gives it the button role. The classes are merged because variants and sizes
+ * override some of the base ones.
+ */
+export const buttonVariants = (options?: Parameters<typeof buttonClasses>[0]) =>
+  cn(buttonClasses(options));
 
 export const Button: FC<ButtonProps> = ({
   className,
