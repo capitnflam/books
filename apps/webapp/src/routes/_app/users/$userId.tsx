@@ -11,9 +11,10 @@ import {
 } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
-import { Link, createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router';
+import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import BackLink from '#/components/BackLink';
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
 import { useServerAction } from '#/hooks/use-server-action';
@@ -58,16 +59,6 @@ type UserDetails = NonNullable<Awaited<ReturnType<typeof getUserDetailsFn>>>;
 function nameOf({ user, account }: UserDetails) {
   return user.displayName || account?.fullName || account?.email || m.users_unnamed();
 }
-
-const BackLink: FC = () => (
-  <Link
-    to="/users"
-    className="text-link focus-visible:ring-ring focus-visible:ring-offset-background flex items-center gap-1.5 self-start rounded-sm text-base/6 underline-offset-3 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
-  >
-    <Icon icon="arrow-left" aria-hidden className="size-4.5" />
-    {m.user_back()}
-  </Link>
-);
 
 type DisplayNameFormProps = { userId: string; displayName: string };
 
@@ -339,7 +330,7 @@ const AccountSection: FC<AccountSectionProps> = ({ details, name }) => {
 function UserNotFound() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-6 px-4 py-16">
-      <BackLink />
+      <BackLink to="/users">{m.user_back()}</BackLink>
       <h1>{m.user_not_found_title()}</h1>
       <p className="text-muted-foreground">{m.user_not_found_description()}</p>
     </div>
@@ -354,7 +345,7 @@ function UserPage() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-12 px-4 py-16">
       <div className="flex flex-col gap-6">
-        <BackLink />
+        <BackLink to="/users">{m.user_back()}</BackLink>
         <header className="flex flex-wrap items-center gap-x-8 gap-y-6">
           <Avatar className="ring-gilt ring-offset-background size-28 ring-1 ring-offset-4">
             <AvatarImage src={account?.imageUrl || undefined} alt="" />
