@@ -1,4 +1,4 @@
-import { Button } from '@books/ui/components/button';
+import { buttonVariants } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -93,10 +93,10 @@ function BooksPage() {
           <p className="text-muted-foreground mt-1">{m.books_intro()}</p>
         </div>
         {canAdd && (
-          <Button nativeButton={false} render={<Link to="/books/new" />}>
+          <Link to="/books/new" className={buttonVariants()}>
             <Icon icon="book-upload" aria-hidden data-icon="inline-start" />
             {m.nav_add_book()}
-          </Button>
+          </Link>
         )}
       </header>
 

@@ -1,4 +1,4 @@
-import { Button } from '@books/ui/components/button';
+import { Button, buttonVariants } from '@books/ui/components/button';
 import { Field, FieldDescription, FieldLabel } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
@@ -202,13 +202,13 @@ const Created: FC<{ bookId: string; title: string; onAddAnother: () => void }> =
           <Icon icon="plus" aria-hidden data-icon="inline-start" />
           {m.book_add_another()}
         </Button>
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<Link to="/books/$bookId" params={{ bookId }} />}
+        <Link
+          to="/books/$bookId"
+          params={{ bookId }}
+          className={buttonVariants({ variant: 'outline' })}
         >
           {m.book_view()}
-        </Button>
+        </Link>
       </div>
     </section>
   );

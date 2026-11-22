@@ -4,7 +4,7 @@ import type { IconButtonProps } from '#/components/icon-button';
 // Option lists shared by the Button and IconButton stories, typed against the components so
 // they fail to compile when a variant or size is renamed.
 
-export const buttonVariants: NonNullable<ButtonProps['variant']>[] = [
+export const buttonVariantNames: NonNullable<ButtonProps['variant']>[] = [
   'default',
   'secondary',
   'outline',
