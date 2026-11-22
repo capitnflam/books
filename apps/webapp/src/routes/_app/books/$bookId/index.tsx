@@ -8,7 +8,7 @@ import BookNotFound from '#/components/BookNotFound';
 import PageSection from '#/components/PageSection';
 import { m } from '#/paraglide/messages';
 import { loadBookDetails } from '#/services/catalog/book-details';
-import { CONTRIBUTOR_ROLES } from '#/services/catalog/catalog';
+import { CONTRIBUTOR_ROLES, bookCover } from '#/services/catalog/catalog';
 import { genreLabel } from '#/services/catalog/genres';
 import { formatLabel, languageName, roleLabel } from '#/services/catalog/labels';
 import { formatDay, formatYear } from '#/utils/dates';
@@ -143,14 +143,13 @@ function BookPage() {
   const authors = book.contributors
     .filter(({ role }) => role === 'author')
     .map(({ author }) => author.name);
-  const cover = book.editions.find(({ coverImageUrl }) => coverImageUrl)?.coverImageUrl ?? null;
 
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-12 px-4 py-16">
       <div className="flex flex-col gap-6">
         <BackLink to="/books">{m.book_back()}</BackLink>
         <header className="flex flex-wrap items-start gap-x-8 gap-y-6">
-          <BookCover url={cover} alt={m.book_cover_alt({ title: book.title })} />
+          <BookCover url={bookCover(book.editions)} alt={m.book_cover_alt({ title: book.title })} />
           <div className="flex min-w-0 flex-1 basis-80 flex-col gap-2">
             <p className="text-overline text-muted-foreground uppercase">{m.books_title()}</p>
             <h1 className="break-words">{book.title}</h1>
