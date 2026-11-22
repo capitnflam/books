@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The Storybook tests in packages/ui run in headless Chromium.
+      # The Storybook tests in packages/ui and the page tests in apps/webapp run in headless Chromium.
       - name: Install Playwright Chromium
         run: pnpm --filter @books/ui exec playwright install --with-deps chromium
 
