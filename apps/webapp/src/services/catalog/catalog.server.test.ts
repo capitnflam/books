@@ -119,20 +119,27 @@ describe('creating a book', () => {
     mocks.selects = [
       // No edition has the ISBN yet.
       [],
-      // The publisher, once inserted or found.
-      [{ id: 'harpercollins' }],
+      // The publisher is already catalogued.
+      [{ id: 'harpercollins', name: 'HarperCollins' }],
       // Tolkien is already catalogued; Anderson and Ledoux are not.
       [{ id: 'tolkien' }],
       [],
       [],
       // No series by that name yet.
       [],
-      // The subjects, once inserted or found.
-      [{ id: 'fantasy' }, { id: 'dragons' }],
+      // Subjects: "fantasy" exists in lower case; "Dragons" doesn't, so it is created and
+      // looked up again.
+      [{ id: 'fantasy', name: 'fantasy' }],
+      [
+        { id: 'fantasy', name: 'fantasy' },
+        { id: 'dragons', name: 'Dragons' },
+      ],
     ];
 
     const result = await createBookServer(
       book({
+        // A French edition: its title and series are filed by French articles.
+        title: 'Le Hobbit',
         isbn: '9780261102217',
         contributors: [
           { name: 'J.R.R. Tolkien', role: 'author' },
@@ -142,7 +149,7 @@ describe('creating a book', () => {
         ],
         originalLanguage: 'en',
         firstPublishedYear: '1937',
-        series: 'The Lord of the Rings',
+        series: 'Le Seigneur des anneaux',
         seriesPosition: '0',
         genres: ['fantasy', 'humour'],
         subjects: 'Fantasy, Dragons',
@@ -154,18 +161,19 @@ describe('creating a book', () => {
       }),
     );
 
-    expect(result).toEqual({ error: null, bookId: 'id-1', title: 'The Hobbit' });
+    expect(result).toEqual({ error: null, bookId: 'id-1', title: 'Le Hobbit' });
     expect(insertsInto(schema.books)).toEqual([
       {
-        title: 'The Hobbit',
+        title: 'Le Hobbit',
         subtitle: null,
-        sortTitle: 'Hobbit, The',
+        sortTitle: 'Hobbit, Le',
         description: null,
         originalLanguage: 'en',
         firstPublishedYear: 1937,
       },
     ]);
-    expect(insertsInto(schema.publishers)).toEqual([[{ name: 'HarperCollins' }]]);
+    // An existing publisher is reused, not inserted again.
+    expect(insertsInto(schema.publishers)).toEqual([]);
     expect(insertsInto(schema.editions)).toEqual([
       expect.objectContaining({
         bookId: 'id-1',
@@ -188,17 +196,17 @@ describe('creating a book', () => {
     expect(insertsInto(schema.bookContributors)).toEqual([
       [
         { bookId: 'id-1', authorId: 'tolkien', role: 'author', position: 0 },
-        { bookId: 'id-1', authorId: 'id-4', role: 'introduction', position: 1 },
+        { bookId: 'id-1', authorId: 'id-3', role: 'introduction', position: 1 },
       ],
     ]);
     expect(insertsInto(schema.editionContributors)).toEqual([
-      [{ editionId: 'id-3', authorId: 'id-5', role: 'translator', position: 0 }],
+      [{ editionId: 'id-2', authorId: 'id-4', role: 'translator', position: 0 }],
     ]);
     expect(insertsInto(schema.series)).toEqual([
-      { name: 'The Lord of the Rings', sortName: 'Lord of the Rings, The' },
+      { name: 'Le Seigneur des anneaux', sortName: 'Seigneur des anneaux, Le' },
     ]);
     expect(insertsInto(schema.bookSeries)).toEqual([
-      { bookId: 'id-1', seriesId: 'id-8', position: 0 },
+      { bookId: 'id-1', seriesId: 'id-7', position: 0 },
     ]);
     expect(insertsInto(schema.bookGenres)).toEqual([
       [
@@ -206,6 +214,8 @@ describe('creating a book', () => {
         { bookId: 'id-1', genre: 'humour' },
       ],
     ]);
+    // Only the subject missing in any case is created.
+    expect(insertsInto(schema.subjects)).toEqual([[{ name: 'Dragons' }]]);
     expect(insertsInto(schema.bookSubjects)).toEqual([
       [
         { bookId: 'id-1', subjectId: 'fantasy' },

@@ -6,9 +6,8 @@ import { isEditionRole, sortName, sortTitle } from './catalog';
 import { parseIsbn } from './isbn';
 import { lookupIsbnOnline } from './isbn-lookup.server';
 
-import type { CreateBookInput } from './catalog';
+import type { BookDraft, CreateBookInput } from './catalog';
 import type { Isbns } from './isbn';
-import type { BookDraft } from './isbn-lookup.server';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -104,7 +103,11 @@ async function findOrCreateSeries(tx: Transaction, name: string, language: strin
   return created!.id;
 }
 
-/** Publishers and subjects have unique names: the existing row's id, or a new one's. */
+/**
+ * The ids of the publishers or subjects named `names`, ignoring case like authors and series
+ * (`Fantasy` reuses `fantasy`), creating those that don't exist yet. Where rows differing only
+ * by case already exist, the oldest is used.
+ */
 async function findOrCreateNamed(
   tx: Transaction,
   table: typeof schema.publishers | typeof schema.subjects,
@@ -114,14 +117,41 @@ async function findOrCreateNamed(
     return [];
   }
 
-  await tx
-    .insert(table)
-    .values(names.map((name) => ({ name })))
-    .onConflictDoNothing({ target: table.name });
+  const idsByName = async () => {
+    const rows = await tx
+      .select({ id: table.id, name: table.name })
+      .from(table)
+      .where(
+        orm.inArray(
+          orm.sql`lower(${table.name})`,
+          names.map((name) => name.toLowerCase()),
+        ),
+      )
+      .orderBy(orm.asc(table.createdAt));
+    const ids = new Map<string, string>();
 
-  const rows = await tx.select({ id: table.id }).from(table).where(orm.inArray(table.name, names));
+    for (const { id, name } of rows) {
+      if (!ids.has(name.toLowerCase())) {
+        ids.set(name.toLowerCase(), id);
+      }
+    }
 
-  return rows.map(({ id }) => id);
+    return ids;
+  };
+
+  let ids = await idsByName();
+  const missing = names.filter((name) => !ids.has(name.toLowerCase()));
+
+  if (missing.length > 0) {
+    // `on conflict` covers another save creating the same name meanwhile.
+    await tx
+      .insert(table)
+      .values(missing.map((name) => ({ name })))
+      .onConflictDoNothing({ target: table.name });
+    ids = await idsByName();
+  }
+
+  return names.flatMap((name) => ids.get(name.toLowerCase()) ?? []);
 }
 
 const isUniqueViolation = (error: unknown) =>
@@ -145,7 +175,9 @@ export async function createBookServer(book: CreateBookInput) {
     }
   }
 
-  const language = book.originalLanguage ?? book.language;
+  // The title and series name are as printed on this edition (often what the lookup found), so
+  // their leading article is the edition's language's: "Le Seigneur des anneaux" files under S.
+  const language = book.language ?? book.originalLanguage;
 
   try {
     const bookId = await db.transaction(async (tx) => {

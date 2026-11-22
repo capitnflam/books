@@ -238,6 +238,7 @@
   "book_contributor_remove": "Mitwirkenden {number} entfernen",
   "book_contributor_add": "Mitwirkenden hinzufügen",
   "book_contributor_error": "Namen dürfen höchstens 200 Zeichen lang sein.",
+  "book_contributors_too_many": "Höchstens {max} Mitwirkende.",
   "book_role_author": "Autor",
   "book_role_editor": "Herausgeber",
   "book_role_illustrator": "Illustrator",

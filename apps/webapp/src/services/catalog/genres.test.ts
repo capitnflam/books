@@ -47,6 +47,14 @@ describe('genresFromSubjects', () => {
     ]);
   });
 
+  it('doesn’t take nonfiction for fiction', () => {
+    expect(genresFromSubjects(['History / Europe / General', 'Juvenile Nonfiction'])).toEqual([
+      'children',
+      'history',
+    ]);
+    expect(genresFromSubjects(['Non-fiction', 'Science / Astronomy'])).toEqual(['science']);
+  });
+
   it('suggests nothing for subjects that name no genre', () => {
     expect(genresFromSubjects(['Rincewind', 'Discworld (Imaginary place)'])).toEqual([]);
     expect(genresFromSubjects([])).toEqual([]);

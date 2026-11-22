@@ -94,6 +94,26 @@ describe('lookupIsbnOnline', () => {
     });
   });
 
+  it('keeps no more credits than the form takes', async () => {
+    const edition = openLibraryHobbit['openlibrary.org/isbn/9780261102217.json'];
+
+    responses = {
+      ...openLibraryHobbit,
+      'openlibrary.org/isbn/9780261102217.json': {
+        ...edition,
+        contributors: Array.from({ length: 30 }, (_, index) => ({
+          name: `Translator ${index}`,
+          role: 'Translator',
+        })),
+      },
+    };
+
+    const outcome = await lookupIsbnOnline(hobbit);
+
+    expect(outcome).toMatchObject({ status: 'found' });
+    expect(outcome).toHaveProperty('draft.contributors.length', 20);
+  });
+
   it('asks for the authors’ records when the search has no names', async () => {
     responses = {
       ...openLibraryHobbit,
@@ -228,6 +248,10 @@ describe('seriesFromText', () => {
       series: 'Dune chronicles',
       seriesPosition: '1',
     });
+    // Names ending in a keyword's letters keep them: the keyword must be a word of its own.
+    expect(seriesFromText('Domino 3')).toEqual({ series: 'Domino', seriesPosition: '3' });
+    expect(seriesFromText('Casino 2')).toEqual({ series: 'Casino', seriesPosition: '2' });
+    expect(seriesFromText('Lorebook 1')).toEqual({ series: 'Lorebook', seriesPosition: '1' });
     expect(seriesFromText('Penguin Classics')).toEqual({
       series: 'Penguin Classics',
       seriesPosition: '',

@@ -61,7 +61,7 @@ export const BOOK_DESCRIPTION_MAX_LENGTH = 10_000;
 const NAME_MAX_LENGTH = 200;
 const SUBJECT_MAX_LENGTH = 100;
 const SUBJECTS_MAX = 20;
-const CONTRIBUTORS_MAX = 20;
+export const CONTRIBUTORS_MAX = 20;
 
 export type ContributorForm = { name: string; role: ContributorRole };
 
@@ -115,6 +115,33 @@ export function emptyBookForm(): BookForm {
     durationMinutes: '',
     coverImageUrl: '',
   };
+}
+
+/** What an ISBN lookup found to prefill the form with; fields it found nothing for are left out. */
+export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
+
+/**
+ * The form once a lookup for `isbn` returned `draft`. Fields the `previous` lookup filled, and
+ * that still hold what it put there, are emptied first: looking up a second book must not keep
+ * the first one's series or cover. Fields the reader typed or changed are kept, unless the new
+ * draft has a value for them.
+ */
+export function applyLookup(
+  form: BookForm,
+  previous: BookDraft | null,
+  draft: BookDraft,
+  isbn: string,
+): BookForm {
+  const empty = emptyBookForm();
+  const next: BookForm = { ...form };
+
+  for (const key of Object.keys(previous ?? {}) as (keyof BookDraft)[]) {
+    if (JSON.stringify(form[key]) === JSON.stringify(previous?.[key])) {
+      Object.assign(next, { [key]: empty[key] });
+    }
+  }
+
+  return { ...next, ...draft, isbn };
 }
 
 /** Leading articles filed after the title, by language: `The Hobbit` → `Hobbit, The`. */
@@ -243,9 +270,21 @@ const published = z
   }))
   .refine(({ publishedYear }) => publishedYear === null || publishedYear <= 9999);
 
-const CURRENT_YEAR_LIMIT = new Date().getFullYear() + 1;
+/** Only the length the chosen format shows counts: running time for audiobooks, pages otherwise. */
+function dropHiddenLength(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
 
-export const createBookSchema = z
+  return (value as Partial<BookForm>).format === 'audiobook'
+    ? { ...value, pageCount: '' }
+    : { ...value, durationMinutes: '' };
+}
+
+/** Next year at the latest: books are announced before they come out. Read on every check. */
+const isNotTooLate = (year: number | null) => year === null || year <= new Date().getFullYear() + 1;
+
+const bookSchema = z
   .object({
     isbn: z
       .string()
@@ -266,7 +305,7 @@ export const createBookSchema = z
       .transform((rows) => rows.filter(({ name }) => name)),
     description: optionalText(BOOK_DESCRIPTION_MAX_LENGTH),
     originalLanguage: optionalLanguage,
-    firstPublishedYear: optionalInteger(-3000, CURRENT_YEAR_LIMIT),
+    firstPublishedYear: optionalInteger(-3000, 9999).refine(isNotTooLate),
     series: optionalText(NAME_MAX_LENGTH),
     seriesPosition: z
       .string()
@@ -312,18 +351,29 @@ export const createBookSchema = z
     path: ['seriesPosition'],
   });
 
+/** The form as the server saves it; the hidden page count or running time is dropped first. */
+export const createBookSchema = z.preprocess(dropHiddenLength, bookSchema);
+
 export type CreateBookInput = z.output<typeof createBookSchema>;
 
 /**
- * The fields of `form` that the server would refuse, as paths like `title` or
- * `contributors.0.name`, so the form can mark them before sending it.
+ * Where the form shows an error at `path`: on the field, even for an item inside a list (a
+ * subject too long is `subjects`), except a contributor's own row (`contributors.0.name`).
+ */
+function errorField(path: readonly PropertyKey[]): string {
+  return path[0] === 'contributors' && path.length >= 3
+    ? path.slice(0, 3).join('.')
+    : String(path[0]);
+}
+
+/**
+ * The fields of `form` that the server would refuse, as the form's field names (`title`,
+ * `subjects`) or contributor rows (`contributors.0.name`), so it can mark them before sending.
  */
 export function bookFormErrors(form: BookForm): Set<string> {
   const result = createBookSchema.safeParse(form);
 
-  return new Set(
-    result.success ? [] : result.error.issues.map(({ path }) => path.slice(0, 3).join('.')),
-  );
+  return new Set(result.success ? [] : result.error.issues.map(({ path }) => errorField(path)));
 }
 
 export const lookupIsbnSchema = z.object({ isbn: z.string().trim().min(1).max(32) });

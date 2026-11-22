@@ -238,6 +238,7 @@
   "book_contributor_remove": "Remove contributor {number}",
   "book_contributor_add": "Add a contributor",
   "book_contributor_error": "Keep names to 200 characters.",
+  "book_contributors_too_many": "Keep the list to {max} contributors.",
   "book_role_author": "Author",
   "book_role_editor": "Editor",
   "book_role_illustrator": "Illustrator",

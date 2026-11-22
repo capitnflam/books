@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { bookFormErrors, createBookSchema, emptyBookForm, sortName, sortTitle } from './catalog';
+import {
+  applyLookup,
+  bookFormErrors,
+  createBookSchema,
+  emptyBookForm,
+  sortName,
+  sortTitle,
+} from './catalog';
 
 import type { BookForm } from './catalog';
 
@@ -150,5 +157,103 @@ describe('bookFormErrors', () => {
         'genres',
       ]),
     );
+  });
+});
+
+describe('bookFormErrors, for fields with several values', () => {
+  it('reports an invalid subject on the Subjects field', () => {
+    expect(bookFormErrors(form({ subjects: `Fantasy, ${'a'.repeat(101)}` }))).toEqual(
+      new Set(['subjects']),
+    );
+  });
+
+  it('reports too many contributors on the list, and a bad name on its row', () => {
+    const many = Array.from({ length: 21 }, (_, index) => ({
+      name: `Author ${index}`,
+      role: 'author' as const,
+    }));
+
+    expect(bookFormErrors(form({ contributors: many }))).toEqual(new Set(['contributors']));
+    expect(
+      bookFormErrors(form({ contributors: [{ name: 'a'.repeat(201), role: 'author' }] })),
+    ).toEqual(new Set(['contributors.0.name']));
+  });
+});
+
+describe('the page count and running time', () => {
+  it('checks and saves only the one the format shows', () => {
+    // Pages are hidden for an audiobook, the running time for every other format.
+    expect(bookFormErrors(form({ format: 'audiobook', pageCount: '0' }))).toEqual(new Set());
+    expect(bookFormErrors(form({ format: 'paperback', durationMinutes: 'abc' }))).toEqual(
+      new Set(),
+    );
+    expect(
+      createBookSchema.parse(
+        form({ format: 'audiobook', pageCount: '310', durationMinutes: '660' }),
+      ),
+    ).toMatchObject({ pageCount: null, durationMinutes: 660 });
+    expect(
+      createBookSchema.parse(form({ format: '', pageCount: '310', durationMinutes: '660' })),
+    ).toMatchObject({ pageCount: 310, durationMinutes: null });
+  });
+});
+
+describe('the first publication year', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('accepts next year at the latest, as of the day the form is checked', () => {
+    vi.useFakeTimers({ now: new Date('2026-12-31T12:00:00Z') });
+    expect(bookFormErrors(form({ firstPublishedYear: '2027' }))).toEqual(new Set());
+    expect(bookFormErrors(form({ firstPublishedYear: '2028' }))).toEqual(
+      new Set(['firstPublishedYear']),
+    );
+
+    // A server still running after New Year moves the limit with it.
+    vi.setSystemTime(new Date('2027-01-02T12:00:00Z'));
+    expect(bookFormErrors(form({ firstPublishedYear: '2028' }))).toEqual(new Set());
+  });
+});
+
+describe('applyLookup', () => {
+  const discworld = {
+    title: 'The Colour of Magic',
+    series: 'Discworld',
+    seriesPosition: '1',
+    coverImageUrl: 'https://covers.example/1.jpg',
+  };
+
+  it('fills the form with what the lookup found, with the ISBN-13', () => {
+    expect(applyLookup(emptyBookForm(), null, discworld, '9780552166591')).toMatchObject({
+      ...discworld,
+      isbn: '9780552166591',
+    });
+  });
+
+  it('empties what the previous lookup filled when another book is looked up', () => {
+    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
+    const second = applyLookup(first, discworld, { title: 'Ficciones' }, '9780802130303');
+
+    expect(second).toMatchObject({
+      title: 'Ficciones',
+      series: '',
+      seriesPosition: '',
+      coverImageUrl: '',
+      isbn: '9780802130303',
+    });
+  });
+
+  it('keeps what the reader changed or typed since', () => {
+    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
+    const edited = { ...first, series: 'The Discworld', description: 'My notes' };
+    const second = applyLookup(edited, discworld, {}, '9780802130303');
+
+    expect(second).toMatchObject({
+      title: '',
+      series: 'The Discworld',
+      description: 'My notes',
+      coverImageUrl: '',
+    });
   });
 });

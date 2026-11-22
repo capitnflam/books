@@ -109,7 +109,8 @@ const SUGGESTED_GENRES_MAX = 3;
  */
 export function genresFromSubjects(subjects: readonly string[]): Genre[] {
   const lower = subjects.map((subject) => subject.toLowerCase());
-  const fiction = lower.some((subject) => subject.includes('fiction'));
+  // "Fiction", but not "Nonfiction" or "Non-fiction".
+  const fiction = lower.some((subject) => /(?<!non-?)\bfiction\b/u.test(subject));
   const hints = fiction ? GENRE_HINTS : [...GENRE_HINTS, ...NONFICTION_HINTS];
 
   return hints

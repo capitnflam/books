@@ -238,6 +238,7 @@
   "book_contributor_remove": "Retirer le contributeur {number}",
   "book_contributor_add": "Ajouter un contributeur",
   "book_contributor_error": "Les noms ne doivent pas dépasser 200 caractères.",
+  "book_contributors_too_many": "{max} contributeurs au plus.",
   "book_role_author": "Auteur",
   "book_role_editor": "Directeur de publication",
   "book_role_illustrator": "Illustrateur",

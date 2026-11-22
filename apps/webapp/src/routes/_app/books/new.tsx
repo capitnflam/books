@@ -36,18 +36,20 @@ import { checkPermissionFn } from '#/services/access/access.functions';
 import {
   BOOK_DESCRIPTION_MAX_LENGTH,
   BOOK_TITLE_MAX_LENGTH,
+  CONTRIBUTORS_MAX,
   CONTRIBUTOR_ROLES,
   EDITION_FORMATS,
   LANGUAGE_OPTIONS,
   bookFormErrors,
   emptyBookForm,
+  applyLookup,
   emptyContributor,
 } from '#/services/catalog/catalog';
 import { createBookFn, lookupIsbnFn } from '#/services/catalog/catalog.functions';
 import { GENRES, genreAliases, genreLabel } from '#/services/catalog/genres';
 import { fuzzyFilter } from '#/utils/fuzzy-search';
 
-import type { BookForm, ContributorForm } from '#/services/catalog/catalog';
+import type { BookDraft, BookForm, ContributorForm } from '#/services/catalog/catalog';
 import type { ContributorRole, EditionFormat, Genre } from '@books/database';
 import type { NativeSelectProps } from '@books/ui/components/native-select';
 import type { ChangeEvent, FC, FormEvent, ReactNode } from 'react';
@@ -236,8 +238,10 @@ const GenresField: FC<{
 const ContributorsField: FC<{
   contributors: ContributorForm[];
   invalid: (index: number) => boolean;
+  /** More rows than the server takes. */
+  tooMany: boolean;
   onChange: (contributors: ContributorForm[]) => void;
-}> = ({ contributors, invalid, onChange }) => {
+}> = ({ contributors, invalid, tooMany, onChange }) => {
   const update = (index: number, change: Partial<ContributorForm>) =>
     onChange(contributors.map((row, at) => (at === index ? { ...row, ...change } : row)));
 
@@ -307,6 +311,9 @@ const ContributorsField: FC<{
         <Icon icon="plus" aria-hidden data-icon="inline-start" />
         {m.book_contributor_add()}
       </Button>
+      {tooMany && (
+        <FieldError>{m.book_contributors_too_many({ max: CONTRIBUTORS_MAX })}</FieldError>
+      )}
     </FieldSet>
   );
 };
@@ -339,10 +346,15 @@ const IsbnLookup: FC<{
   onFound: (result: Extract<LookupResult, { isbn: string }>) => void;
 }> = ({ isbn, invalid, onIsbnChange, onFound }) => {
   const [lookup, setLookup] = useState<LookupState>({ status: 'idle' });
+  // Counts lookups and ISBN edits: a response is applied only if nothing happened since its
+  // request, so a slow answer for an ISBN that was then corrected can't overwrite the new one.
+  const latestRequest = useRef(0);
   const message = lookupMessages(lookup);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    latestRequest.current += 1;
+    const request = latestRequest.current;
 
     if (!isbn.trim()) {
       setLookup({ status: 'invalid' });
@@ -355,13 +367,19 @@ const IsbnLookup: FC<{
     try {
       const result = await lookupIsbnFn({ data: { isbn } });
 
+      if (request !== latestRequest.current) {
+        return;
+      }
+
       setLookup(result);
 
       if ('isbn' in result) {
         onFound(result);
       }
     } catch {
-      setLookup({ status: 'failed' });
+      if (request === latestRequest.current) {
+        setLookup({ status: 'failed' });
+      }
     }
   };
 
@@ -383,6 +401,7 @@ const IsbnLookup: FC<{
               aria-describedby="book-isbn-hint book-isbn-status"
               value={isbn}
               onChange={(event) => {
+                latestRequest.current += 1;
                 onIsbnChange(event.target.value);
                 setLookup({ status: 'idle' });
               }}
@@ -465,6 +484,8 @@ function NewBookPage() {
   const [created, setCreated] = useState<string | null>(null);
   // Remounts the ISBN lookup, clearing its message, when a new book is started.
   const [formKey, setFormKey] = useState(0);
+  // What the last lookup filled in, to empty it if another book is looked up.
+  const [prefilled, setPrefilled] = useState<BookDraft | null>(null);
 
   const errors = submitted ? bookFormErrors(form) : new Set<string>();
   const set =
@@ -507,6 +528,7 @@ function NewBookPage() {
     setTaken(null);
     setCreated(null);
     setFormKey((key) => key + 1);
+    setPrefilled(null);
   };
 
   return (
@@ -527,13 +549,13 @@ function NewBookPage() {
             isbn={form.isbn}
             invalid={errors.has('isbn')}
             onIsbnChange={(isbn) => setForm((current) => ({ ...current, isbn }))}
-            onFound={(result) =>
-              setForm((current) => ({
-                ...current,
-                ...(result.status === 'found' ? result.draft : {}),
-                isbn: result.isbn,
-              }))
-            }
+            onFound={(result) => {
+              // A book the catalogues don't know still clears what the last lookup filled.
+              const draft = result.status === 'found' ? result.draft : {};
+
+              setForm((current) => applyLookup(current, prefilled, draft, result.isbn));
+              setPrefilled(draft);
+            }}
           />
 
           <form
@@ -578,6 +600,7 @@ function NewBookPage() {
                 <ContributorsField
                   contributors={form.contributors}
                   invalid={(index) => errors.has(`contributors.${index}.name`)}
+                  tooMany={errors.has('contributors')}
                   onChange={(contributors) => setForm((current) => ({ ...current, contributors }))}
                 />
                 <FormField

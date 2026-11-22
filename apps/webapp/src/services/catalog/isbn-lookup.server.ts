@@ -1,13 +1,11 @@
 import { z } from 'zod';
 
+import { CONTRIBUTORS_MAX } from './catalog';
 import { genresFromSubjects } from './genres';
 
-import type { BookForm, ContributorForm } from './catalog';
+import type { BookDraft, ContributorForm } from './catalog';
 import type { Isbns } from './isbn';
 import type { EditionFormat } from '@books/database';
-
-/** What a lookup found to prefill the form with; fields it found nothing for are left out. */
-export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
 
 export type LookupOutcome =
   | { status: 'found'; draft: BookDraft }
@@ -244,7 +242,7 @@ export function seriesFromText(
   }
 
   const match =
-    /^(.*?)[\s,;:(-]*(?:#|no\.?|vol\.?|volume|book|bk\.?|tome|band)?\s*(\d{1,4}(?:\.\d{1,2})?)\)?\s*$/iu.exec(
+    /^(.*?)[\s,;:(-]*(?:#|\b(?:no\.?|vol\.?|volume|book|bk\.?|tome|band))?\s*(\d{1,4}(?:\.\d{1,2})?)\)?\s*$/iu.exec(
       value.trim(),
     );
 
@@ -359,7 +357,7 @@ async function fromOpenLibrary({ isbn13 }: Isbns): Promise<BookDraft | null> {
         .slice(0, AUTHORS_MAX)
         .map((name) => ({ name: cleanName(name), role: 'author' as const })),
       ...otherCredits,
-    ],
+    ].slice(0, CONTRIBUTORS_MAX),
     description: cleanDescription(data.description ?? work?.description),
     firstPublishedYear: firstYear === undefined ? undefined : String(firstYear).slice(0, 4),
     ...seriesFromText(data.series?.[0]),
