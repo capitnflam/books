@@ -3,6 +3,7 @@ import { db, orm, schema } from '@books/database';
 import { requireViewerServer } from '#/services/access/access.server';
 import { PAGE_SIZE, escapeLike } from '#/utils/list-search';
 
+import { bookCover } from './catalog';
 import { GENRES } from './genres';
 import { parseIsbn } from './isbn';
 
@@ -89,7 +90,7 @@ export async function listBooksServer({ q, page = 1 }: ListSearch) {
             },
             editions: {
               orderBy: orm.asc(schema.editions.createdAt),
-              columns: { coverImageUrl: true },
+              columns: { title: true, coverImageUrl: true },
             },
           },
         });
@@ -107,8 +108,7 @@ export async function listBooksServer({ q, page = 1 }: ListSearch) {
             subtitle: book.subtitle,
             firstPublishedYear: book.firstPublishedYear,
             authors: book.contributors.map(({ author }) => author.name),
-            coverImageUrl:
-              book.editions.find((edition) => edition.coverImageUrl)?.coverImageUrl ?? null,
+            coverImageUrl: bookCover(book.editions),
           }
         : [];
     }),

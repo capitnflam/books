@@ -36,6 +36,14 @@ async function renderBook(details: BookDetails) {
   };
 }
 
+/** Opens the book's page, to read the cover of the work, above those of the editions. */
+async function renderCover(editions: BookDetails['book']['editions']) {
+  const page = await renderBook(bookDetails({ editions }));
+  const title = page.getByRole('heading', { level: 1 }).element();
+
+  return title.closest('header')?.querySelector('img');
+}
+
 beforeEach(() => signIn());
 
 describe('the work', () => {
@@ -104,6 +112,34 @@ describe('the work', () => {
     await expect
       .element(page.getByRole('link', { name: 'The whole catalogue' }))
       .toHaveAttribute('href', '/books');
+  });
+});
+
+describe('the cover', () => {
+  // The app's own logos: pictures that need no network.
+  const originalCover = new URL('/logo512.png', location.origin).href;
+  const translationCover = new URL('/logo192.png', location.origin).href;
+  const translation = edition({
+    id: uuid(11),
+    title: 'Bilbo le Hobbit',
+    coverImageUrl: translationCover,
+  });
+
+  it('is that of an edition under the book’s own title, though a translation came first', async () => {
+    const cover = await renderCover([translation, edition({ coverImageUrl: originalCover })]);
+
+    expect(cover).toHaveAttribute('src', originalCover);
+    expect(cover).toHaveAttribute('alt', 'Cover of The Hobbit');
+  });
+
+  it('is a translation’s when no edition under the book’s own title has one', async () => {
+    const cover = await renderCover([edition(), translation]);
+
+    expect(cover).toHaveAttribute('src', translationCover);
+  });
+
+  it('is left out when no edition has one', async () => {
+    expect(await renderCover([edition()])).toBeNull();
   });
 });
 

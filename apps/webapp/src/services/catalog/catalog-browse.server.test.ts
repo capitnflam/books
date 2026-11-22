@@ -42,13 +42,15 @@ vi.mock('@books/database', async (importOriginal) => ({
   },
 }));
 
-const listed = (id: string, authors: string[], covers: (string | null)[]) => ({
+type ListedEdition = { title: string | null; coverImageUrl: string | null };
+
+const listed = (id: string, authors: string[], editions: ListedEdition[]) => ({
   id,
   title: id,
   subtitle: null,
   firstPublishedYear: null,
   contributors: authors.map((name) => ({ author: { name } })),
-  editions: covers.map((coverImageUrl) => ({ coverImageUrl })),
+  editions,
 });
 
 beforeEach(() => {
@@ -58,11 +60,18 @@ beforeEach(() => {
 });
 
 describe('listing the catalogue', () => {
-  it('keeps the filing order of the page, with each book’s authors and first cover', async () => {
+  it('keeps the filing order of the page, with each book’s authors and cover', async () => {
     mocks.selects = [[{ id: 'a' }, { id: 'b' }], [{ total: 40 }]];
     mocks.books = [
       listed('b', [], []),
-      listed('a', ['Terry Pratchett', 'Neil Gaiman'], [null, 'https://example.org/a.jpg']),
+      listed(
+        'a',
+        ['Terry Pratchett', 'Neil Gaiman'],
+        [
+          { title: null, coverImageUrl: null },
+          { title: null, coverImageUrl: 'https://example.org/a.jpg' },
+        ],
+      ),
     ];
 
     await expect(listBooksServer({})).resolves.toEqual({
@@ -77,6 +86,27 @@ describe('listing the catalogue', () => {
           coverImageUrl: 'https://example.org/a.jpg',
         },
         expect.objectContaining({ id: 'b', authors: [], coverImageUrl: null }),
+      ],
+    });
+  });
+
+  it('shows the cover of an edition under the book’s own title before a translation’s', async () => {
+    const translation = { title: 'Bilbo le Hobbit', coverImageUrl: 'https://example.org/fr.jpg' };
+
+    mocks.selects = [[{ id: 'both' }, { id: 'translation' }], [{ total: 2 }]];
+    mocks.books = [
+      listed(
+        'both',
+        [],
+        [translation, { title: null, coverImageUrl: 'https://example.org/en.jpg' }],
+      ),
+      listed('translation', [], [{ title: null, coverImageUrl: null }, translation]),
+    ];
+
+    await expect(listBooksServer({})).resolves.toMatchObject({
+      books: [
+        { id: 'both', coverImageUrl: 'https://example.org/en.jpg' },
+        { id: 'translation', coverImageUrl: 'https://example.org/fr.jpg' },
       ],
     });
   });

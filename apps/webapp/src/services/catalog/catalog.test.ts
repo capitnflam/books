@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   applyLookup,
+  bookCover,
   bookFormErrors,
   createBookSchema,
   editionDraftOf,
@@ -498,5 +499,31 @@ describe('refiledTitle', () => {
       'Nineteen Eighty-Four',
     );
     expect(refiledTitle(byHand, { ...byHand, title: 'The Hobbit' })).toBe('Hobbit, The');
+  });
+});
+
+/** An edition printed under the book’s own title, and one under another. */
+const ownTitle = (coverImageUrl: string | null) => ({ title: null, coverImageUrl });
+const otherTitle = (coverImageUrl: string | null) => ({ title: 'Bilbo le Hobbit', coverImageUrl });
+
+describe('bookCover', () => {
+  it('is that of an edition printed under the book’s own title, even after a translation’s', () => {
+    expect(bookCover([otherTitle('fr.jpg'), ownTitle('en.jpg')])).toBe('en.jpg');
+  });
+
+  it('is a translation’s when no edition under the book’s own title has one', () => {
+    expect(bookCover([ownTitle(null), otherTitle('fr.jpg')])).toBe('fr.jpg');
+    expect(bookCover([otherTitle('fr.jpg')])).toBe('fr.jpg');
+  });
+
+  it('is the first one, of several as good', () => {
+    expect(bookCover([ownTitle(null), ownTitle('1.jpg'), ownTitle('2.jpg')])).toBe('1.jpg');
+    expect(bookCover([otherTitle(null), otherTitle('1.jpg'), otherTitle('2.jpg')])).toBe('1.jpg');
+  });
+
+  it('is none when no edition has one', () => {
+    expect(bookCover([])).toBeNull();
+    expect(bookCover([ownTitle(null), otherTitle(null)])).toBeNull();
+    expect(bookCover([ownTitle('')])).toBeNull();
   });
 });

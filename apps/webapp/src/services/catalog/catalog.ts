@@ -649,4 +649,17 @@ export function refiledTitle(
     : sortTitle(after.title, titleLanguage(after, after.editions));
 }
 
+/**
+ * The cover a book is shown with: the first among the editions printed under its own title, or
+ * else the first of any edition, such as a translation.
+ */
+export function bookCover(
+  editions: readonly { title: string | null; coverImageUrl: string | null }[],
+): string | null {
+  const withCover = editions.filter(({ coverImageUrl }) => coverImageUrl);
+  const shown = withCover.find(({ title }) => title === null) ?? withCover[0];
+
+  return shown?.coverImageUrl ?? null;
+}
+
 export const lookupIsbnSchema = z.object({ isbn: z.string().trim().min(1).max(32) });
