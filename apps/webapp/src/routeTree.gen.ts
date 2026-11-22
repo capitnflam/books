@@ -28,6 +28,7 @@ import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppBooksBookIdIndexRouteImport } from './routes/_app/books/$bookId/index'
 import { Route as AppBooksBookIdEditRouteImport } from './routes/_app/books/$bookId/edit'
+import { Route as AppBooksBookIdEditionsNewRouteImport } from './routes/_app/books/$bookId/editions.new'
 import { Route as AppBooksBookIdEditionsEditionIdEditRouteImport } from './routes/_app/books/$bookId/editions.$editionId.edit'
 
 const AppRoute = AppRouteImport.update({
@@ -124,6 +125,12 @@ const AppBooksBookIdEditRoute = AppBooksBookIdEditRouteImport.update({
   path: '/$bookId/edit',
   getParentRoute: () => AppBooksRoute,
 } as any)
+const AppBooksBookIdEditionsNewRoute =
+  AppBooksBookIdEditionsNewRouteImport.update({
+    id: '/$bookId/editions/new',
+    path: '/$bookId/editions/new',
+    getParentRoute: () => AppBooksRoute,
+  } as any)
 const AppBooksBookIdEditionsEditionIdEditRoute =
   AppBooksBookIdEditionsEditionIdEditRouteImport.update({
     id: '/$bookId/editions/$editionId/edit',
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/users/': typeof AppUsersIndexRoute
   '/books/$bookId/edit': typeof AppBooksBookIdEditRoute
   '/books/$bookId/': typeof AppBooksBookIdIndexRoute
+  '/books/$bookId/editions/new': typeof AppBooksBookIdEditionsNewRoute
   '/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/users': typeof AppUsersIndexRoute
   '/books/$bookId/edit': typeof AppBooksBookIdEditRoute
   '/books/$bookId': typeof AppBooksBookIdIndexRoute
+  '/books/$bookId/editions/new': typeof AppBooksBookIdEditionsNewRoute
   '/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRoutesById {
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/_app/users/': typeof AppUsersIndexRoute
   '/_app/books/$bookId/edit': typeof AppBooksBookIdEditRoute
   '/_app/books/$bookId/': typeof AppBooksBookIdIndexRoute
+  '/_app/books/$bookId/editions/new': typeof AppBooksBookIdEditionsNewRoute
   '/_app/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRouteTypes {
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/users/'
     | '/books/$bookId/edit'
     | '/books/$bookId/'
+    | '/books/$bookId/editions/new'
     | '/books/$bookId/editions/$editionId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/books/$bookId/edit'
     | '/books/$bookId'
+    | '/books/$bookId/editions/new'
     | '/books/$bookId/editions/$editionId/edit'
   id:
     | '__root__'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/_app/users/'
     | '/_app/books/$bookId/edit'
     | '/_app/books/$bookId/'
+    | '/_app/books/$bookId/editions/new'
     | '/_app/books/$bookId/editions/$editionId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -398,6 +411,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBooksBookIdEditRouteImport
       parentRoute: typeof AppBooksRoute
     }
+    '/_app/books/$bookId/editions/new': {
+      id: '/_app/books/$bookId/editions/new'
+      path: '/$bookId/editions/new'
+      fullPath: '/books/$bookId/editions/new'
+      preLoaderRoute: typeof AppBooksBookIdEditionsNewRouteImport
+      parentRoute: typeof AppBooksRoute
+    }
     '/_app/books/$bookId/editions/$editionId/edit': {
       id: '/_app/books/$bookId/editions/$editionId/edit'
       path: '/$bookId/editions/$editionId/edit'
@@ -413,6 +433,7 @@ interface AppBooksRouteChildren {
   AppBooksIndexRoute: typeof AppBooksIndexRoute
   AppBooksBookIdEditRoute: typeof AppBooksBookIdEditRoute
   AppBooksBookIdIndexRoute: typeof AppBooksBookIdIndexRoute
+  AppBooksBookIdEditionsNewRoute: typeof AppBooksBookIdEditionsNewRoute
   AppBooksBookIdEditionsEditionIdEditRoute: typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 
@@ -421,6 +442,7 @@ const AppBooksRouteChildren: AppBooksRouteChildren = {
   AppBooksIndexRoute: AppBooksIndexRoute,
   AppBooksBookIdEditRoute: AppBooksBookIdEditRoute,
   AppBooksBookIdIndexRoute: AppBooksBookIdIndexRoute,
+  AppBooksBookIdEditionsNewRoute: AppBooksBookIdEditionsNewRoute,
   AppBooksBookIdEditionsEditionIdEditRoute:
     AppBooksBookIdEditionsEditionIdEditRoute,
 }

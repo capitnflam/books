@@ -6,7 +6,13 @@ import { isEditionRole, refiledTitle, sortName, sortTitle } from './catalog';
 import { parseIsbn } from './isbn';
 import { lookupIsbnOnline } from './isbn-lookup.server';
 
-import type { BookDraft, CreateBookInput, UpdateBookInput, UpdateEditionInput } from './catalog';
+import type {
+  BookDraft,
+  CreateBookInput,
+  CreateEditionInput,
+  UpdateBookInput,
+  UpdateEditionInput,
+} from './catalog';
 import type { Isbns } from './isbn';
 import type { ContributorRole } from '@books/database';
 
@@ -231,7 +237,7 @@ async function insertGenresAndSubjects(
   }
 }
 
-/** The columns of an edition the add and edit forms share, its publisher found or created. */
+/** The columns of an edition that every form with one has, its publisher found or created. */
 async function editionValues(
   tx: Transaction,
   edition: Omit<UpdateEditionInput, 'editionId' | 'title' | 'subtitle' | 'contributors'>,
@@ -263,6 +269,36 @@ const isUniqueViolation = (error: unknown) =>
     || (error.cause as { code?: unknown } | undefined)?.code === '23505');
 
 /**
+ * Runs `save`, unless an edition other than `exceptId` has the ISBN, or takes it meanwhile:
+ * the answer is then that edition's book.
+ */
+async function saveUnlessIsbnTaken<Saved>(
+  isbn: Isbns | null,
+  save: () => Promise<Saved>,
+  exceptId?: string,
+) {
+  const findTaken = async () => (isbn ? findEditionByIsbnServer(isbn, exceptId) : null);
+  const taken = await findTaken();
+
+  if (taken) {
+    return { error: 'isbn-taken' as const, ...taken };
+  }
+
+  try {
+    return await save();
+  } catch (error) {
+    // Another edition took the ISBN between the check and the save.
+    const takenMeanwhile = isUniqueViolation(error) ? await findTaken() : null;
+
+    if (takenMeanwhile) {
+      return { error: 'isbn-taken' as const, ...takenMeanwhile };
+    }
+
+    throw error;
+  }
+}
+
+/**
  * Adds a book and its edition to the catalogue, with their credits, publisher, series, genres
  * and subjects; reuses the authors, publisher, series and subjects that already exist by name.
  * Refuses an ISBN another edition already has.
@@ -270,19 +306,11 @@ const isUniqueViolation = (error: unknown) =>
 export async function createBookServer(book: CreateBookInput) {
   await requirePermissionServer('catalog:manage');
 
-  if (book.isbn) {
-    const existing = await findEditionByIsbnServer(book.isbn);
-
-    if (existing) {
-      return { error: 'isbn-taken' as const, ...existing };
-    }
-  }
-
   // The title and series name are as printed on this edition (often what the lookup found), so
   // their leading article is the edition's language's: "Le Seigneur des anneaux" files under S.
   const language = book.language ?? book.originalLanguage;
 
-  try {
+  return saveUnlessIsbnTaken(book.isbn, async () => {
     const bookId = await db.transaction(async (tx) => {
       const [created] = await tx
         .insert(schema.books)
@@ -330,18 +358,7 @@ export async function createBookServer(book: CreateBookInput) {
     });
 
     return { error: null, bookId, title: book.title };
-  } catch (error) {
-    // Another edition took the ISBN between the check and the insert.
-    if (isUniqueViolation(error) && book.isbn) {
-      const existing = await findEditionByIsbnServer(book.isbn);
-
-      if (existing) {
-        return { error: 'isbn-taken' as const, ...existing };
-      }
-    }
-
-    throw error;
-  }
+  });
 }
 
 /**
@@ -372,6 +389,24 @@ async function lockBook(tx: Transaction, bookId: string) {
   });
 
   return book ?? null;
+}
+
+type LockedBook = NonNullable<Awaited<ReturnType<typeof lockBook>>>;
+
+/** Files a book under its title again: the language of its `editions` decides which article moves. */
+async function refileBook(
+  tx: Transaction,
+  book: LockedBook,
+  editions: readonly { title: string | null; language: string | null }[],
+) {
+  const sortTitleAfter = refiledTitle(book, { ...book, editions });
+
+  if (sortTitleAfter !== book.sortTitle) {
+    await tx
+      .update(schema.books)
+      .set({ sortTitle: sortTitleAfter })
+      .where(orm.eq(schema.books.id, book.id));
+  }
 }
 
 /** Saves the edit-book form: the work itself, with its credits, series, genres and subjects. */
@@ -440,21 +475,59 @@ export async function updateBookServer({ bookId, ...book }: UpdateBookInput) {
 }
 
 /**
+ * Saves the add-edition form: another published form of a book, with its publisher and credits.
+ * Refuses an ISBN another edition already has.
+ */
+export async function createEditionServer({ bookId, ...edition }: CreateEditionInput) {
+  await requirePermissionServer('catalog:manage');
+
+  const save = async () =>
+    db.transaction(async (tx) => {
+      const book = await lockBook(tx, bookId);
+
+      if (!book) {
+        return { error: 'not-found' as const };
+      }
+
+      const [created] = await tx
+        .insert(schema.editions)
+        .values({
+          bookId,
+          title: edition.title,
+          subtitle: edition.subtitle,
+          ...(await editionValues(tx, edition)),
+        })
+        .returning({ id: schema.editions.id });
+
+      await refileBook(tx, book, [...book.editions, edition]);
+
+      // Whoever the book or another of its editions credits is kept over a homonym.
+      const credits = await resolveCredits(
+        tx,
+        edition.contributors,
+        authorsByName([
+          ...book.editions.flatMap(({ contributors }) => contributors),
+          ...book.contributors,
+        ]),
+      );
+
+      await insertEditionCredits(tx, created!.id, credits);
+
+      return { error: null };
+    });
+
+  return saveUnlessIsbnTaken(edition.isbn, save);
+}
+
+/**
  * Saves the edit-edition form: one published form of a book, with its publisher and credits.
  * Refuses an ISBN another edition already has.
  */
 export async function updateEditionServer({ editionId, ...edition }: UpdateEditionInput) {
   await requirePermissionServer('catalog:manage');
 
-  const findTaken = () => (edition.isbn ? findEditionByIsbnServer(edition.isbn, editionId) : null);
-  const taken = await findTaken();
-
-  if (taken) {
-    return { error: 'isbn-taken' as const, ...taken };
-  }
-
-  try {
-    return await db.transaction(async (tx) => {
+  const save = async () =>
+    db.transaction(async (tx) => {
       const [owner] = await tx
         .select({ bookId: schema.editions.bookId })
         .from(schema.editions)
@@ -475,20 +548,11 @@ export async function updateEditionServer({ editionId, ...edition }: UpdateEditi
         })
         .where(orm.eq(schema.editions.id, editionId));
 
-      // Its language decides which article the book's title is filed after.
-      const sortTitleAfter = refiledTitle(book, {
-        ...book,
-        editions: book.editions.map((other) =>
-          other.id === editionId ? { title: edition.title, language: edition.language } : other,
-        ),
-      });
-
-      if (sortTitleAfter !== book.sortTitle) {
-        await tx
-          .update(schema.books)
-          .set({ sortTitle: sortTitleAfter })
-          .where(orm.eq(schema.books.id, book.id));
-      }
+      await refileBook(
+        tx,
+        book,
+        book.editions.map((other) => (other.id === editionId ? edition : other)),
+      );
 
       const credits = await resolveCredits(
         tx,
@@ -503,18 +567,8 @@ export async function updateEditionServer({ editionId, ...edition }: UpdateEditi
 
       return { error: null };
     });
-  } catch (error) {
-    // Another edition took the ISBN between the check and the update.
-    if (isUniqueViolation(error)) {
-      const takenMeanwhile = await findTaken();
 
-      if (takenMeanwhile) {
-        return { error: 'isbn-taken' as const, ...takenMeanwhile };
-      }
-    }
-
-    throw error;
-  }
+  return saveUnlessIsbnTaken(edition.isbn, save, editionId);
 }
 
 /**
@@ -555,13 +609,6 @@ export async function deleteEditionServer({ editionId }: { editionId: string }) 
       return;
     }
 
-    const sortTitleAfter = refiledTitle(book, { ...book, editions });
-
-    if (sortTitleAfter !== book.sortTitle) {
-      await tx
-        .update(schema.books)
-        .set({ sortTitle: sortTitleAfter })
-        .where(orm.eq(schema.books.id, book.id));
-    }
+    await refileBook(tx, book, editions);
   });
 }

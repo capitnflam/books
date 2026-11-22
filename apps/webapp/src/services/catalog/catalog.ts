@@ -23,7 +23,7 @@ export const isEditionRole = (role: ContributorRole) => EDITION_ROLES.has(role);
 /** Credits offered when editing a work. */
 export const WORK_CREDIT_ROLES = CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role));
 
-/** Credits offered when editing an edition: an illustrator can be one edition's too. */
+/** Credits offered on an edition's form: an illustrator can be one edition's too. */
 export const EDITION_CREDIT_ROLES = [
   ...CONTRIBUTOR_ROLES.filter((role) => isEditionRole(role)),
   ...CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role) && role !== 'author'),
@@ -132,6 +132,8 @@ export const emptyContributor = (role: ContributorRole = 'author'): ContributorF
   role,
 });
 
+type SavedCredit = { role: ContributorRole; author: { name: string } };
+
 export type SeriesForm = { name: string; position: string };
 
 export const emptySeries = (): SeriesForm => ({ name: '', position: '' });
@@ -139,7 +141,7 @@ export const emptySeries = (): SeriesForm => ({ name: '', position: '' });
 /** What the edit-book form holds. A book can be in several series, though it is added to one. */
 export type WorkForm = WorkValues & { series: SeriesForm[] };
 
-/** What the edit-edition form holds; its title and subtitle only when they differ from the book's. */
+/** What the edition forms hold; its title and subtitle only when they differ from the book's. */
 export type EditionForm = EditionValues
   & Pick<BookForm, 'isbn' | 'title' | 'subtitle' | 'contributors'>;
 
@@ -173,31 +175,88 @@ export const emptyBookForm = (): BookForm => ({
   ...emptyEditionValues(),
 });
 
+export const emptyEditionForm = (): EditionForm => ({
+  isbn: '',
+  title: '',
+  subtitle: '',
+  contributors: [emptyContributor(EDITION_CREDIT_ROLES[0])],
+  ...emptyEditionValues(),
+});
+
+type Draft<Form> = Partial<Omit<Form, 'isbn'>>;
+
 /** What an ISBN lookup found to prefill the form with; fields it found nothing for are left out. */
-export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
+export type BookDraft = Draft<BookForm>;
+
+/** The part of a lookup's draft that the add-edition form takes. */
+export type EditionDraft = Draft<EditionForm>;
 
 /**
  * The form once a lookup for `isbn` returned `draft`. Fields the `previous` lookup filled, and
- * that still hold what it put there, are emptied first: looking up a second book must not keep
- * the first one's series or cover. Fields the reader typed or changed are kept, unless the new
- * draft has a value for them.
+ * that still hold what it put there, go back to what the `empty` form has first: looking up a
+ * second book must not keep the first one's series or cover. Fields the reader typed or changed
+ * are kept, unless the new draft has a value for them.
  */
-export function applyLookup(
-  form: BookForm,
-  previous: BookDraft | null,
-  draft: BookDraft,
+export function applyLookup<Form extends { isbn: string }>(
+  form: Form,
+  empty: Form,
+  previous: Draft<Form> | null,
+  draft: Draft<Form>,
   isbn: string,
-): BookForm {
-  const empty = emptyBookForm();
-  const next: BookForm = { ...form };
+): Form {
+  const next = { ...form };
 
-  for (const key of Object.keys(previous ?? {}) as (keyof BookDraft)[]) {
+  for (const key of Object.keys(previous ?? {}) as (keyof Draft<Form>)[]) {
     if (JSON.stringify(form[key]) === JSON.stringify(previous?.[key])) {
       Object.assign(next, { [key]: empty[key] });
     }
   }
 
   return { ...next, ...draft, isbn };
+}
+
+const EDITION_FIELDS = Object.keys(emptyEditionValues()) as (keyof EditionValues)[];
+
+const sameText = (a: string, b: string | null) =>
+  a.trim().toLowerCase() === (b ?? '').trim().toLowerCase();
+
+/**
+ * What a lookup's draft says about an edition of `book`, which already has the rest: the title
+ * and subtitle only when they differ from the book's, and only the credits it doesn't have.
+ */
+export function editionDraftOf(
+  draft: BookDraft,
+  book: { title: string; subtitle: string | null; contributors: readonly SavedCredit[] },
+): EditionDraft {
+  const edition: EditionDraft = {};
+
+  for (const key of EDITION_FIELDS) {
+    if (draft[key] !== undefined) {
+      Object.assign(edition, { [key]: draft[key] });
+    }
+  }
+
+  if (draft.title && !sameText(draft.title, book.title)) {
+    edition.title = draft.title;
+  }
+
+  if (draft.subtitle && !sameText(draft.subtitle, book.subtitle)) {
+    edition.subtitle = draft.subtitle;
+  }
+
+  const credits = (draft.contributors ?? []).filter(
+    ({ name, role }) =>
+      EDITION_CREDIT_ROLES.includes(role)
+      && !book.contributors.some(
+        (credit) => credit.role === role && sameText(name, credit.author.name),
+      ),
+  );
+
+  if (credits.length > 0) {
+    edition.contributors = credits;
+  }
+
+  return edition;
 }
 
 /** Leading articles filed after the title, by language: `The Hobbit` → `Hobbit, The`. */
@@ -458,6 +517,13 @@ export const updateEditionSchema = z.preprocess(
 
 export type UpdateEditionInput = z.output<typeof updateEditionSchema>;
 
+export const createEditionSchema = z.preprocess(
+  dropHiddenLength,
+  editionFormSchema.extend(bookIdSchema.shape),
+);
+
+export type CreateEditionInput = z.output<typeof createEditionSchema>;
+
 /**
  * Where the form shows an error at `path`: on the field, even for an item inside a list (a
  * subject too long is `subjects`), except a row's own field (`contributors[0].name`).
@@ -483,11 +549,9 @@ export const bookFormErrors = (form: BookForm) => fieldErrors(createBookSchema, 
 /** The same for the edit-book form. */
 export const workFormErrors = (form: WorkForm) => fieldErrors(workFormSchema, form);
 
-/** The same for the edit-edition form. */
+/** The same for the edition forms. */
 export const editionFormErrors = (form: EditionForm) =>
   fieldErrors(z.preprocess(dropHiddenLength, editionFormSchema), form);
-
-type SavedCredit = { role: ContributorRole; author: { name: string } };
 
 const creditRows = (credits: readonly SavedCredit[], role: ContributorRole | undefined) =>
   credits.length > 0

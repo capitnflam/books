@@ -2,7 +2,7 @@ import { createFieldMap } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 
 import BackLink from '#/components/BackLink';
-import EditFormActions from '#/components/book-form/EditFormActions';
+import FormActions from '#/components/book-form/FormActions';
 import SeriesFields from '#/components/book-form/SeriesFields';
 import WorkFields from '#/components/book-form/WorkFields';
 import BookNotFound from '#/components/BookNotFound';
@@ -82,7 +82,7 @@ function EditBookPage() {
           series={<SeriesFields form={form} fields={{ series: 'series' }} />}
         />
         <form.AppForm>
-          <EditFormActions bookId={book.id} problem={problem} />
+          <FormActions bookId={book.id} problem={problem} />
         </form.AppForm>
       </form>
 

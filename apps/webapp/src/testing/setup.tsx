@@ -33,6 +33,7 @@ vi.mock('#/services/authentication/authentication.functions', () =>
 vi.mock('#/services/catalog/catalog.functions', () =>
   serverFunctions(
     'createBookFn',
+    'createEditionFn',
     'deleteBookFn',
     'deleteEditionFn',
     'deleteIndexEntriesFn',

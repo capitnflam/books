@@ -6,6 +6,7 @@ import { listSearchSchema } from '#/utils/list-search';
 import {
   bookIdSchema,
   createBookSchema,
+  createEditionSchema,
   editionIdSchema,
   lookupIsbnSchema,
   updateBookSchema,
@@ -16,6 +17,7 @@ import { indexEntriesSchema, listIndexSchema } from './catalog-index';
 import { deleteIndexEntriesServer, listIndexServer } from './catalog-index.server';
 import {
   createBookServer,
+  createEditionServer,
   deleteBookServer,
   deleteEditionServer,
   lookupIsbnServer,
@@ -38,6 +40,10 @@ export const createBookFn = createServerFn({ method: 'POST' })
 export const updateBookFn = createServerFn({ method: 'POST' })
   .validator(updateBookSchema)
   .handler(async ({ data }) => updateBookServer(data));
+
+export const createEditionFn = createServerFn({ method: 'POST' })
+  .validator(createEditionSchema)
+  .handler(async ({ data }) => createEditionServer(data));
 
 export const updateEditionFn = createServerFn({ method: 'POST' })
   .validator(updateEditionSchema)

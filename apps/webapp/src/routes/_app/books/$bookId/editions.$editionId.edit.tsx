@@ -3,9 +3,8 @@ import { createFieldMap } from '@tanstack/react-form';
 import { createFileRoute, notFound } from '@tanstack/react-router';
 
 import BackLink from '#/components/BackLink';
-import ContributorsFields from '#/components/book-form/ContributorsFields';
-import EditFormActions from '#/components/book-form/EditFormActions';
-import EditionFields from '#/components/book-form/EditionFields';
+import EditionFormFields from '#/components/book-form/EditionFormFields';
+import FormActions from '#/components/book-form/FormActions';
 import BookNotFound from '#/components/BookNotFound';
 import DeleteSection from '#/components/DeleteSection';
 import { useAppForm } from '#/hooks/use-app-form';
@@ -15,13 +14,7 @@ import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
 import { checkPermissionFn } from '#/services/access/access.functions';
 import { loadBookDetails } from '#/services/catalog/book-details';
-import {
-  BOOK_TITLE_MAX_LENGTH,
-  EDITION_CREDIT_ROLES,
-  editionFormErrors,
-  editionFormOf,
-  emptyEditionValues,
-} from '#/services/catalog/catalog';
+import { editionFormErrors, editionFormOf, emptyEditionForm } from '#/services/catalog/catalog';
 import { deleteEditionFn, updateEditionFn } from '#/services/catalog/catalog.functions';
 import { checkedOnSubmit } from '#/utils/form-validation';
 
@@ -50,7 +43,7 @@ export const Route = createFileRoute('/_app/books/$bookId/editions/$editionId/ed
   component: EditEditionPage,
 });
 
-const editionFields = createFieldMap(emptyEditionValues());
+const editionFields = createFieldMap(emptyEditionForm());
 
 function EditEditionPage() {
   const { book, edition } = Route.useLoaderData();
@@ -98,37 +91,10 @@ function EditEditionPage() {
               />
             )}
           </form.AppField>
-          <form.AppField name="title">
-            {(field) => (
-              <field.TextField
-                label={m.book_edition_title_label()}
-                hint={m.book_edition_title_hint()}
-                error={m.book_edition_title_error({ max: BOOK_TITLE_MAX_LENGTH })}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="subtitle">
-            {(field) => (
-              <field.TextField
-                label={m.book_edition_subtitle_label()}
-                error={m.book_subtitle_error({ max: BOOK_TITLE_MAX_LENGTH })}
-              />
-            )}
-          </form.AppField>
-          <ContributorsFields
-            form={form}
-            fields={{ contributors: 'contributors' }}
-            hint={m.book_edition_contributors_hint()}
-            roles={EDITION_CREDIT_ROLES}
-          />
-          <form.Subscribe selector={({ values }) => values.title}>
-            {(title) => (
-              <EditionFields form={form} fields={editionFields} title={title || book.title} />
-            )}
-          </form.Subscribe>
+          <EditionFormFields form={form} fields={editionFields} bookTitle={book.title} />
         </FieldGroup>
         <form.AppForm>
-          <EditFormActions bookId={book.id} problem={problem} />
+          <FormActions bookId={book.id} problem={problem} />
         </form.AppForm>
       </form>
 

@@ -4,6 +4,7 @@ import {
   applyLookup,
   bookFormErrors,
   createBookSchema,
+  editionDraftOf,
   editionFormErrors,
   editionFormOf,
   emptyBookForm,
@@ -233,15 +234,23 @@ describe('applyLookup', () => {
   };
 
   it('fills the form with what the lookup found, with the ISBN-13', () => {
-    expect(applyLookup(emptyBookForm(), null, discworld, '9780552166591')).toMatchObject({
+    expect(
+      applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591'),
+    ).toMatchObject({
       ...discworld,
       isbn: '9780552166591',
     });
   });
 
   it('empties what the previous lookup filled when another book is looked up', () => {
-    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
-    const second = applyLookup(first, discworld, { title: 'Ficciones' }, '9780802130303');
+    const first = applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591');
+    const second = applyLookup(
+      first,
+      emptyBookForm(),
+      discworld,
+      { title: 'Ficciones' },
+      '9780802130303',
+    );
 
     expect(second).toMatchObject({
       title: 'Ficciones',
@@ -253,9 +262,9 @@ describe('applyLookup', () => {
   });
 
   it('keeps what the reader changed or typed since', () => {
-    const first = applyLookup(emptyBookForm(), null, discworld, '9780552166591');
+    const first = applyLookup(emptyBookForm(), emptyBookForm(), null, discworld, '9780552166591');
     const edited = { ...first, series: 'The Discworld', description: 'My notes' };
-    const second = applyLookup(edited, discworld, {}, '9780802130303');
+    const second = applyLookup(edited, emptyBookForm(), discworld, {}, '9780802130303');
 
     expect(second).toMatchObject({
       title: '',
@@ -263,6 +272,69 @@ describe('applyLookup', () => {
       description: 'My notes',
       coverImageUrl: '',
     });
+  });
+});
+
+describe('editionDraftOf', () => {
+  const hobbit = {
+    title: 'The Hobbit',
+    subtitle: 'There and Back Again',
+    contributors: [
+      { role: 'author' as const, author: { name: 'J. R. R. Tolkien' } },
+      { role: 'illustrator' as const, author: { name: 'Alan Lee' } },
+    ],
+  };
+
+  it('keeps what is about the edition', () => {
+    const edition = {
+      editionStatement: '2nd edition',
+      publisher: 'Stock',
+      published: '1969',
+      language: 'fr',
+      format: 'paperback' as const,
+      pageCount: '320',
+      coverImageUrl: 'https://covers.example/1.jpg',
+    };
+
+    expect(
+      editionDraftOf(
+        { ...edition, description: 'A hobbit leaves home.', series: 'Middle-earth' },
+        hobbit,
+      ),
+    ).toEqual(edition);
+  });
+
+  it('keeps the title and subtitle that differ from the book’s', () => {
+    expect(
+      editionDraftOf({ title: 'Bilbo le Hobbit', subtitle: 'Aller et retour' }, hobbit),
+    ).toEqual({ title: 'Bilbo le Hobbit', subtitle: 'Aller et retour' });
+    expect(
+      editionDraftOf({ title: 'the hobbit', subtitle: 'There and back again ' }, hobbit),
+    ).toEqual({});
+  });
+
+  it('keeps the credits the book doesn’t have, but for authors', () => {
+    expect(
+      editionDraftOf(
+        {
+          contributors: [
+            { name: 'Tolkien', role: 'author' },
+            { name: 'alan lee', role: 'illustrator' },
+            { name: 'John Howe', role: 'illustrator' },
+            { name: 'Francis Ledoux', role: 'translator' },
+          ],
+        },
+        hobbit,
+      ),
+    ).toEqual({
+      contributors: [
+        { name: 'John Howe', role: 'illustrator' },
+        { name: 'Francis Ledoux', role: 'translator' },
+      ],
+    });
+    expect(
+      editionDraftOf({ contributors: [{ name: 'J. R. R. Tolkien', role: 'author' }] }, hobbit),
+    ).toEqual({});
   });
 });
 

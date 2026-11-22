@@ -51,7 +51,7 @@ describe('looking up an ISBN', () => {
     await expect
       .element(
         page.getByText(
-          'Details found and filled in. Check them, and add anything missing, before adding the book.',
+          'Details found and filled in. Check them, and add anything missing, before adding them to the catalogue.',
         ),
       )
       .toBeVisible();
@@ -243,6 +243,19 @@ describe('adding the book', () => {
     await expect.element(page.getByText('Some fields need correcting.')).toBeVisible();
     await expect.element(page.getByText('Enter the title, in up to 500 characters.')).toBeVisible();
     await expect.element(page.getByText('Choose at least one genre.')).toBeVisible();
+    expect(createBookFn).not.toHaveBeenCalled();
+  });
+
+  it('waits for the ISBN to be corrected', async () => {
+    const page = await renderPage('/books/new');
+
+    await field(page, 'ISBN').fill('9780261102218');
+    await fillRequired(page);
+    await submit(page);
+
+    await expect
+      .element(page.getByText('This is not a valid ISBN: check the digits.'))
+      .toBeVisible();
     expect(createBookFn).not.toHaveBeenCalled();
   });
 
