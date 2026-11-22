@@ -24,13 +24,17 @@ export type VirtualTableColumn<Row> = {
   className?: string;
 };
 
-/** Checkboxes on each row, and one in the header over every loaded row. */
+/** Checkboxes on each row, and one in the header over every loaded row that can be selected. */
 type Selection = {
   selected: ReadonlySet<string>;
   onSelectedChange: (selected: Set<string>) => void;
   disabled: boolean;
   /** The row's checkbox label, e.g. "Select Ada Lovelace". */
   rowLabel: (id: string) => string;
+  /** The header checkbox's label. */
+  allLabel: string;
+  /** Whether a row can be selected; every row can when left out. */
+  isSelectable?: (id: string) => boolean;
 };
 
 type VirtualTableProps<Row extends { id: string }> = {
@@ -87,7 +91,8 @@ export function VirtualTable<Row extends { id: string }>({
   const paddingTop = items[0]?.start ?? 0;
   const paddingBottom = virtualizer.getTotalSize() - (items.at(-1)?.end ?? 0);
   const columnCount = columns.length + (selection ? 1 : 0);
-  const ids = rows.map(({ id }) => id);
+  const isSelectable = (id: string) => selection?.isSelectable?.(id) ?? true;
+  const ids = rows.map(({ id }) => id).filter((id) => isSelectable(id));
   const all = selection ? selectionState(selection.selected, ids) : false;
 
   const toggle = (id: string, checked: boolean) => {
@@ -123,10 +128,10 @@ export function VirtualTable<Row extends { id: string }>({
               {selection && (
                 <th scope="col" className="w-12 py-2 pr-4 pl-4">
                   <Checkbox
-                    aria-label={m.list_select_loaded()}
+                    aria-label={selection.allLabel}
                     checked={all === true}
                     indeterminate={all === 'some'}
-                    disabled={selection.disabled || rows.length === 0}
+                    disabled={selection.disabled || ids.length === 0}
                     onCheckedChange={(checked) =>
                       selection.onSelectedChange(checked ? new Set(ids) : new Set())
                     }
@@ -179,7 +184,7 @@ export function VirtualTable<Row extends { id: string }>({
                       <Checkbox
                         aria-label={selection.rowLabel(row.id)}
                         checked={selection.selected.has(row.id)}
-                        disabled={selection.disabled}
+                        disabled={selection.disabled || !isSelectable(row.id)}
                         onCheckedChange={(checked) => toggle(row.id, checked)}
                       />
                     </td>

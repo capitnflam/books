@@ -12,6 +12,8 @@ import {
   updateEditionSchema,
 } from './catalog';
 import { getBookServer, listBooksServer } from './catalog-browse.server';
+import { indexEntriesSchema, listIndexSchema } from './catalog-index';
+import { deleteIndexEntriesServer, listIndexServer } from './catalog-index.server';
 import {
   createBookServer,
   deleteBookServer,
@@ -56,3 +58,11 @@ export const listBooksFn = createServerFn({ method: 'GET' })
 export const getBookFn = createServerFn({ method: 'GET' })
   .validator(bookIdSchema)
   .handler(async ({ data }) => getBookServer(data.bookId));
+
+export const listIndexFn = createServerFn({ method: 'GET' })
+  .validator(listIndexSchema)
+  .handler(async ({ data }) => listIndexServer(data));
+
+export const deleteIndexEntriesFn = createServerFn({ method: 'POST' })
+  .validator(indexEntriesSchema)
+  .handler(async ({ data }) => deleteIndexEntriesServer(data));

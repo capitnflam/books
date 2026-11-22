@@ -45,6 +45,12 @@ const navGroups: NavGroup[] = [
         label: m.nav_add_book,
         permission: 'catalog:manage',
       },
+      {
+        to: '/catalog-index',
+        icon: 'list-letters',
+        label: m.index_title,
+        permission: 'catalog:manage',
+      },
       { to: '/sample', icon: 'components', label: m.sample_page_title },
     ],
   },

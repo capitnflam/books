@@ -226,6 +226,7 @@ const HoldersSection: FC<{ flag: Flag }> = ({ flag }) => {
               onSelectedChange: setSelected,
               disabled: pending,
               rowLabel: (id) => m.flag_select_user({ name: nameOf(byId.get(id)) }),
+              allLabel: m.list_select_loaded(),
             }}
           />
           <Button
@@ -302,6 +303,7 @@ const GrantSection: FC<{ flag: Flag }> = ({ flag }) => {
               onSelectedChange: setSelected,
               disabled: pending,
               rowLabel: (id) => m.flag_select_user({ name: nameOf(byId.get(id)) }),
+              allLabel: m.list_select_loaded(),
             }}
           />
           <Button
