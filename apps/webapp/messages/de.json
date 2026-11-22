@@ -206,7 +206,7 @@
   "list_select_loaded": "Alle geladenen Benutzer auswählen",
   "list_loading_more": "Weitere werden geladen …",
   "list_shown": "{shown} von {total} geladen",
-  "list_load_failed": "Weitere Benutzer konnten nicht geladen werden.",
+  "list_load_failed": "Weitere Einträge konnten nicht geladen werden.",
   "list_retry": "Erneut versuchen",
   "flag_holders_label": "Benutzer mit dem Flag",
   "flag_grant_label": "Benutzer ohne das Flag",

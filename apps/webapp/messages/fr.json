@@ -206,7 +206,7 @@
   "list_select_loaded": "Sélectionner tous les utilisateurs chargés",
   "list_loading_more": "Chargement de la suite…",
   "list_shown": "{shown} sur {total} chargés",
-  "list_load_failed": "La suite des utilisateurs n’a pas pu être chargée.",
+  "list_load_failed": "La suite de la liste n’a pas pu être chargée.",
   "list_retry": "Réessayer",
   "flag_holders_label": "Utilisateurs qui ont le flag",
   "flag_grant_label": "Utilisateurs sans le flag",

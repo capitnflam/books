@@ -80,6 +80,8 @@ Every component you add with shadcn, or update from upstream, gets the theme bef
 - `packages/ui`: every story in `src/stories/` runs as a test in headless Chromium (Storybook Vitest addon). A new component needs a story; use `play` functions to test interactions. Run one file with `pnpm --filter @books/ui exec vitest run src/stories/button.stories.tsx`.
 - `packages/ui` stories are also checked with axe (`a11y.test: 'error'` in `packages/ui/.storybook/preview.tsx`), so an accessibility violation fails the test. Each story runs twice, as the `storybook-light` and `storybook-dark` vitest projects (`packages/ui/vite.config.ts`), so contrast is checked in both themes. Give icon-only buttons an accessible name (`IconButton` requires `label`) and don't lower the setting to get a story to pass.
 - `packages/shared`, `packages/database` and `apps/webapp`: Vitest (`shared` also runs type tests with `--typecheck`). Run one file with `pnpm --filter <package-name> exec vitest run <path>`.
+- The pages of `webapp` are tested in headless Chromium, as the `pages` vitest project (`apps/webapp/vitest.config.ts`): every `*.test.tsx`; `*.test.ts` files run in Node, as the `node` project. A page's test sits beside its route with a `-` before its name (`-me.test.tsx`), so the router doesn't take it for a route; to run it, give vitest its path (`src/routes/_app/-me.test.tsx`), since a filter starting with `-` is read as an option. What the pages share is tested in `src/routes/-app`, `-guards` and `-root`. A new page or a change to one comes with its tests.
+- A page test opens the app at a path with `renderPage` (`apps/webapp/src/testing/`), through its real guards, loaders and layout. Every server function is replaced and fails until the test says what it answers (`vi.mocked(getBookFn).mockResolvedValue(bookDetails())`), and so is Clerk: `signIn(permissions)` says who is signed in. A new server function is added to the list in `src/testing/setup.tsx`. Locators match names and texts exactly; pass `exact: false` for part of one.
 - `pnpm test` from the root runs every package's tests.
 
 ## Local setup
@@ -127,7 +129,7 @@ pnpm build          # production build of every package
 ```
 
 - Run `pnpm install --frozen-lockfile` first on a fresh checkout or after dependency changes.
-- The Storybook tests in `packages/ui` run in headless Chromium; install it once with `pnpm --filter @books/ui exec playwright install chromium`.
+- The Storybook tests in `packages/ui` and the page tests in `apps/webapp` run in headless Chromium; install it once with `pnpm --filter @books/ui exec playwright install chromium`.
 - To check a single package, filter it: `pnpm --filter <package-name> run type:check` (or `test`, `build`).
 - The `pre-commit` hook runs lint-staged (lint fix, format fix and type check on staged files, `actionlint` on workflow files), but it is not a substitute for the full list above.
 
