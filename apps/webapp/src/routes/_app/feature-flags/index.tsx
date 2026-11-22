@@ -1,22 +1,16 @@
-import { Button } from '@books/ui/components/button';
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@books/ui/components/field';
+import { FieldGroup } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
-import { Input } from '@books/ui/components/input';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
+import { useAppForm } from '#/hooks/use-app-form';
 import { m } from '#/paraglide/messages';
 import {
   FLAG_DESCRIPTION_MAX_LENGTH,
   FLAG_KEY_MAX_LENGTH,
+  createFeatureFlagSchema,
   flagKeyError,
 } from '#/services/feature-flags/feature-flags';
 import {
@@ -24,8 +18,9 @@ import {
   listFeatureFlagsFn,
 } from '#/services/feature-flags/feature-flags.functions';
 import { formatDate } from '#/utils/dates';
+import { checkedOnSubmit, refusedFields } from '#/utils/form-validation';
 
-import type { FC, FormEvent } from 'react';
+import type { FC } from 'react';
 
 export const Route = createFileRoute('/_app/feature-flags/')({
   loader: async () => listFeatureFlagsFn(),
@@ -42,45 +37,36 @@ const keyErrorMessages = {
   'key-taken': () => m.flags_key_taken(),
 };
 
+/** Why the key is refused: what is wrong with it, or else what the server answered. */
+const keyErrorMessage = (key: string) => keyErrorMessages[flagKeyError(key) ?? 'key-taken']();
+
 const NewFlagForm: FC = () => {
   const navigate = useNavigate();
-  const [key, setKey] = useState('');
-  const [description, setDescription] = useState('');
-  const [keyError, setKeyError] = useState<keyof typeof keyErrorMessages | null>(null);
-  const [descriptionTooLong, setDescriptionTooLong] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'failed'>('idle');
+  const [failed, setFailed] = useState(false);
+  const form = useAppForm({
+    defaultValues: { key: '', description: '' },
+    ...checkedOnSubmit(refusedFields(createFeatureFlagSchema)),
+    onSubmit: async ({ value, formApi }) => {
+      setFailed(false);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const invalidKey = flagKeyError(key);
-    const longDescription = description.trim().length > FLAG_DESCRIPTION_MAX_LENGTH;
+      try {
+        const { id, error } = await createFeatureFlagFn({ data: value });
 
-    setKeyError(invalidKey);
-    setDescriptionTooLong(longDescription);
+        if (error) {
+          formApi.setFieldMeta('key', (meta) => ({
+            ...meta,
+            errorMap: { ...meta.errorMap, onSubmit: error },
+          }));
 
-    if (invalidKey || longDescription) {
-      return;
-    }
+          return;
+        }
 
-    setStatus('saving');
-
-    try {
-      const { id, error } = await createFeatureFlagFn({
-        data: { key: key.trim(), description },
-      });
-
-      if (error) {
-        setKeyError(error);
-        setStatus('idle');
-
-        return;
+        await navigate({ to: '/feature-flags/$flagId', params: { flagId: id } });
+      } catch {
+        setFailed(true);
       }
-
-      await navigate({ to: '/feature-flags/$flagId', params: { flagId: id } });
-    } catch {
-      setStatus('failed');
-    }
-  };
+    },
+  });
 
   return (
     <PageSection
@@ -90,50 +76,47 @@ const NewFlagForm: FC = () => {
     >
       <form
         className="flex flex-col gap-6"
-        onSubmit={(event) => void handleSubmit(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          // A key the server refused is sent again: it may be free by now.
+          form.setFieldMeta('key', (meta) => ({
+            ...meta,
+            errorMap: { ...meta.errorMap, onSubmit: undefined },
+          }));
+          void form.handleSubmit();
+        }}
         noValidate
       >
         <FieldGroup>
-          <Field data-invalid={keyError ? true : undefined}>
-            <FieldLabel htmlFor="flag-key">{m.flags_key_label()}</FieldLabel>
-            <Input
-              id="flag-key"
-              autoComplete="off"
-              spellCheck={false}
-              className="max-w-sm"
-              aria-invalid={keyError ? true : undefined}
-              aria-describedby="flag-key-hint"
-              value={key}
-              onChange={(event) => setKey(event.target.value)}
-            />
-            <FieldDescription id="flag-key-hint">{m.flags_key_hint()}</FieldDescription>
-            <FieldError>{keyError && keyErrorMessages[keyError]()}</FieldError>
-          </Field>
-          <Field data-invalid={descriptionTooLong ? true : undefined}>
-            <FieldLabel htmlFor="flag-description">{m.flags_description_label()}</FieldLabel>
-            <Input
-              id="flag-description"
-              autoComplete="off"
-              aria-invalid={descriptionTooLong ? true : undefined}
-              aria-describedby="flag-description-hint"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-            <FieldDescription id="flag-description-hint">
-              {m.flags_description_hint()}
-            </FieldDescription>
-            <FieldError>
-              {descriptionTooLong
-                && m.flags_description_too_long({ max: FLAG_DESCRIPTION_MAX_LENGTH })}
-            </FieldError>
-          </Field>
+          <form.AppField name="key">
+            {(field) => (
+              <field.TextField
+                spellCheck={false}
+                className="max-w-sm"
+                label={m.flags_key_label()}
+                hint={m.flags_key_hint()}
+                error={keyErrorMessage(field.state.value)}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="description">
+            {(field) => (
+              <field.TextField
+                label={m.flags_description_label()}
+                hint={m.flags_description_hint()}
+                error={m.flags_description_too_long({ max: FLAG_DESCRIPTION_MAX_LENGTH })}
+              />
+            )}
+          </form.AppField>
         </FieldGroup>
         <div className="flex flex-wrap-reverse items-center justify-end gap-4">
-          {status === 'failed' && <ErrorMessage>{m.flags_create_failed()}</ErrorMessage>}
-          <Button type="submit" disabled={status === 'saving'}>
-            <Icon icon="plus" aria-hidden data-icon="inline-start" />
-            {m.flags_create()}
-          </Button>
+          {failed && <ErrorMessage>{m.flags_create_failed()}</ErrorMessage>}
+          <form.AppForm>
+            <form.SubmitButton>
+              <Icon icon="plus" aria-hidden data-icon="inline-start" />
+              {m.flags_create()}
+            </form.SubmitButton>
+          </form.AppForm>
         </div>
       </form>
     </PageSection>
