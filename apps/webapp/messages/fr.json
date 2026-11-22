@@ -336,7 +336,7 @@
   "book_cover_alt": "Couverture de {title}",
   "book_create": "Ajouter au catalogue",
   "book_create_failed": "Le livre n’a pas pu être ajouté. Réessayez dans un instant.",
-  "book_form_invalid": "Certains champs sont à corriger.",
+  "form_invalid": "Certains champs sont à corriger.",
   "book_isbn_taken": "« {title} » a déjà cet ISBN : il est au catalogue.",
   "book_created": "« {title} » est maintenant au catalogue.",
   "book_add_another": "Ajouter un autre livre",

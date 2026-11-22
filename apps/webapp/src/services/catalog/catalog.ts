@@ -143,29 +143,35 @@ export type WorkForm = WorkValues & { series: SeriesForm[] };
 export type EditionForm = EditionValues
   & Pick<BookForm, 'isbn' | 'title' | 'subtitle' | 'contributors'>;
 
-export function emptyBookForm(): BookForm {
-  return {
-    isbn: '',
-    title: '',
-    subtitle: '',
-    contributors: [emptyContributor()],
-    description: '',
-    originalLanguage: '',
-    firstPublishedYear: '',
-    series: '',
-    seriesPosition: '',
-    genres: [],
-    subjects: '',
-    editionStatement: '',
-    publisher: '',
-    published: '',
-    language: '',
-    format: '',
-    pageCount: '',
-    durationMinutes: '',
-    coverImageUrl: '',
-  };
-}
+export const emptyWorkValues = (): WorkValues => ({
+  title: '',
+  subtitle: '',
+  contributors: [emptyContributor()],
+  description: '',
+  originalLanguage: '',
+  firstPublishedYear: '',
+  genres: [],
+  subjects: '',
+});
+
+export const emptyEditionValues = (): EditionValues => ({
+  editionStatement: '',
+  publisher: '',
+  published: '',
+  language: '',
+  format: '',
+  pageCount: '',
+  durationMinutes: '',
+  coverImageUrl: '',
+});
+
+export const emptyBookForm = (): BookForm => ({
+  isbn: '',
+  ...emptyWorkValues(),
+  series: '',
+  seriesPosition: '',
+  ...emptyEditionValues(),
+});
 
 /** What an ISBN lookup found to prefill the form with; fields it found nothing for are left out. */
 export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
@@ -454,11 +460,11 @@ export type UpdateEditionInput = z.output<typeof updateEditionSchema>;
 
 /**
  * Where the form shows an error at `path`: on the field, even for an item inside a list (a
- * subject too long is `subjects`), except a row's own field (`contributors.0.name`).
+ * subject too long is `subjects`), except a row's own field (`contributors[0].name`).
  */
 function errorField(path: readonly PropertyKey[]): string {
   return (path[0] === 'contributors' || path[0] === 'series') && path.length >= 3
-    ? path.slice(0, 3).join('.')
+    ? `${String(path[0])}[${String(path[1])}].${String(path[2])}`
     : String(path[0]);
 }
 
@@ -470,7 +476,7 @@ const fieldErrors = (schema: z.ZodType, form: unknown): Set<string> => {
 
 /**
  * The fields of `form` that the server would refuse, as the form's field names (`title`,
- * `subjects`) or rows (`contributors.0.name`), so it can mark them before sending.
+ * `subjects`) or rows (`contributors[0].name`), so it can mark them before sending.
  */
 export const bookFormErrors = (form: BookForm) => fieldErrors(createBookSchema, form);
 

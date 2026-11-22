@@ -1,14 +1,14 @@
 import { FieldGroup } from '@books/ui/components/field';
-import { Input } from '@books/ui/components/input';
+import { createFieldMap } from '@tanstack/react-form';
 import { createFileRoute, notFound } from '@tanstack/react-router';
 
 import BackLink from '#/components/BackLink';
-import ContributorsField from '#/components/book-form/ContributorsField';
+import ContributorsFields from '#/components/book-form/ContributorsFields';
 import EditFormActions from '#/components/book-form/EditFormActions';
 import EditionFields from '#/components/book-form/EditionFields';
-import FormField from '#/components/book-form/FormField';
 import BookNotFound from '#/components/BookNotFound';
-import { useEditBookForm } from '#/hooks/use-edit-book-form';
+import { useAppForm } from '#/hooks/use-app-form';
+import { useSaveBook } from '#/hooks/use-save-book';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
 import { checkPermissionFn } from '#/services/access/access.functions';
@@ -18,8 +18,10 @@ import {
   EDITION_CREDIT_ROLES,
   editionFormErrors,
   editionFormOf,
+  emptyEditionValues,
 } from '#/services/catalog/catalog';
 import { updateEditionFn } from '#/services/catalog/catalog.functions';
+import { checkedOnSubmit } from '#/utils/form-validation';
 
 export const Route = createFileRoute('/_app/books/$bookId/editions/$editionId/edit')({
   beforeLoad: async ({ location }) => {
@@ -46,13 +48,16 @@ export const Route = createFileRoute('/_app/books/$bookId/editions/$editionId/ed
   component: EditEditionPage,
 });
 
+const editionFields = createFieldMap(emptyEditionValues());
+
 function EditEditionPage() {
   const { book, edition } = Route.useLoaderData();
-  const { form, update, errors, status, taken, handleSubmit } = useEditBookForm({
-    bookId: book.id,
-    initial: editionFormOf(edition),
-    errorsOf: editionFormErrors,
-    save: (data) => updateEditionFn({ data: { editionId: edition.id, ...data } }),
+  const { problem, save } = useSaveBook(book.id);
+  const form = useAppForm({
+    defaultValues: editionFormOf(edition),
+    ...checkedOnSubmit(editionFormErrors),
+    onSubmit: async ({ value }) =>
+      save(async () => updateEditionFn({ data: { editionId: edition.id, ...value } })),
   });
 
   return (
@@ -71,75 +76,57 @@ function EditEditionPage() {
 
       <form
         className="flex flex-col gap-12"
-        onSubmit={(event) => void handleSubmit(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
         noValidate
       >
         <FieldGroup>
-          <FormField
-            name="isbn"
-            label={m.book_isbn_label()}
-            hint={m.book_isbn_hint()}
-            error={errors.has('isbn') && m.book_isbn_invalid()}
-          >
-            {(props) => (
-              <Input
+          <form.AppField name="isbn">
+            {(field) => (
+              <field.TextField
                 inputMode="numeric"
-                autoComplete="off"
                 spellCheck={false}
                 className="max-w-xs"
-                value={form.isbn}
-                onChange={(event) => update({ isbn: event.target.value })}
-                {...props}
+                label={m.book_isbn_label()}
+                hint={m.book_isbn_hint()}
+                error={m.book_isbn_invalid()}
               />
             )}
-          </FormField>
-          <FormField
-            name="edition-title"
-            label={m.book_edition_title_label()}
-            hint={m.book_edition_title_hint()}
-            error={
-              errors.has('title') && m.book_edition_title_error({ max: BOOK_TITLE_MAX_LENGTH })
-            }
-          >
-            {(props) => (
-              <Input
-                autoComplete="off"
-                value={form.title}
-                onChange={(event) => update({ title: event.target.value })}
-                {...props}
+          </form.AppField>
+          <form.AppField name="title">
+            {(field) => (
+              <field.TextField
+                label={m.book_edition_title_label()}
+                hint={m.book_edition_title_hint()}
+                error={m.book_edition_title_error({ max: BOOK_TITLE_MAX_LENGTH })}
               />
             )}
-          </FormField>
-          <FormField
-            name="edition-subtitle"
-            label={m.book_edition_subtitle_label()}
-            error={errors.has('subtitle') && m.book_subtitle_error({ max: BOOK_TITLE_MAX_LENGTH })}
-          >
-            {(props) => (
-              <Input
-                autoComplete="off"
-                value={form.subtitle}
-                onChange={(event) => update({ subtitle: event.target.value })}
-                {...props}
+          </form.AppField>
+          <form.AppField name="subtitle">
+            {(field) => (
+              <field.TextField
+                label={m.book_edition_subtitle_label()}
+                error={m.book_subtitle_error({ max: BOOK_TITLE_MAX_LENGTH })}
               />
             )}
-          </FormField>
-          <ContributorsField
-            contributors={form.contributors}
+          </form.AppField>
+          <ContributorsFields
+            form={form}
+            fields={{ contributors: 'contributors' }}
             hint={m.book_edition_contributors_hint()}
             roles={EDITION_CREDIT_ROLES}
-            invalid={(index) => errors.has(`contributors.${index}.name`)}
-            tooMany={errors.has('contributors')}
-            onChange={(contributors) => update({ contributors })}
           />
-          <EditionFields
-            form={form}
-            errors={errors}
-            title={form.title || book.title}
-            onChange={update}
-          />
+          <form.Subscribe selector={({ values }) => values.title}>
+            {(title) => (
+              <EditionFields form={form} fields={editionFields} title={title || book.title} />
+            )}
+          </form.Subscribe>
         </FieldGroup>
-        <EditFormActions bookId={book.id} invalid={errors.size > 0} status={status} taken={taken} />
+        <form.AppForm>
+          <EditFormActions bookId={book.id} problem={problem} />
+        </form.AppForm>
       </form>
     </div>
   );

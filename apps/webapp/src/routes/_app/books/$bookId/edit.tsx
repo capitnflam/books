@@ -1,17 +1,25 @@
+import { createFieldMap } from '@tanstack/react-form';
 import { createFileRoute } from '@tanstack/react-router';
 
 import BackLink from '#/components/BackLink';
 import EditFormActions from '#/components/book-form/EditFormActions';
-import SeriesField from '#/components/book-form/SeriesField';
+import SeriesFields from '#/components/book-form/SeriesFields';
 import WorkFields from '#/components/book-form/WorkFields';
 import BookNotFound from '#/components/BookNotFound';
-import { useEditBookForm } from '#/hooks/use-edit-book-form';
+import { useAppForm } from '#/hooks/use-app-form';
+import { useSaveBook } from '#/hooks/use-save-book';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
 import { checkPermissionFn } from '#/services/access/access.functions';
 import { loadBookDetails } from '#/services/catalog/book-details';
-import { WORK_CREDIT_ROLES, workFormErrors, workFormOf } from '#/services/catalog/catalog';
+import {
+  WORK_CREDIT_ROLES,
+  emptyWorkValues,
+  workFormErrors,
+  workFormOf,
+} from '#/services/catalog/catalog';
 import { updateBookFn } from '#/services/catalog/catalog.functions';
+import { checkedOnSubmit } from '#/utils/form-validation';
 
 export const Route = createFileRoute('/_app/books/$bookId/edit')({
   beforeLoad: async ({ location }) => {
@@ -29,13 +37,16 @@ export const Route = createFileRoute('/_app/books/$bookId/edit')({
   component: EditBookPage,
 });
 
+const workFields = createFieldMap(emptyWorkValues());
+
 function EditBookPage() {
   const { book } = Route.useLoaderData();
-  const { form, update, errors, status, taken, handleSubmit } = useEditBookForm({
-    bookId: book.id,
-    initial: workFormOf(book),
-    errorsOf: workFormErrors,
-    save: (data) => updateBookFn({ data: { bookId: book.id, ...data } }),
+  const { problem, save } = useSaveBook(book.id);
+  const form = useAppForm({
+    defaultValues: workFormOf(book),
+    ...checkedOnSubmit(workFormErrors),
+    onSubmit: async ({ value }) =>
+      save(async () => updateBookFn({ data: { bookId: book.id, ...value } })),
   });
 
   return (
@@ -54,24 +65,22 @@ function EditBookPage() {
 
       <form
         className="flex flex-col gap-12"
-        onSubmit={(event) => void handleSubmit(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
         noValidate
       >
         <WorkFields
           form={form}
-          errors={errors}
+          fields={workFields}
           contributorsHint={m.book_edit_contributors_hint()}
           contributorRoles={WORK_CREDIT_ROLES}
-          series={
-            <SeriesField
-              series={form.series}
-              errors={errors}
-              onChange={(series) => update({ series })}
-            />
-          }
-          onChange={update}
+          series={<SeriesFields form={form} fields={{ series: 'series' }} />}
         />
-        <EditFormActions bookId={book.id} invalid={errors.size > 0} status={status} taken={taken} />
+        <form.AppForm>
+          <EditFormActions bookId={book.id} problem={problem} />
+        </form.AppForm>
       </form>
     </div>
   );

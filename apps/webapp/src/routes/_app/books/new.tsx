@@ -2,23 +2,34 @@ import { Button } from '@books/ui/components/button';
 import { Field, FieldDescription, FieldLabel } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
+import { createFieldMap } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 
 import EditionFields from '#/components/book-form/EditionFields';
-import FormField from '#/components/book-form/FormField';
 import TakenIsbnMessage from '#/components/book-form/TakenIsbnMessage';
 import WorkFields from '#/components/book-form/WorkFields';
 import ErrorMessage from '#/components/ErrorMessage';
+import { useFieldContext } from '#/components/form/form-context';
 import PageSection from '#/components/PageSection';
 import TextLink from '#/components/TextLink';
+import { useAppForm } from '#/hooks/use-app-form';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
 import { checkPermissionFn } from '#/services/access/access.functions';
-import { applyLookup, bookFormErrors, emptyBookForm } from '#/services/catalog/catalog';
+import {
+  CONTRIBUTOR_ROLES,
+  applyLookup,
+  bookFormErrors,
+  emptyBookForm,
+  emptyEditionValues,
+  emptyWorkValues,
+} from '#/services/catalog/catalog';
 import { createBookFn, lookupIsbnFn } from '#/services/catalog/catalog.functions';
+import { checkedOnSubmit } from '#/utils/form-validation';
 
+import type { SaveProblem } from '#/hooks/use-save-book';
 import type { BookDraft, BookForm } from '#/services/catalog/catalog';
 import type { FC, FormEvent } from 'react';
 
@@ -57,12 +68,12 @@ const lookupMessages = (lookup: LookupState): { text: string; error: boolean } |
   }
 };
 
-const IsbnLookup: FC<{
-  isbn: string;
-  invalid: boolean;
-  onIsbnChange: (isbn: string) => void;
-  onFound: (result: Extract<LookupResult, { isbn: string }>) => void;
-}> = ({ isbn, invalid, onIsbnChange, onFound }) => {
+type IsbnLookupProps = { onFound: (result: Extract<LookupResult, { isbn: string }>) => void };
+
+/** The form's ISBN, and the button that looks it up in the book catalogues. */
+const IsbnLookup: FC<IsbnLookupProps> = ({ onFound }) => {
+  const field = useFieldContext<string>();
+  const isbn = field.state.value;
   const [lookup, setLookup] = useState<LookupState>({ status: 'idle' });
   // Counts lookups and ISBN edits: a response is applied only if nothing happened since its
   // request, so a slow answer for an ISBN that was then corrected can't overwrite the new one.
@@ -101,7 +112,7 @@ const IsbnLookup: FC<{
     }
   };
 
-  const showError = invalid || lookup.status === 'invalid';
+  const showError = field.state.meta.errors.length > 0 || lookup.status === 'invalid';
 
   return (
     <PageSection id="book-isbn-section" title={m.book_isbn_heading()}>
@@ -120,7 +131,7 @@ const IsbnLookup: FC<{
               value={isbn}
               onChange={(event) => {
                 latestRequest.current += 1;
-                onIsbnChange(event.target.value);
+                field.handleChange(event.target.value);
                 setLookup({ status: 'idle' });
               }}
             />
@@ -203,61 +214,63 @@ const Created: FC<{ bookId: string; title: string; onAddAnother: () => void }> =
   );
 };
 
+const workFields = createFieldMap(emptyWorkValues());
+const editionFields = createFieldMap(emptyEditionValues());
+
 type SavedBook = { bookId: string; title: string };
 
 function NewBookPage() {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<BookForm>(emptyBookForm);
-  // Fields are checked once the form has been sent, then again as they change.
-  const [submitted, setSubmitted] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'failed'>('idle');
-  const [taken, setTaken] = useState<SavedBook | null>(null);
+  const [problem, setProblem] = useState<SaveProblem | null>(null);
   const [created, setCreated] = useState<SavedBook | null>(null);
   // Remounts the ISBN lookup, clearing its message, when a new book is started.
   const [formKey, setFormKey] = useState(0);
   // What the last lookup filled in, to empty it if another book is looked up.
   const [prefilled, setPrefilled] = useState<BookDraft | null>(null);
 
-  const errors = submitted ? bookFormErrors(form) : new Set<string>();
-  const update = (change: Partial<BookForm>) => setForm((current) => ({ ...current, ...change }));
-  const error = (key: string, message: string) => errors.has(key) && message;
+  const form = useAppForm({
+    defaultValues: emptyBookForm(),
+    ...checkedOnSubmit(bookFormErrors),
+    onSubmit: async ({ value }) => {
+      setProblem(null);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitted(true);
-    setTaken(null);
+      try {
+        const result = await createBookFn({ data: value });
 
-    if (bookFormErrors(form).size > 0) {
-      return;
-    }
+        if (result.error === 'isbn-taken') {
+          setProblem(result);
 
-    setStatus('saving');
+          return;
+        }
 
-    try {
-      const result = await createBookFn({ data: form });
-
-      if (result.error === 'isbn-taken') {
-        setTaken({ bookId: result.bookId, title: result.title });
-        setStatus('idle');
-
-        return;
+        setCreated({ bookId: result.bookId, title: result.title });
+        queryClient.removeQueries({ queryKey: ['books'] });
+      } catch {
+        setProblem({ error: 'failed' });
       }
-
-      setCreated({ bookId: result.bookId, title: result.title });
-      queryClient.removeQueries({ queryKey: ['books'] });
-      setStatus('idle');
-    } catch {
-      setStatus('failed');
-    }
-  };
+    },
+  });
 
   const startOver = () => {
-    setForm(emptyBookForm());
-    setSubmitted(false);
-    setTaken(null);
+    form.reset();
+    setProblem(null);
     setCreated(null);
     setFormKey((key) => key + 1);
     setPrefilled(null);
+  };
+
+  const fillIn = (result: Extract<LookupResult, { isbn: string }>) => {
+    // A book the catalogues don't know still clears what the last lookup filled.
+    const draft = result.status === 'found' ? result.draft : {};
+    const next = applyLookup(form.state.values, prefilled, draft, result.isbn);
+
+    for (const key of Object.keys(next) as (keyof BookForm)[]) {
+      if (next[key] !== form.state.values[key]) {
+        form.setFieldValue(key, next[key]);
+      }
+    }
+
+    setPrefilled(draft);
   };
 
   return (
@@ -273,23 +286,16 @@ function NewBookPage() {
         <Created {...created} onAddAnother={startOver} />
       ) : (
         <>
-          <IsbnLookup
-            key={formKey}
-            isbn={form.isbn}
-            invalid={errors.has('isbn')}
-            onIsbnChange={(isbn) => update({ isbn })}
-            onFound={(result) => {
-              // A book the catalogues don't know still clears what the last lookup filled.
-              const draft = result.status === 'found' ? result.draft : {};
-
-              setForm((current) => applyLookup(current, prefilled, draft, result.isbn));
-              setPrefilled(draft);
-            }}
-          />
+          <form.AppField name="isbn">
+            {() => <IsbnLookup key={formKey} onFound={fillIn} />}
+          </form.AppField>
 
           <form
             className="flex flex-col gap-12"
-            onSubmit={(event) => void handleSubmit(event)}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
             noValidate
           >
             <PageSection
@@ -299,42 +305,30 @@ function NewBookPage() {
             >
               <WorkFields
                 form={form}
-                errors={errors}
+                fields={workFields}
                 contributorsHint={m.book_contributors_hint()}
+                contributorRoles={CONTRIBUTOR_ROLES}
                 series={
                   <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-                    <FormField
-                      name="series"
-                      label={m.book_series_label()}
-                      error={error('series', m.book_text_error())}
-                    >
-                      {(props) => (
-                        <Input
-                          autoComplete="off"
-                          value={form.series}
-                          onChange={(event) => update({ series: event.target.value })}
-                          {...props}
+                    <form.AppField name="series">
+                      {(field) => (
+                        <field.TextField
+                          label={m.book_series_label()}
+                          error={m.book_text_error()}
                         />
                       )}
-                    </FormField>
-                    <FormField
-                      name="series-position"
-                      label={m.book_series_position_label()}
-                      error={error('seriesPosition', m.book_series_position_error())}
-                    >
-                      {(props) => (
-                        <Input
+                    </form.AppField>
+                    <form.AppField name="seriesPosition">
+                      {(field) => (
+                        <field.TextField
                           inputMode="decimal"
-                          autoComplete="off"
-                          value={form.seriesPosition}
-                          onChange={(event) => update({ seriesPosition: event.target.value })}
-                          {...props}
+                          label={m.book_series_position_label()}
+                          error={m.book_series_position_error()}
                         />
                       )}
-                    </FormField>
+                    </form.AppField>
                   </div>
                 }
-                onChange={update}
               />
             </PageSection>
 
@@ -343,17 +337,26 @@ function NewBookPage() {
               title={m.book_edition_heading()}
               description={m.book_edition_description()}
             >
-              <EditionFields form={form} errors={errors} title={form.title} onChange={update} />
+              <form.Subscribe selector={({ values }) => values.title}>
+                {(title) => <EditionFields form={form} fields={editionFields} title={title} />}
+              </form.Subscribe>
             </PageSection>
 
             <div className="flex flex-wrap-reverse items-center justify-end gap-4">
-              {errors.size > 0 && <ErrorMessage>{m.book_form_invalid()}</ErrorMessage>}
-              {taken && <TakenIsbnMessage {...taken} />}
-              {status === 'failed' && <ErrorMessage>{m.book_create_failed()}</ErrorMessage>}
-              <Button type="submit" disabled={status === 'saving'}>
-                <Icon icon="book-upload" aria-hidden data-icon="inline-start" />
-                {m.book_create()}
-              </Button>
+              <form.AppForm>
+                <form.FormStatus>
+                  {problem?.error === 'isbn-taken' && (
+                    <TakenIsbnMessage bookId={problem.bookId} title={problem.title} />
+                  )}
+                  {problem?.error === 'failed' && (
+                    <ErrorMessage>{m.book_create_failed()}</ErrorMessage>
+                  )}
+                </form.FormStatus>
+                <form.SubmitButton>
+                  <Icon icon="book-upload" aria-hidden data-icon="inline-start" />
+                  {m.book_create()}
+                </form.SubmitButton>
+              </form.AppForm>
             </div>
           </form>
         </>

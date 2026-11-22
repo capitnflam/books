@@ -336,7 +336,7 @@
   "book_cover_alt": "Umschlag von {title}",
   "book_create": "Zum Katalog hinzufügen",
   "book_create_failed": "Das Buch konnte nicht hinzugefügt werden. Versuchen Sie es gleich noch einmal.",
-  "book_form_invalid": "Einige Felder müssen korrigiert werden.",
+  "form_invalid": "Einige Felder müssen korrigiert werden.",
   "book_isbn_taken": "„{title}“ hat bereits diese ISBN: Es ist im Katalog.",
   "book_created": "„{title}“ ist jetzt im Katalog.",
   "book_add_another": "Weiteres Buch hinzufügen",

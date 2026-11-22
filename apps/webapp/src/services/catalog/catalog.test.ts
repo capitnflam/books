@@ -155,7 +155,7 @@ describe('bookFormErrors', () => {
       new Set([
         'isbn',
         'title',
-        'contributors.0.name',
+        'contributors[0].name',
         'firstPublishedYear',
         'published',
         'language',
@@ -184,7 +184,7 @@ describe('bookFormErrors, for fields with several values', () => {
     expect(bookFormErrors(form({ contributors: many }))).toEqual(new Set(['contributors']));
     expect(
       bookFormErrors(form({ contributors: [{ name: 'a'.repeat(201), role: 'author' }] })),
-    ).toEqual(new Set(['contributors.0.name']));
+    ).toEqual(new Set(['contributors[0].name']));
   });
 });
 
@@ -376,7 +376,7 @@ describe('the edit forms', () => {
           { name: 'Discworld', position: 'eight' },
         ],
       }),
-    ).toEqual(new Set(['title', 'series.0.name', 'series.1.position']));
+    ).toEqual(new Set(['title', 'series[0].name', 'series[1].position']));
     expect(
       workFormErrors({ ...edited, title: 'Mort', series: Array.from({ length: 11 }, emptySeries) }),
     ).toEqual(new Set(['series']));

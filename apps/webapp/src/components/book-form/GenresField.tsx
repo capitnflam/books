@@ -13,6 +13,7 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from '@books/ui/components/field';
 import { useState } from 'react';
 
+import { useFieldContext } from '#/components/form/form-context';
 import { m } from '#/paraglide/messages';
 import { getLocale } from '#/paraglide/runtime';
 import { GENRES, genreAliases, genreLabel } from '#/services/catalog/genres';
@@ -26,11 +27,9 @@ import type { FC } from 'react';
  * searches names and other words for them (`theatre` finds Drama) forgivingly (`mistery`), best
  * matches first; at least one is required.
  */
-const GenresField: FC<{
-  genres: Genre[];
-  invalid: boolean;
-  onChange: (genres: Genre[]) => void;
-}> = ({ genres, invalid, onChange }) => {
+const GenresField: FC = () => {
+  const field = useFieldContext<Genre[]>();
+  const invalid = field.state.meta.errors.length > 0;
   const anchor = useComboboxAnchor();
   const [query, setQuery] = useState('');
   const options = GENRES.toSorted((a, b) =>
@@ -50,9 +49,9 @@ const GenresField: FC<{
         filteredItems={fuzzyFilter(options, query, genreLabel, genreAliases)}
         inputValue={query}
         onInputValueChange={setQuery}
-        value={genres}
+        value={field.state.value}
         itemToStringLabel={genreLabel}
-        onValueChange={onChange}
+        onValueChange={field.handleChange}
       >
         <ComboboxChips ref={anchor}>
           <ComboboxValue>

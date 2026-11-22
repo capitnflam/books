@@ -1,11 +1,10 @@
 import { Button } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
-import { Input } from '@books/ui/components/input';
-import { Label } from '@books/ui/components/label';
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 
 import BookCover from '#/components/BookCover';
+import ListSearchForm from '#/components/ListSearchForm';
 import TextLink from '#/components/TextLink';
 import { VirtualTable } from '#/components/VirtualTable';
 import { m } from '#/paraglide/messages';
@@ -16,7 +15,6 @@ import { formatList } from '#/utils/format-list';
 import { nextPage, parseListSearch } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
-import type { FormEvent } from 'react';
 
 /** The catalogue, loaded a page at a time as it scrolls. */
 const booksQuery = (q: string | undefined) =>
@@ -85,14 +83,6 @@ function BooksPage() {
   const books = data?.pages.flatMap((page) => page.books) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
-  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const value = new FormData(event.currentTarget).get('q');
-    const query = typeof value === 'string' ? value.trim() : '';
-
-    void navigate({ search: { q: query || undefined } });
-  };
-
   return (
     <div className="container mx-auto flex max-w-5xl flex-col gap-8 px-4 py-16">
       <header className="flex flex-wrap items-end justify-between gap-6">
@@ -110,19 +100,14 @@ function BooksPage() {
         )}
       </header>
 
-      <search>
-        <form className="flex flex-col gap-2" onSubmit={handleSearch}>
-          <Label htmlFor="books-search">{m.books_search_label()}</Label>
-          <div className="flex max-w-lg gap-2">
-            {/* Keyed by the query, so going back in history shows the matching text. */}
-            <Input key={q} id="books-search" name="q" type="search" defaultValue={q ?? ''} />
-            <Button type="submit" variant="outline">
-              <Icon icon="search" aria-hidden data-icon="inline-start" />
-              {m.books_search_submit()}
-            </Button>
-          </div>
-        </form>
-      </search>
+      <ListSearchForm
+        key={q}
+        id="books-search"
+        label={m.books_search_label()}
+        submitLabel={m.books_search_submit()}
+        query={q}
+        onSearch={(query) => void navigate({ search: { q: query } })}
+      />
 
       <section aria-labelledby="books-results" className="flex flex-col gap-4">
         <h2 id="books-results" className="text-heading-3 border-rule border-b pb-1.5">
