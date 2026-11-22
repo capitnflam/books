@@ -4,6 +4,7 @@ import {
   applyLookup,
   bookFormErrors,
   createBookSchema,
+  editionDraftOf,
   editionFormErrors,
   editionFormOf,
   emptyBookForm,
@@ -271,6 +272,69 @@ describe('applyLookup', () => {
       description: 'My notes',
       coverImageUrl: '',
     });
+  });
+});
+
+describe('editionDraftOf', () => {
+  const hobbit = {
+    title: 'The Hobbit',
+    subtitle: 'There and Back Again',
+    contributors: [
+      { role: 'author' as const, author: { name: 'J. R. R. Tolkien' } },
+      { role: 'illustrator' as const, author: { name: 'Alan Lee' } },
+    ],
+  };
+
+  it('keeps what is about the edition', () => {
+    const edition = {
+      editionStatement: '2nd edition',
+      publisher: 'Stock',
+      published: '1969',
+      language: 'fr',
+      format: 'paperback' as const,
+      pageCount: '320',
+      coverImageUrl: 'https://covers.example/1.jpg',
+    };
+
+    expect(
+      editionDraftOf(
+        { ...edition, description: 'A hobbit leaves home.', series: 'Middle-earth' },
+        hobbit,
+      ),
+    ).toEqual(edition);
+  });
+
+  it('keeps the title and subtitle that differ from the book’s', () => {
+    expect(
+      editionDraftOf({ title: 'Bilbo le Hobbit', subtitle: 'Aller et retour' }, hobbit),
+    ).toEqual({ title: 'Bilbo le Hobbit', subtitle: 'Aller et retour' });
+    expect(
+      editionDraftOf({ title: 'the hobbit', subtitle: 'There and back again ' }, hobbit),
+    ).toEqual({});
+  });
+
+  it('keeps the credits the book doesn’t have, but for authors', () => {
+    expect(
+      editionDraftOf(
+        {
+          contributors: [
+            { name: 'Tolkien', role: 'author' },
+            { name: 'alan lee', role: 'illustrator' },
+            { name: 'John Howe', role: 'illustrator' },
+            { name: 'Francis Ledoux', role: 'translator' },
+          ],
+        },
+        hobbit,
+      ),
+    ).toEqual({
+      contributors: [
+        { name: 'John Howe', role: 'illustrator' },
+        { name: 'Francis Ledoux', role: 'translator' },
+      ],
+    });
+    expect(
+      editionDraftOf({ contributors: [{ name: 'J. R. R. Tolkien', role: 'author' }] }, hobbit),
+    ).toEqual({});
   });
 });
 

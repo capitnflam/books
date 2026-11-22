@@ -6,7 +6,13 @@ import { isEditionRole, refiledTitle, sortName, sortTitle } from './catalog';
 import { parseIsbn } from './isbn';
 import { lookupIsbnOnline } from './isbn-lookup.server';
 
-import type { BookDraft, CreateBookInput, UpdateBookInput, UpdateEditionInput } from './catalog';
+import type {
+  BookDraft,
+  CreateBookInput,
+  CreateEditionInput,
+  UpdateBookInput,
+  UpdateEditionInput,
+} from './catalog';
 import type { Isbns } from './isbn';
 import type { ContributorRole } from '@books/database';
 
@@ -466,6 +472,51 @@ export async function updateBookServer({ bookId, ...book }: UpdateBookInput) {
 
     return { error: null };
   });
+}
+
+/**
+ * Saves the add-edition form: another published form of a book, with its publisher and credits.
+ * Refuses an ISBN another edition already has.
+ */
+export async function createEditionServer({ bookId, ...edition }: CreateEditionInput) {
+  await requirePermissionServer('catalog:manage');
+
+  const save = async () =>
+    db.transaction(async (tx) => {
+      const book = await lockBook(tx, bookId);
+
+      if (!book) {
+        return { error: 'not-found' as const };
+      }
+
+      const [created] = await tx
+        .insert(schema.editions)
+        .values({
+          bookId,
+          title: edition.title,
+          subtitle: edition.subtitle,
+          ...(await editionValues(tx, edition)),
+        })
+        .returning({ id: schema.editions.id });
+
+      await refileBook(tx, book, [...book.editions, edition]);
+
+      // Whoever the book or another of its editions credits is kept over a homonym.
+      const credits = await resolveCredits(
+        tx,
+        edition.contributors,
+        authorsByName([
+          ...book.editions.flatMap(({ contributors }) => contributors),
+          ...book.contributors,
+        ]),
+      );
+
+      await insertEditionCredits(tx, created!.id, credits);
+
+      return { error: null };
+    });
+
+  return saveUnlessIsbnTaken(edition.isbn, save);
 }
 
 /**

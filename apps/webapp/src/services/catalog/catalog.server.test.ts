@@ -3,13 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createBookSchema,
+  createEditionSchema,
   editionFormOf,
   emptyBookForm,
+  emptyEditionForm,
   updateBookSchema,
   updateEditionSchema,
 } from './catalog';
 import {
   createBookServer,
+  createEditionServer,
   deleteBookServer,
   deleteEditionServer,
   lookupIsbnServer,
@@ -31,6 +34,8 @@ const mocks = vi.hoisted(() => ({
   savedBook: null as unknown,
   /** Makes the next update fail, as another save taking the ISBN does. */
   updateError: null as unknown,
+  /** The same for the next insert. */
+  insertError: null as unknown,
   lookupIsbnOnline: vi.fn(),
 }));
 
@@ -70,6 +75,10 @@ vi.mock('@books/database', async (importOriginal) => {
     select: () => query(mocks.selects.shift() ?? []),
     insert: (table: unknown) => ({
       values: (values: unknown) => {
+        if (mocks.insertError) {
+          throw mocks.insertError;
+        }
+
         mocks.inserts.push({ table, values });
 
         const id = `id-${mocks.inserts.length}`;
@@ -119,6 +128,7 @@ beforeEach(() => {
   mocks.deletes = [];
   mocks.savedBook = null;
   mocks.updateError = null;
+  mocks.insertError = null;
   mocks.lookupIsbnOnline.mockReset();
 });
 
@@ -482,6 +492,134 @@ const edition = (changes: Partial<EditionForm>) =>
     editionId: EDITION_ID,
     ...changes,
   });
+
+const newEdition = (changes: Partial<EditionForm>) =>
+  createEditionSchema.parse({ ...emptyEditionForm(), bookId: BOOK_ID, ...changes });
+
+describe('adding an edition', () => {
+  beforeEach(() => {
+    mocks.selects = [[{ id: BOOK_ID }]];
+    mocks.savedBook = savedBook();
+  });
+
+  it('saves the edition and its credits, and leaves the book alone', async () => {
+    mocks.selects = [
+      // No edition has the ISBN yet.
+      [],
+      ...mocks.selects,
+      // The publisher is already catalogued, and the translator is not.
+      [{ id: 'atalante', name: 'L’Atalante' }],
+      [],
+    ];
+
+    await expect(
+      createEditionServer(
+        newEdition({
+          isbn: '978-0-552-12475-1',
+          title: 'La Huitième Couleur',
+          contributors: [
+            { name: 'Patrick Couton', role: 'translator' },
+            { name: 'terry pratchett', role: 'introduction' },
+            { name: 'Nigel Planer', role: 'narrator' },
+          ],
+          publisher: 'L’Atalante',
+          published: '1996',
+          language: 'fr',
+          format: 'audiobook',
+          pageCount: '288',
+          durationMinutes: '426',
+        }),
+      ),
+    ).resolves.toEqual({ error: null });
+
+    expect(insertsInto(schema.editions)).toEqual([
+      {
+        bookId: BOOK_ID,
+        title: 'La Huitième Couleur',
+        subtitle: null,
+        editionStatement: null,
+        publisherId: 'atalante',
+        publishedYear: 1996,
+        publishedOn: null,
+        isbn13: '9780552124751',
+        isbn10: '0552124753',
+        language: 'fr',
+        format: 'audiobook',
+        pageCount: null,
+        durationMinutes: 426,
+        coverImageUrl: null,
+      },
+    ]);
+    // Those the book or its other editions credit are kept, whatever others have their name.
+    expect(insertsInto(schema.authors)).toEqual([
+      { name: 'Patrick Couton', sortName: 'Couton, Patrick' },
+    ]);
+    expect(insertsInto(schema.editionContributors)).toEqual([
+      [
+        { editionId: 'id-1', authorId: 'id-2', role: 'translator', position: 0 },
+        { editionId: 'id-1', authorId: 'homonym', role: 'introduction', position: 1 },
+        { editionId: 'id-1', authorId: 'planer', role: 'narrator', position: 2 },
+      ],
+    ]);
+    expect(insertsInto(schema.bookContributors)).toEqual([]);
+    expect(mocks.updates).toEqual([]);
+    expect(mocks.deletes).toEqual([]);
+  });
+
+  it('saves an edition nothing is known about', async () => {
+    await expect(createEditionServer(newEdition({}))).resolves.toEqual({ error: null });
+    expect(mocks.inserts.map(({ table }) => table)).toEqual([schema.editions]);
+  });
+
+  it('files the book again when the edition tells the language of its title', async () => {
+    mocks.savedBook = {
+      ...savedBook(),
+      title: 'Die Farben der Magie',
+      sortTitle: 'Die Farben der Magie',
+      editions: [],
+    };
+
+    await createEditionServer(newEdition({ language: 'de' }));
+
+    expect(updatesOf(schema.books)).toEqual([{ sortTitle: 'Farben der Magie, Die' }]);
+  });
+
+  it('refuses an ISBN another edition has', async () => {
+    mocks.selects = [[{ bookId: 'hobbit', title: 'The Hobbit' }]];
+
+    await expect(createEditionServer(newEdition({ isbn: '9780261102217' }))).resolves.toEqual({
+      error: 'isbn-taken',
+      bookId: 'hobbit',
+      title: 'The Hobbit',
+    });
+    expect(mocks.inserts).toEqual([]);
+  });
+
+  it('refuses an ISBN another edition takes meanwhile', async () => {
+    mocks.selects = [[], ...mocks.selects, [{ bookId: 'hobbit', title: 'The Hobbit' }]];
+    mocks.insertError = Object.assign(new Error('duplicate key'), { code: '23505' });
+
+    await expect(createEditionServer(newEdition({ isbn: '9780261102217' }))).resolves.toEqual({
+      error: 'isbn-taken',
+      bookId: 'hobbit',
+      title: 'The Hobbit',
+    });
+  });
+
+  it('says when the book is gone', async () => {
+    mocks.selects = [[]];
+
+    await expect(createEditionServer(newEdition({}))).resolves.toEqual({ error: 'not-found' });
+    expect(mocks.inserts).toEqual([]);
+  });
+
+  it('needs the catalog:manage permission', async () => {
+    mocks.permissions = ['collection:manage'];
+
+    await expect(createEditionServer(newEdition({}))).rejects.toThrow(/catalog:manage/u);
+    expect(mocks.inserts).toEqual([]);
+  });
+});
 
 describe('editing an edition', () => {
   beforeEach(() => {
