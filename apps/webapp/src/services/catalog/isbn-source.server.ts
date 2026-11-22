@@ -1,5 +1,8 @@
 // What the catalogues asked by the ISBN lookup have in common.
 
+import { XMLParser } from 'fast-xml-parser';
+import { z } from 'zod';
+
 import type { BookDraft } from './catalog';
 
 // Open Library asks automated clients to name themselves.
@@ -7,15 +10,16 @@ const USER_AGENT = 'books-catalogue-isbn-lookup/1.0';
 const TIMEOUT_MS = 8000;
 const SUBJECTS_MAX = 8;
 
-class SourceUnavailableError extends Error {}
+/** A source that can't be reached, or answers something else than expected. */
+export class SourceUnavailableError extends Error {}
 
-/** The JSON at `url`, or null when it does not exist (404); throws when the source is down. */
-export async function getJson(url: string): Promise<unknown> {
+/** The answer at `url`, or null when it does not exist (404); throws when the source is down. */
+async function get(url: string, accept: string): Promise<Response | null> {
   let response: Response;
 
   try {
     response = await fetch(url, {
-      headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+      headers: { Accept: accept, 'User-Agent': USER_AGENT },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (error) {
@@ -30,8 +34,39 @@ export async function getJson(url: string): Promise<unknown> {
     throw new SourceUnavailableError(`${new URL(url).host} answered ${response.status}`);
   }
 
-  return response.json();
+  return response;
 }
+
+/** The JSON at `url`, or null when it does not exist (404); throws when the source is down. */
+export async function getJson(url: string): Promise<unknown> {
+  const response = await get(url, 'application/json');
+
+  return response ? response.json() : null;
+}
+
+// Every element is an object, with its text as `text` and its attributes by name. Text stays
+// text: an ISBN or a volume that looks like a number keeps its zeros.
+const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '',
+  textNodeName: 'text',
+  alwaysCreateTextNode: true,
+  parseTagValue: false,
+  parseAttributeValue: false,
+  // Character references (`&#233;`) as well as XML's own entities.
+  htmlEntities: true,
+});
+
+/** The XML at `url`, or null when it does not exist (404); throws when the source is down. */
+export async function getXml(url: string): Promise<unknown> {
+  const response = await get(url, 'application/xml, text/xml');
+
+  return response ? xmlParser.parse(await response.text()) : null;
+}
+
+/** An element that may be repeated, which is an array only when it is, or may be missing. */
+export const oneOrMore = <Item extends z.ZodType>(item: Item) =>
+  z.union([z.array(item), item.transform((one) => [one])]).default([]);
 
 /** Libraries' MARC language codes, as BCP 47 tags. */
 const MARC_LANGUAGES: Record<string, string> = {

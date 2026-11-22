@@ -24,7 +24,11 @@ const fetchMock = vi.fn(async (input: string) => {
     throw answer;
   }
 
-  return answer === undefined ? new Response('Not found', { status: 404 }) : Response.json(answer);
+  if (answer === undefined) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  return typeof answer === 'string' ? new Response(answer) : Response.json(answer);
 });
 
 const openLibraryHobbit = {
@@ -196,6 +200,69 @@ describe('lookupIsbnOnline', () => {
     responses = { 'openlibrary.org/': new TypeError('fetch failed') };
 
     await expect(lookupIsbnOnline(hobbit)).resolves.toEqual({ status: 'unavailable' });
+  });
+});
+
+const naruto = { isbn13: '9782871294146', isbn10: '2871294143' };
+
+const bnfNaruto = `<?xml version="1.0"?>
+<srw:searchRetrieveResponse>
+  <srw:numberOfRecords>1</srw:numberOfRecords>
+  <srw:records><srw:record><srw:recordData><mxc:record>
+    <mxc:datafield tag="200"><mxc:subfield code="a">Naruto</mxc:subfield><mxc:subfield code="h">1</mxc:subfield></mxc:datafield>
+  </mxc:record></srw:recordData></srw:record></srw:records>
+</srw:searchRetrieveResponse>`;
+
+describe('lookupIsbnOnline with the national libraries', () => {
+  it('prefers the BnF for a French ISBN, with Open Library filling the gaps', async () => {
+    responses = {
+      'catalogue.bnf.fr/api/SRU': bnfNaruto,
+      'openlibrary.org/isbn/9782871294146.json': {
+        title: 'Naruto, tome 1 (French Edition)',
+        subtitle: 'Edition',
+        covers: [1],
+      },
+    };
+
+    await expect(lookupIsbnOnline(naruto)).resolves.toEqual({
+      status: 'found',
+      draft: {
+        title: 'Naruto, tome 1',
+        series: 'Naruto',
+        seriesPosition: '1',
+        coverImageUrl: 'https://covers.openlibrary.org/b/id/1-L.jpg',
+      },
+    });
+  });
+
+  it.each([
+    ['9782871294146', 'catalogue.bnf.fr'],
+    ['9791032710838', 'catalogue.bnf.fr'],
+  ])('asks the library of %s', async (isbn13, host) => {
+    await lookupIsbnOnline({ isbn13, isbn10: null });
+
+    expect(fetchMock.mock.calls.map(([url]) => new URL(url).host)).toEqual([
+      host,
+      'openlibrary.org',
+    ]);
+  });
+
+  it('uses Open Library when the library cannot be reached', async () => {
+    responses = {
+      'catalogue.bnf.fr/': new TypeError('fetch failed'),
+      'openlibrary.org/isbn/9782871294146.json': { title: 'Naruto' },
+    };
+
+    await expect(lookupIsbnOnline(naruto)).resolves.toMatchObject({
+      status: 'found',
+      draft: { title: 'Naruto' },
+    });
+  });
+
+  it('does not call an ISBN unknown when the library cannot be reached', async () => {
+    responses = { 'catalogue.bnf.fr/': new TypeError('fetch failed') };
+
+    await expect(lookupIsbnOnline(naruto)).resolves.toEqual({ status: 'unavailable' });
   });
 });
 

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { CONTRIBUTORS_MAX } from './catalog';
 import { genresFromSubjects } from './genres';
+import { fromBnf } from './isbn-bnf.server';
 import {
   cleanName,
   cleanSubjects,
@@ -18,7 +19,7 @@ import type { EditionFormat } from '@books/database';
 export type LookupOutcome =
   | { status: 'found'; draft: BookDraft }
   | { status: 'not-found' }
-  /** Every source failed (network error, outage, quota): trying again later may work. */
+  /** The source most likely to know it failed (network error, outage): trying again may work. */
   | { status: 'unavailable' };
 
 const OPEN_LIBRARY = 'https://openlibrary.org';
@@ -310,15 +311,20 @@ export function mergeDrafts(drafts: readonly BookDraft[]): BookDraft {
   return compact(merged);
 }
 
+/** ISBNs of the French-language group (France, Belgium, Quebec…) and, in `979`, of France. */
+const isFrench = ({ isbn13 }: Isbns) => /^(?:9782|97910)/u.test(isbn13);
+
 /**
- * Finds a book by ISBN in the open catalogues: Open Library first, then Google Books (when an
- * API key is configured: it refuses anonymous requests) for the fields Open Library lacks.
+ * Finds a book by ISBN in the open catalogues: first the national library of France when the
+ * ISBN is French, then Open Library, then Google Books (when an API key is configured:
+ * it refuses anonymous requests) for the fields the others lack.
  */
 export async function lookupIsbnOnline(
   isbns: Isbns,
   { googleBooksApiKey }: { googleBooksApiKey?: string } = {},
 ): Promise<LookupOutcome> {
   const sources = [
+    ...(isFrench(isbns) ? [fromBnf(isbns)] : []),
     fromOpenLibrary(isbns),
     ...(googleBooksApiKey ? [fromGoogleBooks(isbns, googleBooksApiKey)] : []),
   ];
@@ -328,9 +334,7 @@ export async function lookupIsbnOnline(
   );
 
   if (drafts.length === 0) {
-    return results.every(({ status }) => status === 'rejected')
-      ? { status: 'unavailable' }
-      : { status: 'not-found' };
+    return results[0]?.status === 'rejected' ? { status: 'unavailable' } : { status: 'not-found' };
   }
 
   return { status: 'found', draft: mergeDrafts(drafts) };
