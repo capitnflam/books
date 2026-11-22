@@ -67,6 +67,26 @@ describe('fromGoogleBooks', () => {
     await expect(fromGoogleBooks(hobbit, 'test-key')).resolves.toEqual({ title: 'The Hobbit' });
   });
 
+  it('drops a page count of 0 and keeps the rest', async () => {
+    respond({ items: [{ volumeInfo: { title: 'The Hobbit', pageCount: 0 } }] });
+
+    await expect(fromGoogleBooks(hobbit, 'test-key')).resolves.toEqual({ title: 'The Hobbit' });
+  });
+
+  it('keeps the first volume when another one has a page count of 0', async () => {
+    respond({
+      items: [
+        { volumeInfo: { title: 'The Hobbit', pageCount: 310 } },
+        { volumeInfo: { title: 'Another book', pageCount: 0 } },
+      ],
+    });
+
+    await expect(fromGoogleBooks(hobbit, 'test-key')).resolves.toEqual({
+      title: 'The Hobbit',
+      pageCount: '310',
+    });
+  });
+
   it('finds nothing in an empty answer', async () => {
     respond({ totalItems: 0 });
 

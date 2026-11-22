@@ -27,7 +27,8 @@ const googleBooksVolumes = z.object({
           publisher: z.string().optional(),
           publishedDate: z.string().optional(),
           description: z.string().optional(),
-          pageCount: z.number().int().positive().optional(),
+          // Google gives 0 when it does not know, which must not fail the whole answer
+          pageCount: z.number().int().positive().optional().catch(undefined),
           categories: z.array(z.string()).optional(),
           language: z.string().optional(),
           imageLinks: z.object({ thumbnail: z.string().optional() }).optional(),
