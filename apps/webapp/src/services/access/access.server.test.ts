@@ -1,7 +1,11 @@
 import { isRedirect } from '@tanstack/react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { checkPermissionServer, requirePermissionServer } from './access.server';
+import {
+  checkPermissionServer,
+  requirePermissionServer,
+  requireViewerServer,
+} from './access.server';
 
 import type * as Database from '@books/database';
 
@@ -63,6 +67,18 @@ describe('requirePermissionServer', () => {
     await expect(requirePermissionServer('retired:permission' as never)).rejects.toThrow(
       /retired:permission/u,
     );
+  });
+});
+
+describe('requireViewerServer', () => {
+  it('rejects a visitor who is not signed in', async () => {
+    mocks.user = null;
+
+    await expect(requireViewerServer()).rejects.toThrow(/signed in/u);
+  });
+
+  it('returns a user who has no permission at all', async () => {
+    await expect(requireViewerServer()).resolves.toEqual({ user: reader, permissions: [] });
   });
 });
 

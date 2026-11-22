@@ -4,9 +4,17 @@ import {
   applyLookup,
   bookFormErrors,
   createBookSchema,
+  editionFormErrors,
+  editionFormOf,
   emptyBookForm,
+  emptySeries,
+  refiledTitle,
   sortName,
   sortTitle,
+  updateBookSchema,
+  updateEditionSchema,
+  workFormErrors,
+  workFormOf,
 } from './catalog';
 
 import type { BookForm } from './catalog';
@@ -255,5 +263,168 @@ describe('applyLookup', () => {
       description: 'My notes',
       coverImageUrl: '',
     });
+  });
+});
+
+const BOOK_ID = '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e01';
+
+const savedBook = {
+  title: 'Guards! Guards!',
+  subtitle: null,
+  description: 'The Night Watch meets a dragon.',
+  originalLanguage: 'en',
+  firstPublishedYear: 1989,
+  contributors: [{ role: 'author' as const, author: { name: 'Terry Pratchett' } }],
+  series: [
+    { position: 1, series: { name: 'City Watch' } },
+    { position: null, series: { name: 'Discworld' } },
+    { position: 1.5, series: { name: 'Dragons' } },
+  ],
+  genres: ['fantasy' as const],
+  subjects: [{ name: 'Dragons' }, { name: 'Policemen' }],
+};
+
+const savedEdition = {
+  title: null,
+  subtitle: null,
+  editionStatement: '2nd edition',
+  publisher: { name: 'Corgi' },
+  publishedYear: 1990,
+  publishedOn: '1990-11-01',
+  isbn13: '9780552134620',
+  isbn10: '0552134627',
+  language: 'en',
+  format: 'audiobook' as const,
+  pageCount: null,
+  durationMinutes: 510,
+  coverImageUrl: 'https://example.org/cover.jpg',
+  contributors: [{ role: 'narrator' as const, author: { name: 'Nigel Planer' } }],
+};
+
+describe('the edit forms', () => {
+  it('save a book nobody changed as it was', () => {
+    const edited = workFormOf(savedBook);
+
+    expect(workFormErrors(edited)).toEqual(new Set());
+    expect(updateBookSchema.parse({ bookId: BOOK_ID, ...edited })).toEqual({
+      bookId: BOOK_ID,
+      title: 'Guards! Guards!',
+      subtitle: null,
+      description: 'The Night Watch meets a dragon.',
+      originalLanguage: 'en',
+      firstPublishedYear: 1989,
+      contributors: [{ name: 'Terry Pratchett', role: 'author' }],
+      series: [
+        { name: 'City Watch', position: 1 },
+        { name: 'Discworld', position: null },
+        { name: 'Dragons', position: 1.5 },
+      ],
+      genres: ['fantasy'],
+      subjects: ['Dragons', 'Policemen'],
+    });
+  });
+
+  it('save an edition nobody changed as it was', () => {
+    const edited = editionFormOf(savedEdition);
+
+    expect(editionFormErrors(edited)).toEqual(new Set());
+    expect(updateEditionSchema.parse({ editionId: BOOK_ID, ...edited })).toEqual({
+      editionId: BOOK_ID,
+      title: null,
+      subtitle: null,
+      contributors: [{ name: 'Nigel Planer', role: 'narrator' }],
+      isbn: { isbn13: '9780552134620', isbn10: '0552134627' },
+      editionStatement: '2nd edition',
+      publisher: 'Corgi',
+      published: { publishedYear: 1990, publishedOn: '1990-11-01' },
+      language: 'en',
+      format: 'audiobook',
+      pageCount: null,
+      durationMinutes: 510,
+      coverImageUrl: 'https://example.org/cover.jpg',
+    });
+  });
+
+  it('save an edition with only a year, and only an ISBN-10', () => {
+    const edited = editionFormOf({ ...savedEdition, publishedOn: null, isbn13: null });
+
+    expect(updateEditionSchema.parse({ editionId: BOOK_ID, ...edited })).toMatchObject({
+      isbn: { isbn13: '9780552134620', isbn10: '0552134627' },
+      published: { publishedYear: 1990, publishedOn: null },
+    });
+  });
+
+  it('show an empty row for a book without credits or series, and save none', () => {
+    const edited = workFormOf({ ...savedBook, contributors: [], series: [] });
+
+    expect(edited.contributors).toEqual([{ name: '', role: 'author' }]);
+    expect(edited.series).toEqual([emptySeries()]);
+    expect(updateBookSchema.parse({ bookId: BOOK_ID, ...edited })).toMatchObject({
+      contributors: [],
+      series: [],
+    });
+  });
+
+  it('name the series row to correct', () => {
+    const edited = workFormOf({ ...savedBook, title: ' ' });
+
+    expect(
+      workFormErrors({
+        ...edited,
+        series: [
+          { name: '', position: '3' },
+          { name: 'Discworld', position: 'eight' },
+        ],
+      }),
+    ).toEqual(new Set(['title', 'series.0.name', 'series.1.position']));
+    expect(
+      workFormErrors({ ...edited, title: 'Mort', series: Array.from({ length: 11 }, emptySeries) }),
+    ).toEqual(new Set(['series']));
+  });
+});
+
+describe('refiledTitle', () => {
+  const before = {
+    title: 'The Hobbit',
+    sortTitle: 'Hobbit, The',
+    originalLanguage: 'en',
+    editions: [{ title: null, language: 'en' }],
+  };
+
+  it('files a new title by its language', () => {
+    expect(refiledTitle(before, { ...before, title: 'A Hobbit' })).toBe('Hobbit, A');
+  });
+
+  it('uses the language of the edition printed under that title', () => {
+    expect(
+      refiledTitle(before, {
+        ...before,
+        title: 'Le Hobbit',
+        editions: [
+          { title: 'Der Hobbit', language: 'de' },
+          { title: null, language: 'fr' },
+        ],
+      }),
+    ).toBe('Hobbit, Le');
+  });
+
+  it('files the title again when its language becomes known', () => {
+    const unknown = {
+      title: 'Der Hobbit',
+      sortTitle: 'Der Hobbit',
+      originalLanguage: null,
+      editions: [],
+    };
+
+    expect(refiledTitle(unknown, { ...unknown, originalLanguage: 'de' })).toBe('Hobbit, Der');
+  });
+
+  it('keeps a title filed by hand until it changes', () => {
+    const byHand = { ...before, title: '1984', sortTitle: 'Nineteen Eighty-Four' };
+
+    expect(refiledTitle(byHand, { ...byHand, originalLanguage: 'fr' })).toBe(
+      'Nineteen Eighty-Four',
+    );
+    expect(refiledTitle(byHand, { ...byHand, title: 'The Hobbit' })).toBe('Hobbit, The');
   });
 });

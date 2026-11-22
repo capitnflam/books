@@ -2,25 +2,29 @@ import { db, orm, schema } from '@books/database';
 
 import { requirePermissionServer } from '#/services/access/access.server';
 
-import { isEditionRole, sortName, sortTitle } from './catalog';
+import { isEditionRole, refiledTitle, sortName, sortTitle } from './catalog';
 import { parseIsbn } from './isbn';
 import { lookupIsbnOnline } from './isbn-lookup.server';
 
-import type { BookDraft, CreateBookInput } from './catalog';
+import type { BookDraft, CreateBookInput, UpdateBookInput, UpdateEditionInput } from './catalog';
 import type { Isbns } from './isbn';
+import type { ContributorRole } from '@books/database';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-/** The catalogued edition that has one of these ISBNs, with its book's title. */
-async function findEditionByIsbnServer({ isbn13, isbn10 }: Isbns) {
+/** The catalogued edition, other than `exceptId`, with one of these ISBNs, and its book's title. */
+async function findEditionByIsbnServer({ isbn13, isbn10 }: Isbns, exceptId?: string) {
   const [edition] = await db
     .select({ bookId: schema.editions.bookId, title: schema.books.title })
     .from(schema.editions)
     .innerJoin(schema.books, orm.eq(schema.books.id, schema.editions.bookId))
     .where(
-      orm.or(
-        orm.eq(schema.editions.isbn13, isbn13),
-        isbn10 ? orm.eq(schema.editions.isbn10, isbn10) : undefined,
+      orm.and(
+        orm.or(
+          orm.eq(schema.editions.isbn13, isbn13),
+          isbn10 ? orm.eq(schema.editions.isbn10, isbn10) : undefined,
+        ),
+        exceptId ? orm.ne(schema.editions.id, exceptId) : undefined,
       ),
     )
     .limit(1);
@@ -154,6 +158,105 @@ async function findOrCreateNamed(
   return names.flatMap((name) => ids.get(name.toLowerCase()) ?? []);
 }
 
+type Credit = { authorId: string; role: ContributorRole };
+
+/**
+ * The credits entered as names, in the order they were entered; the same person twice in the
+ * same role is one credit. `known` holds the authors already credited, by name in lower case:
+ * they are kept rather than looked up, so a homonym doesn't take their place.
+ */
+async function resolveCredits(
+  tx: Transaction,
+  contributors: readonly { name: string; role: ContributorRole }[],
+  known: ReadonlyMap<string, string> = new Map(),
+) {
+  const credits: Credit[] = [];
+  const credited = new Set<string>();
+  // Someone credited twice (author and illustrator) is looked up once.
+  const authorIds = new Map(known);
+
+  for (const { name, role } of contributors) {
+    const authorId = authorIds.get(name.toLowerCase()) ?? (await findOrCreateAuthor(tx, name));
+
+    authorIds.set(name.toLowerCase(), authorId);
+    const key = `${authorId}:${role}`;
+
+    if (!credited.has(key)) {
+      credited.add(key);
+      credits.push({ authorId, role });
+    }
+  }
+
+  return credits;
+}
+
+/** The authors of saved credits, by name in lower case. */
+const authorsByName = (credits: readonly { author: { id: string; name: string } }[]) =>
+  new Map(credits.map(({ author }) => [author.name.toLowerCase(), author.id]));
+
+async function insertBookCredits(tx: Transaction, bookId: string, credits: readonly Credit[]) {
+  if (credits.length > 0) {
+    await tx
+      .insert(schema.bookContributors)
+      .values(credits.map((credit, position) => ({ bookId, ...credit, position })));
+  }
+}
+
+async function insertEditionCredits(
+  tx: Transaction,
+  editionId: string,
+  credits: readonly Credit[],
+) {
+  if (credits.length > 0) {
+    await tx
+      .insert(schema.editionContributors)
+      .values(credits.map((credit, position) => ({ editionId, ...credit, position })));
+  }
+}
+
+async function insertGenresAndSubjects(
+  tx: Transaction,
+  bookId: string,
+  { genres, subjects }: Pick<UpdateBookInput, 'genres' | 'subjects'>,
+) {
+  // The schemas require at least one genre.
+  await tx.insert(schema.bookGenres).values(genres.map((genre) => ({ bookId, genre })));
+
+  const subjectIds = await findOrCreateNamed(tx, schema.subjects, subjects);
+
+  if (subjectIds.length > 0) {
+    await tx
+      .insert(schema.bookSubjects)
+      .values(subjectIds.map((subjectId) => ({ bookId, subjectId })));
+  }
+}
+
+/** The columns of an edition the add and edit forms share, its publisher found or created. */
+async function editionValues(
+  tx: Transaction,
+  edition: Omit<UpdateEditionInput, 'editionId' | 'title' | 'subtitle' | 'contributors'>,
+) {
+  const [publisherId] = await findOrCreateNamed(
+    tx,
+    schema.publishers,
+    edition.publisher ? [edition.publisher] : [],
+  );
+
+  return {
+    editionStatement: edition.editionStatement,
+    publisherId: publisherId ?? null,
+    publishedYear: edition.published.publishedYear,
+    publishedOn: edition.published.publishedOn,
+    isbn13: edition.isbn?.isbn13 ?? null,
+    isbn10: edition.isbn?.isbn10 ?? null,
+    language: edition.language,
+    format: edition.format,
+    pageCount: edition.pageCount,
+    durationMinutes: edition.durationMinutes,
+    coverImageUrl: edition.coverImageUrl,
+  };
+}
+
 const isUniqueViolation = (error: unknown) =>
   error instanceof Error
   && ((error as { code?: unknown }).code === '23505'
@@ -194,68 +297,24 @@ export async function createBookServer(book: CreateBookInput) {
         .returning({ id: schema.books.id });
       const { id } = created!;
 
-      const [publisherId] = await findOrCreateNamed(
-        tx,
-        schema.publishers,
-        book.publisher ? [book.publisher] : [],
-      );
       const [edition] = await tx
         .insert(schema.editions)
-        .values({
-          bookId: id,
-          editionStatement: book.editionStatement,
-          publisherId: publisherId ?? null,
-          publishedYear: book.published.publishedYear,
-          publishedOn: book.published.publishedOn,
-          isbn13: book.isbn?.isbn13 ?? null,
-          isbn10: book.isbn?.isbn10 ?? null,
-          language: book.language,
-          format: book.format,
-          pageCount: book.pageCount,
-          durationMinutes: book.durationMinutes,
-          coverImageUrl: book.coverImageUrl,
-        })
+        .values({ bookId: id, ...(await editionValues(tx, book)) })
         .returning({ id: schema.editions.id });
 
-      // Credits keep the order they were entered in, counted apart for the book and the edition.
-      const bookCredits: (typeof schema.bookContributors.$inferInsert)[] = [];
-      const editionCredits: (typeof schema.editionContributors.$inferInsert)[] = [];
-      const credited = new Set<string>();
-      // Someone credited twice (author and illustrator) is looked up once.
-      const authorIds = new Map<string, string>();
+      const credits = await resolveCredits(tx, book.contributors);
 
-      for (const { name, role } of book.contributors) {
-        const authorId = authorIds.get(name.toLowerCase()) ?? (await findOrCreateAuthor(tx, name));
-
-        authorIds.set(name.toLowerCase(), authorId);
-        const key = `${authorId}:${role}`;
-
-        // The same person twice in the same role is one credit.
-        if (credited.has(key)) {
-          continue;
-        }
-
-        credited.add(key);
-
-        if (isEditionRole(role)) {
-          editionCredits.push({
-            editionId: edition!.id,
-            authorId,
-            role,
-            position: editionCredits.length,
-          });
-        } else {
-          bookCredits.push({ bookId: id, authorId, role, position: bookCredits.length });
-        }
-      }
-
-      if (bookCredits.length > 0) {
-        await tx.insert(schema.bookContributors).values(bookCredits);
-      }
-
-      if (editionCredits.length > 0) {
-        await tx.insert(schema.editionContributors).values(editionCredits);
-      }
+      // Numbered apart for the book and the edition.
+      await insertBookCredits(
+        tx,
+        id,
+        credits.filter(({ role }) => !isEditionRole(role)),
+      );
+      await insertEditionCredits(
+        tx,
+        edition!.id,
+        credits.filter(({ role }) => isEditionRole(role)),
+      );
 
       if (book.series) {
         await tx.insert(schema.bookSeries).values({
@@ -265,18 +324,7 @@ export async function createBookServer(book: CreateBookInput) {
         });
       }
 
-      // `createBookSchema` requires at least one genre.
-      await tx
-        .insert(schema.bookGenres)
-        .values(book.genres.map((genre) => ({ bookId: id, genre })));
-
-      const subjectIds = await findOrCreateNamed(tx, schema.subjects, book.subjects);
-
-      if (subjectIds.length > 0) {
-        await tx
-          .insert(schema.bookSubjects)
-          .values(subjectIds.map((subjectId) => ({ bookId: id, subjectId })));
-      }
+      await insertGenresAndSubjects(tx, id, book);
 
       return id;
     });
@@ -289,6 +337,179 @@ export async function createBookServer(book: CreateBookInput) {
 
       if (existing) {
         return { error: 'isbn-taken' as const, ...existing };
+      }
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Takes the lock every edit of a book or of its editions holds, so two at once follow each
+ * other instead of mixing their credits. Returns the book as it was, or null when it's gone.
+ */
+async function lockBook(tx: Transaction, bookId: string) {
+  const [locked] = await tx
+    .select({ id: schema.books.id })
+    .from(schema.books)
+    .where(orm.eq(schema.books.id, bookId))
+    .for('update');
+
+  if (!locked) {
+    return null;
+  }
+
+  const book = await tx.query.books.findFirst({
+    where: orm.eq(schema.books.id, bookId),
+    with: {
+      contributors: { with: { author: true } },
+      series: { with: { series: true } },
+      editions: {
+        orderBy: orm.asc(schema.editions.createdAt),
+        with: { contributors: { with: { author: true } } },
+      },
+    },
+  });
+
+  return book ?? null;
+}
+
+/** Saves the edit-book form: the work itself, with its credits, series, genres and subjects. */
+export async function updateBookServer({ bookId, ...book }: UpdateBookInput) {
+  await requirePermissionServer('catalog:manage');
+
+  return db.transaction(async (tx) => {
+    const before = await lockBook(tx, bookId);
+
+    if (!before) {
+      return { error: 'not-found' as const };
+    }
+
+    await tx
+      .update(schema.books)
+      .set({
+        title: book.title,
+        subtitle: book.subtitle,
+        sortTitle: refiledTitle(before, { ...book, editions: before.editions }),
+        description: book.description,
+        originalLanguage: book.originalLanguage,
+        firstPublishedYear: book.firstPublishedYear,
+      })
+      .where(orm.eq(schema.books.id, bookId));
+
+    const credits = await resolveCredits(tx, book.contributors, authorsByName(before.contributors));
+
+    await tx.delete(schema.bookContributors).where(orm.eq(schema.bookContributors.bookId, bookId));
+    await insertBookCredits(tx, bookId, credits);
+
+    const knownSeries = new Map(
+      before.series.map(({ series }) => [series.name.toLowerCase(), series.id]),
+    );
+    // Keyed by series, so one entered twice is kept once, with its first number.
+    const positions = new Map<string, number | null>();
+
+    for (const { name, position } of book.series) {
+      const seriesId =
+        knownSeries.get(name.toLowerCase())
+        // As when a book is added, filed by the articles of the language of the edition.
+        ?? (await findOrCreateSeries(
+          tx,
+          name,
+          before.editions.find(({ language }) => language)?.language ?? book.originalLanguage,
+        ));
+
+      if (!positions.has(seriesId)) {
+        positions.set(seriesId, position);
+      }
+    }
+
+    await tx.delete(schema.bookSeries).where(orm.eq(schema.bookSeries.bookId, bookId));
+
+    if (positions.size > 0) {
+      await tx
+        .insert(schema.bookSeries)
+        .values([...positions].map(([seriesId, position]) => ({ bookId, seriesId, position })));
+    }
+
+    await tx.delete(schema.bookGenres).where(orm.eq(schema.bookGenres.bookId, bookId));
+    await tx.delete(schema.bookSubjects).where(orm.eq(schema.bookSubjects.bookId, bookId));
+    await insertGenresAndSubjects(tx, bookId, book);
+
+    return { error: null };
+  });
+}
+
+/**
+ * Saves the edit-edition form: one published form of a book, with its publisher and credits.
+ * Refuses an ISBN another edition already has.
+ */
+export async function updateEditionServer({ editionId, ...edition }: UpdateEditionInput) {
+  await requirePermissionServer('catalog:manage');
+
+  const findTaken = () => (edition.isbn ? findEditionByIsbnServer(edition.isbn, editionId) : null);
+  const taken = await findTaken();
+
+  if (taken) {
+    return { error: 'isbn-taken' as const, ...taken };
+  }
+
+  try {
+    return await db.transaction(async (tx) => {
+      const [owner] = await tx
+        .select({ bookId: schema.editions.bookId })
+        .from(schema.editions)
+        .where(orm.eq(schema.editions.id, editionId));
+      const book = owner ? await lockBook(tx, owner.bookId) : null;
+      const before = book?.editions.find(({ id }) => id === editionId);
+
+      if (!book || !before) {
+        return { error: 'not-found' as const };
+      }
+
+      await tx
+        .update(schema.editions)
+        .set({
+          title: edition.title,
+          subtitle: edition.subtitle,
+          ...(await editionValues(tx, edition)),
+        })
+        .where(orm.eq(schema.editions.id, editionId));
+
+      // Its language decides which article the book's title is filed after.
+      const sortTitleAfter = refiledTitle(book, {
+        ...book,
+        editions: book.editions.map((other) =>
+          other.id === editionId ? { title: edition.title, language: edition.language } : other,
+        ),
+      });
+
+      if (sortTitleAfter !== book.sortTitle) {
+        await tx
+          .update(schema.books)
+          .set({ sortTitle: sortTitleAfter })
+          .where(orm.eq(schema.books.id, book.id));
+      }
+
+      const credits = await resolveCredits(
+        tx,
+        edition.contributors,
+        new Map([...authorsByName(book.contributors), ...authorsByName(before.contributors)]),
+      );
+
+      await tx
+        .delete(schema.editionContributors)
+        .where(orm.eq(schema.editionContributors.editionId, editionId));
+      await insertEditionCredits(tx, editionId, credits);
+
+      return { error: null };
+    });
+  } catch (error) {
+    // Another edition took the ISBN between the check and the update.
+    if (isUniqueViolation(error)) {
+      const takenMeanwhile = await findTaken();
+
+      if (takenMeanwhile) {
+        return { error: 'isbn-taken' as const, ...takenMeanwhile };
       }
     }
 
