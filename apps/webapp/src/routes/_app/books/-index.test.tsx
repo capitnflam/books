@@ -5,6 +5,18 @@ import { listedBook, pageOf, uuid } from '#/testing/fixtures';
 import { renderPage } from '#/testing/render-page';
 import { signIn } from '#/testing/session';
 
+/** The server lists that many books, `Volume 1` and so on, a page at a time. */
+function serverHasBooks(count: number) {
+  const books = Array.from({ length: count }, (_, index) =>
+    listedBook({ id: uuid(index), title: `Volume ${index + 1}` }),
+  );
+
+  vi.mocked(listBooksFn).mockImplementation(async ({ data }) => ({
+    total: count,
+    books: pageOf(books, data.page),
+  }));
+}
+
 beforeEach(() => signIn());
 
 describe('the list', () => {
@@ -67,14 +79,7 @@ describe('the list', () => {
   });
 
   it('loads more books as it scrolls', async () => {
-    const books = Array.from({ length: 30 }, (_, index) =>
-      listedBook({ id: uuid(index), title: `Volume ${index + 1}` }),
-    );
-
-    vi.mocked(listBooksFn).mockImplementation(async ({ data }) => ({
-      total: books.length,
-      books: pageOf(books, data.page),
-    }));
+    serverHasBooks(30);
     const page = await renderPage('/books');
 
     await expect.element(page.getByText('25 of 30 loaded')).toBeVisible();
@@ -87,6 +92,24 @@ describe('the list', () => {
 
     await expect.element(page.getByRole('link', { name: 'Volume 30' })).toBeVisible();
     expect(listBooksFn).toHaveBeenLastCalledWith({ data: { q: undefined, page: 2 } });
+  });
+
+  it('offers to try again when the next books fail to load', async () => {
+    serverHasBooks(30);
+    const page = await renderPage('/books');
+
+    await expect.element(page.getByText('25 of 30 loaded')).toBeVisible();
+    vi.mocked(listBooksFn).mockRejectedValue(new Error('The server is down.'));
+    page.getByRole('region', { name: 'Catalogue' }).element().scrollTo({ top: 100_000 });
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('More entries could not be loaded.');
+
+    serverHasBooks(30);
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(page.getByText('30 of 30 loaded')).toBeVisible();
+    await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
   });
 });
 

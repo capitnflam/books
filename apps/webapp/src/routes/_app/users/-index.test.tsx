@@ -108,7 +108,7 @@ describe('scrolling', () => {
     page.getByRole('region', { name: 'Users' }).element().scrollTo({ top: 100_000 });
     await expect
       .element(page.getByRole('alert'))
-      .toHaveTextContent('More users could not be loaded.');
+      .toHaveTextContent('More entries could not be loaded.');
 
     serverHasUsers(30);
     await page.getByRole('button', { name: 'Try again' }).click();
