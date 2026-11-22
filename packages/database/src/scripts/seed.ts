@@ -5,6 +5,7 @@ import { ADMIN_ROLE_NAME, BUILT_IN_ROLES } from '../db/roles.ts';
 import {
   authors,
   bookContributors,
+  bookGenres,
   books,
   bookSeries,
   bookSubjects,
@@ -293,6 +294,21 @@ async function seedCatalog() {
         { bookId: book.guards, subjectId: subject.fantasy },
         { bookId: book.guards, subjectId: subject.humour },
         { bookId: book.wizard, subjectId: subject.fantasy },
+      ])
+      .onConflictDoNothing();
+
+    await tx
+      .insert(bookGenres)
+      .values([
+        { bookId: book.ficciones, genre: 'short_stories' },
+        { bookId: book.ficciones, genre: 'literary_fiction' },
+        { bookId: book.hobbit, genre: 'fantasy' },
+        { bookId: book.hobbit, genre: 'children' },
+        { bookId: book.fellowship, genre: 'fantasy' },
+        { bookId: book.guards, genre: 'fantasy' },
+        { bookId: book.guards, genre: 'humour' },
+        { bookId: book.wizard, genre: 'fantasy' },
+        { bookId: book.wizard, genre: 'young_adult' },
       ])
       .onConflictDoNothing();
 

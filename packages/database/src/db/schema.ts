@@ -15,6 +15,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import type { Genre } from './genres.ts';
 import type { Permission } from './permissions.ts';
 
 export const booksSchema = pgSchema('books');
@@ -270,6 +271,21 @@ export const bookSubjects = booksSchema.table(
   ],
 );
 
+/** The genres a book is filed under, from the fixed list in `genres.ts`. */
+export const bookGenres = booksSchema.table(
+  'book_genres',
+  {
+    bookId: uuid('book_id')
+      .notNull()
+      .references(() => books.id, { onDelete: 'cascade' }),
+    genre: text().$type<Genre>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.bookId, table.genre] }),
+    index('book_genres_genre').on(table.genre),
+  ],
+);
+
 /** One published form of a book: it has the ISBN, the format and the cover; readers own these. */
 export const editions = booksSchema.table(
   'editions',
@@ -401,6 +417,7 @@ export const booksRelations = relations(books, ({ many }) => ({
   contributors: many(bookContributors),
   series: many(bookSeries),
   subjects: many(bookSubjects),
+  genres: many(bookGenres),
   editions: many(editions),
 }));
 
@@ -417,6 +434,10 @@ export const bookSeriesRelations = relations(bookSeries, ({ one }) => ({
 export const bookSubjectsRelations = relations(bookSubjects, ({ one }) => ({
   book: one(books, { fields: [bookSubjects.bookId], references: [books.id] }),
   subject: one(subjects, { fields: [bookSubjects.subjectId], references: [subjects.id] }),
+}));
+
+export const bookGenresRelations = relations(bookGenres, ({ one }) => ({
+  book: one(books, { fields: [bookGenres.bookId], references: [books.id] }),
 }));
 
 export const editionsRelations = relations(editions, ({ one, many }) => ({

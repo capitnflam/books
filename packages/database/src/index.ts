@@ -1,3 +1,4 @@
+export * from './db/genres.ts';
 export * from './db/index.ts';
 export * from './db/permissions.ts';
 export * from './types/index.ts';

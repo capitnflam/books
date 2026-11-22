@@ -38,6 +38,12 @@ const navGroups: NavGroup[] = [
     label: m.nav_group_library,
     items: [
       { to: '/', icon: 'home', label: m.nav_home },
+      {
+        to: '/books/new',
+        icon: 'book-upload',
+        label: m.nav_add_book,
+        permission: 'catalog:manage',
+      },
       { to: '/sample', icon: 'components', label: m.sample_page_title },
     ],
   },
