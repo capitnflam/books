@@ -37,6 +37,38 @@ export const GENRES = Object.keys(genreLabels) as [Genre, ...Genre[]];
 /** A genre's name in the page's language. */
 export const genreLabel = (genre: Genre) => genreLabels[genre]();
 
+// Other words readers search a genre by, in each language: `theatre` for Drama, `scifi` for
+// Science fiction. Comma-separated in the messages; genres without any are left out.
+const genreAliasMessages: Partial<Record<Genre, () => string>> = {
+  science_fiction: m.genre_science_fiction_aliases,
+  horror: m.genre_horror_aliases,
+  mystery: m.genre_mystery_aliases,
+  thriller: m.genre_thriller_aliases,
+  crime: m.genre_crime_aliases,
+  romance: m.genre_romance_aliases,
+  literary_fiction: m.genre_literary_fiction_aliases,
+  classics: m.genre_classics_aliases,
+  young_adult: m.genre_young_adult_aliases,
+  children: m.genre_children_aliases,
+  humour: m.genre_humour_aliases,
+  poetry: m.genre_poetry_aliases,
+  drama: m.genre_drama_aliases,
+  short_stories: m.genre_short_stories_aliases,
+  comics: m.genre_comics_aliases,
+  biography: m.genre_biography_aliases,
+  science: m.genre_science_aliases,
+  essays: m.genre_essays_aliases,
+  travel: m.genre_travel_aliases,
+};
+
+/** The words a genre is also found by in the page's language; never shown, only searched. */
+export function genreAliases(genre: Genre): string[] {
+  return (genreAliasMessages[genre]?.() ?? '')
+    .split(',')
+    .map((alias) => alias.trim())
+    .filter(Boolean);
+}
+
 /** Words in a catalogue's subjects that point to a genre; the first genres found are suggested. */
 const GENRE_HINTS: [Genre, RegExp][] = [
   ['science_fiction', /science[ -]fiction|sci-fi|space opera|dystopi/u],

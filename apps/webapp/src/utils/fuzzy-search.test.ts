@@ -53,3 +53,28 @@ describe('fuzzyFilter', () => {
     expect(search('fsy')).toEqual([]);
   });
 });
+
+describe('fuzzyFilter with aliases', () => {
+  const plays = { label: 'Drama', aliases: ['theatre', 'plays'] };
+  const poetry = { label: 'Poetry', aliases: ['verse'] };
+  const theatreHistory = { label: 'Theatre history', aliases: [] };
+  const theatre = { label: 'Theatre', aliases: [] };
+  const items = [plays, poetry, theatreHistory, theatre];
+  const searchWithAliases = (query: string) =>
+    fuzzyFilter(
+      items,
+      query,
+      (item) => item.label,
+      (item) => item.aliases,
+    ).map((item) => item.label);
+
+  it('finds an item by one of its aliases, forgiving typos there too', () => {
+    expect(searchWithAliases('plays')).toEqual(['Drama']);
+    expect(searchWithAliases('vers')).toEqual(['Poetry']);
+    expect(searchWithAliases('plaus')).toEqual(['Drama']);
+  });
+
+  it('ranks an exact label, then an exact alias, then a label that only contains the query', () => {
+    expect(searchWithAliases('theatre')).toEqual(['Theatre', 'Drama', 'Theatre history']);
+  });
+});
