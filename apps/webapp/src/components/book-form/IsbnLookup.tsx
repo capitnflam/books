@@ -50,7 +50,7 @@ const IsbnLookup: FC<IsbnLookupProps> = ({ onFound }) => {
   // request, so a slow answer for an ISBN that was then corrected can't overwrite the new one.
   const latestRequest = useRef(0);
   const invalid = field.state.meta.errors.length > 0 || lookup.status === 'invalid';
-  const message = lookupMessages(lookup);
+  const message = lookupMessages(invalid ? { status: 'invalid' } : lookup);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

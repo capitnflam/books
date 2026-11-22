@@ -246,6 +246,19 @@ describe('adding the book', () => {
     expect(createBookFn).not.toHaveBeenCalled();
   });
 
+  it('waits for the ISBN to be corrected', async () => {
+    const page = await renderPage('/books/new');
+
+    await field(page, 'ISBN').fill('9780261102218');
+    await fillRequired(page);
+    await submit(page);
+
+    await expect
+      .element(page.getByText('This is not a valid ISBN: check the digits.'))
+      .toBeVisible();
+    expect(createBookFn).not.toHaveBeenCalled();
+  });
+
   it('needs the series a number is in', async () => {
     const page = await renderPage('/books/new');
 
