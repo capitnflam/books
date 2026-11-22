@@ -163,6 +163,27 @@ describe('the editions', () => {
   });
 });
 
+describe('adding an edition', () => {
+  it.each([
+    ['another', [edition()]],
+    ['the first', []],
+  ])('is offered to those who may, be it %s', async (_, editions) => {
+    const page = await renderBook(bookDetails({ editions }, { canEdit: true }));
+
+    await expect
+      .element(page.getByRole('link', { name: 'Add an edition' }))
+      .toHaveAttribute('href', `${path}/editions/new`);
+  });
+
+  it('is not offered to other readers', async () => {
+    const page = await renderBook(bookDetails());
+
+    await expect
+      .element(page.getByRole('link', { name: 'Add an edition' }))
+      .not.toBeInTheDocument();
+  });
+});
+
 describe('editing', () => {
   it('is offered to those who may', async () => {
     const page = await renderBook(bookDetails({}, { canEdit: true }));

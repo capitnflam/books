@@ -51,7 +51,7 @@ describe('looking up an ISBN', () => {
     await expect
       .element(
         page.getByText(
-          'Details found and filled in. Check them, and add anything missing, before adding the book.',
+          'Details found and filled in. Check them, and add anything missing, before adding them to the catalogue.',
         ),
       )
       .toBeVisible();

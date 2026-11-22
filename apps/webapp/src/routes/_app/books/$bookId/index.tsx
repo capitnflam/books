@@ -234,6 +234,16 @@ function BookPage() {
             ))}
           </ul>
         )}
+        {can.edit && (
+          <Link
+            to="/books/$bookId/editions/new"
+            params={{ bookId: book.id }}
+            className={buttonVariants({ variant: 'outline', className: 'self-start' })}
+          >
+            <Icon icon="plus" aria-hidden data-icon="inline-start" />
+            {m.book_edition_new_title()}
+          </Link>
+        )}
       </PageSection>
     </div>
   );

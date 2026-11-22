@@ -12,17 +12,28 @@ import TakenIsbnMessage from './TakenIsbnMessage';
 import type { SaveProblem } from '#/hooks/use-save-book';
 import type { FC } from 'react';
 
-type FormActionsProps = { bookId: string; problem: SaveProblem | null };
+type FormActionsProps = {
+  bookId: string;
+  problem: SaveProblem | null;
+  /** Whether the form adds an edition to the book, rather than changes what is there. */
+  adding?: boolean;
+};
 
 /** The end of a form opened from a book: why it was not saved, and the buttons to save or leave. */
-const FormActions: FC<FormActionsProps> = ({ bookId, problem }) => (
+const FormActions: FC<FormActionsProps> = ({ bookId, problem, adding = false }) => (
   <div className="flex flex-wrap-reverse items-center justify-end gap-4">
     <FormStatus>
       {problem?.error === 'isbn-taken' && (
         <TakenIsbnMessage bookId={problem.bookId} title={problem.title} />
       )}
-      {problem?.error === 'failed' && <ErrorMessage>{m.book_save_failed()}</ErrorMessage>}
-      {problem?.error === 'not-found' && <ErrorMessage>{m.book_gone()}</ErrorMessage>}
+      {problem?.error === 'failed' && (
+        <ErrorMessage>
+          {adding ? m.book_edition_create_failed() : m.book_save_failed()}
+        </ErrorMessage>
+      )}
+      {problem?.error === 'not-found' && (
+        <ErrorMessage>{adding ? m.book_not_found_description() : m.book_gone()}</ErrorMessage>
+      )}
     </FormStatus>
     <div className="flex gap-3">
       <Link
@@ -33,8 +44,12 @@ const FormActions: FC<FormActionsProps> = ({ bookId, problem }) => (
         {m.book_cancel()}
       </Link>
       <SubmitButton>
-        <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
-        {m.book_save()}
+        <Icon
+          icon={adding ? 'book-upload' : 'device-floppy'}
+          aria-hidden
+          data-icon="inline-start"
+        />
+        {adding ? m.book_create() : m.book_save()}
       </SubmitButton>
     </div>
   </div>
