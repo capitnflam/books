@@ -2,6 +2,7 @@ import { Button } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
 import { Label } from '@books/ui/components/label';
+import { useEffect } from 'react';
 
 import { useAppForm } from '#/hooks/use-app-form';
 
@@ -11,17 +12,29 @@ type ListSearchFormProps = {
   id: string;
   label: string;
   submitLabel: string;
-  /** The text the list is searched for now; key the form by it to follow the history. */
+  /** The search param the text goes in when the form is sent before the page has loaded. */
+  name?: string;
+  /** The text the list is searched for now. */
   query: string | undefined;
   onSearch: (query: string | undefined) => void;
 };
 
 /** The search box above a list. */
-const ListSearchForm: FC<ListSearchFormProps> = ({ id, label, submitLabel, query, onSearch }) => {
+const ListSearchForm: FC<ListSearchFormProps> = ({
+  id,
+  name = 'q',
+  label,
+  submitLabel,
+  query,
+  onSearch,
+}) => {
   const form = useAppForm({
     defaultValues: { q: query ?? '' },
     onSubmit: ({ value }) => onSearch(value.q.trim() || undefined),
   });
+
+  // Going back in history shows the matching text.
+  useEffect(() => form.reset({ q: query ?? '' }), [form, query]);
 
   return (
     <search>
@@ -38,7 +51,7 @@ const ListSearchForm: FC<ListSearchFormProps> = ({ id, label, submitLabel, query
             {(field) => (
               <Input
                 id={id}
-                name="q"
+                name={name}
                 type="search"
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}

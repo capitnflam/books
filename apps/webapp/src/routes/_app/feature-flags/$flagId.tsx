@@ -1,17 +1,16 @@
 import { Button } from '@books/ui/components/button';
-import { Field, FieldDescription, FieldError, FieldLabel } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
-import { Input } from '@books/ui/components/input';
-import { Label } from '@books/ui/components/label';
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import BackLink from '#/components/BackLink';
 import ErrorMessage from '#/components/ErrorMessage';
+import ListSearchForm from '#/components/ListSearchForm';
 import PageSection from '#/components/PageSection';
 import UserCell from '#/components/UserCell';
 import { VirtualTable } from '#/components/VirtualTable';
+import { useAppForm } from '#/hooks/use-app-form';
 import { useServerAction } from '#/hooks/use-server-action';
 import { m } from '#/paraglide/messages';
 import {
@@ -19,6 +18,7 @@ import {
   flagIdSchema,
   inBulkBatches,
   parseFlagDetailsSearch,
+  updateFeatureFlagSchema,
 } from '#/services/feature-flags/feature-flags';
 import {
   deleteFeatureFlagFn,
@@ -30,11 +30,12 @@ import {
   updateFeatureFlagFn,
 } from '#/services/feature-flags/feature-flags.functions';
 import { formatDate } from '#/utils/dates';
+import { checkedOnSubmit, refusedFields } from '#/utils/form-validation';
 import { nextPage } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
-import type { FC, FormEvent } from 'react';
+import type { FC } from 'react';
 
 /** Every query of a flag's lists, refreshed together after a grant or a take-back. */
 const flagListsKey = (flagId: string) => ['feature-flag-users', flagId] as const;
@@ -125,23 +126,20 @@ function loadedRows<Row>(
   };
 }
 
+const settingsSchema = updateFeatureFlagSchema.pick({ description: true });
+
 const SettingsSection: FC<{ flag: Flag }> = ({ flag }) => {
-  const { pending, failed, run } = useServerAction();
-  const [description, setDescription] = useState(flag.description ?? '');
-  const [tooLong, setTooLong] = useState(false);
+  const { failed, run } = useServerAction();
   const [saved, setSaved] = useState(false);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const long = description.trim().length > FLAG_DESCRIPTION_MAX_LENGTH;
-
-    setTooLong(long);
-    setSaved(false);
-
-    if (!long) {
-      setSaved(await run(() => updateFeatureFlagFn({ data: { flagId: flag.id, description } })));
-    }
-  };
+  const form = useAppForm({
+    defaultValues: { description: flag.description ?? '' },
+    ...checkedOnSubmit(refusedFields(settingsSchema)),
+    listeners: { onChange: () => setSaved(false) },
+    onSubmit: async ({ value }) => {
+      setSaved(false);
+      setSaved(await run(() => updateFeatureFlagFn({ data: { flagId: flag.id, ...value } })));
+    },
+  });
 
   return (
     <PageSection
@@ -152,26 +150,21 @@ const SettingsSection: FC<{ flag: Flag }> = ({ flag }) => {
       {failed && <ErrorMessage>{m.user_action_failed()}</ErrorMessage>}
       <form
         className="flex flex-col gap-4"
-        onSubmit={(event) => void handleSubmit(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
         noValidate
       >
-        <Field data-invalid={tooLong ? true : undefined}>
-          <FieldLabel htmlFor="flag-description">{m.flags_description_label()}</FieldLabel>
-          <Input
-            id="flag-description"
-            autoComplete="off"
-            aria-invalid={tooLong ? true : undefined}
-            value={description}
-            onChange={(event) => {
-              setDescription(event.target.value);
-              setSaved(false);
-            }}
-          />
-          <FieldDescription>{m.flags_description_hint()}</FieldDescription>
-          <FieldError>
-            {tooLong && m.flags_description_too_long({ max: FLAG_DESCRIPTION_MAX_LENGTH })}
-          </FieldError>
-        </Field>
+        <form.AppField name="description">
+          {(field) => (
+            <field.TextField
+              label={m.flags_description_label()}
+              hint={m.flags_description_hint()}
+              error={m.flags_description_too_long({ max: FLAG_DESCRIPTION_MAX_LENGTH })}
+            />
+          )}
+        </form.AppField>
         <div className="flex flex-wrap-reverse items-center justify-end gap-4">
           <p role="status" className="text-forest text-ui flex items-center gap-2 empty:hidden">
             {saved && (
@@ -181,10 +174,12 @@ const SettingsSection: FC<{ flag: Flag }> = ({ flag }) => {
               </>
             )}
           </p>
-          <Button type="submit" disabled={pending}>
-            <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
-            {m.profile_save()}
-          </Button>
+          <form.AppForm>
+            <form.SubmitButton>
+              <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
+              {m.profile_save()}
+            </form.SubmitButton>
+          </form.AppForm>
         </div>
       </form>
     </PageSection>
@@ -255,15 +250,6 @@ const GrantSection: FC<{ flag: Flag }> = ({ flag }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const byId = new Map(list.rows.map((user) => [user.id, user]));
 
-  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const value = new FormData(event.currentTarget).get('find');
-    const query = typeof value === 'string' ? value.trim() : '';
-
-    // Searching keeps the scroll where it is: the list is further down the page.
-    void navigate({ search: { find: query || undefined }, resetScroll: false });
-  };
-
   const grant = async () => {
     const batches = inBulkBatches([...selected]);
     const done = await run(async () => {
@@ -285,25 +271,17 @@ const GrantSection: FC<{ flag: Flag }> = ({ flag }) => {
       title={m.flag_grant_heading()}
       description={m.flag_grant_description()}
     >
-      <search>
-        <form className="flex flex-col gap-2" onSubmit={handleSearch}>
-          <Label htmlFor="flag-grant-search">{m.users_search_label()}</Label>
-          <div className="flex max-w-lg gap-2">
-            {/* Keyed by the query, so going back in history shows the matching text. */}
-            <Input
-              key={find}
-              id="flag-grant-search"
-              name="find"
-              type="search"
-              defaultValue={find ?? ''}
-            />
-            <Button type="submit" variant="outline">
-              <Icon icon="search" aria-hidden data-icon="inline-start" />
-              {m.users_search_submit()}
-            </Button>
-          </div>
-        </form>
-      </search>
+      <ListSearchForm
+        id="flag-grant-search"
+        name="find"
+        label={m.users_search_label()}
+        submitLabel={m.users_search_submit()}
+        query={find}
+        onSearch={(query) =>
+          // Searching keeps the scroll where it is: the list is further down the page.
+          void navigate({ search: { find: query }, resetScroll: false })
+        }
+      />
       <h3 className="text-base/6 font-semibold">
         {find
           ? m.flag_grant_results_matching({ count: list.total, query: find })

@@ -1,25 +1,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@books/ui/components/avatar';
 import { Button } from '@books/ui/components/button';
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
-import { Input } from '@books/ui/components/input';
-import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router';
+import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import BackLink from '#/components/BackLink';
+import DisplayNameForm from '#/components/DisplayNameForm';
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
 import { useServerAction } from '#/hooks/use-server-action';
 import { m } from '#/paraglide/messages';
-import { DISPLAY_NAME_MAX_LENGTH, displayNameSchema } from '#/services/profile/profile';
 import { userIdSchema } from '#/services/user-management/user-management';
 import {
   deleteUserFn,
@@ -32,7 +22,7 @@ import { formatDate } from '#/utils/dates';
 import { initialsOf } from '#/utils/names';
 import { permissionLabel } from '#/utils/permission-labels';
 
-import type { FC, FormEvent } from 'react';
+import type { FC } from 'react';
 
 export const Route = createFileRoute('/_app/users/$userId')({
   loader: async ({ params }) => {
@@ -59,84 +49,6 @@ type UserDetails = NonNullable<Awaited<ReturnType<typeof getUserDetailsFn>>>;
 function nameOf({ user, account }: UserDetails) {
   return user.displayName || account?.fullName || account?.email || m.users_unnamed();
 }
-
-type DisplayNameFormProps = { userId: string; displayName: string };
-
-const DisplayNameForm: FC<DisplayNameFormProps> = ({ userId, displayName }) => {
-  const router = useRouter();
-  const [value, setValue] = useState(displayName);
-  const [error, setError] = useState<string>();
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const parsed = displayNameSchema.safeParse({ displayName: value });
-
-    if (!parsed.success) {
-      setError(
-        value.trim()
-          ? m.profile_display_name_too_long({ max: DISPLAY_NAME_MAX_LENGTH })
-          : m.profile_display_name_required(),
-      );
-      setStatus('idle');
-
-      return;
-    }
-
-    setError(undefined);
-    setStatus('saving');
-
-    try {
-      await updateUserDisplayNameFn({ data: { userId, ...parsed.data } });
-      setValue(parsed.data.displayName);
-      setStatus('saved');
-      await router.invalidate();
-    } catch {
-      setStatus('failed');
-    }
-  };
-
-  return (
-    <form className="flex flex-col gap-6" onSubmit={(event) => void handleSubmit(event)} noValidate>
-      <FieldSet>
-        <FieldLegend>{m.user_details_legend()}</FieldLegend>
-        <FieldDescription>{m.user_details_description()}</FieldDescription>
-        <FieldGroup>
-          <Field data-invalid={error ? true : undefined}>
-            <FieldLabel htmlFor="user-display-name">{m.profile_display_name_label()}</FieldLabel>
-            <Input
-              id="user-display-name"
-              autoComplete="off"
-              className="max-w-sm"
-              aria-invalid={error ? true : undefined}
-              value={value}
-              onChange={(event) => {
-                setValue(event.target.value);
-                setStatus('idle');
-              }}
-            />
-            <FieldError>{error}</FieldError>
-          </Field>
-        </FieldGroup>
-      </FieldSet>
-      <div className="flex flex-wrap-reverse items-center justify-end gap-4">
-        <p role="status" className="text-forest text-ui flex items-center gap-2 empty:hidden">
-          {status === 'saved' && (
-            <>
-              <Icon icon="circle-check" aria-hidden className="size-5" />
-              {m.user_saved()}
-            </>
-          )}
-        </p>
-        {status === 'failed' && <FieldError>{m.user_action_failed()}</FieldError>}
-        <Button type="submit" disabled={status === 'saving'}>
-          <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
-          {m.profile_save()}
-        </Button>
-      </div>
-    </form>
-  );
-};
 
 type RoleSectionProps = { details: UserDetails; name: string };
 
@@ -380,8 +292,14 @@ function UserPage() {
       {can.manageUser && (
         <DisplayNameForm
           key={user.id}
-          userId={user.id}
           displayName={user.displayName ?? account?.fullName ?? ''}
+          legend={m.user_details_legend()}
+          description={m.user_details_description()}
+          savedMessage={m.user_saved()}
+          failedMessage={m.user_action_failed()}
+          onSave={async (displayName) =>
+            updateUserDisplayNameFn({ data: { userId: user.id, displayName } })
+          }
         />
       )}
 
