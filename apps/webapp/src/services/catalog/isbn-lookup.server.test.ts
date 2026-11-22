@@ -1,12 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  formatFromText,
-  languageFromMarc,
-  lookupIsbnOnline,
-  publishedFromText,
-  seriesFromText,
-} from './isbn-lookup.server';
+import { formatFromText, lookupIsbnOnline, seriesFromText } from './isbn-lookup.server';
+import { languageFromMarc, publishedFromText } from './isbn-source.server';
 
 const hobbit = { isbn13: '9780261102217', isbn10: '0261102214' };
 
