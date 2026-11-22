@@ -38,6 +38,7 @@ const navGroups: NavGroup[] = [
     label: m.nav_group_library,
     items: [
       { to: '/', icon: 'home', label: m.nav_home },
+      { to: '/books', icon: 'library', label: m.books_title },
       {
         to: '/books/new',
         icon: 'book-upload',
@@ -65,6 +66,12 @@ export default function AppSidebar() {
   const matchRoute = useMatchRoute();
   const { setOpenMobile } = useSidebar();
   const permissions = usePermissions();
+  // Of the items leading to this page, the closest is the active one: on `/books/new`, that is
+  // "Add a book", not "Catalogue".
+  const activeTo = navGroups
+    .flatMap(({ items }) => items.map(({ to }) => to))
+    .filter((to) => matchRoute({ to, fuzzy: to !== '/' }))
+    .toSorted((a, b) => b.length - a.length)[0];
   // On mobile the sidebar is a sheet over the page: close it once a page is chosen.
   const closeMobile = () => setOpenMobile(false);
 
@@ -100,7 +107,7 @@ export default function AppSidebar() {
                       {items.map(({ to, icon, label }) => (
                         <SidebarMenuItem key={to}>
                           <SidebarMenuButton
-                            isActive={!!matchRoute({ to, fuzzy: to !== '/' })}
+                            isActive={to === activeTo}
                             tooltip={label()}
                             render={<Link to={to} onClick={closeMobile} />}
                           >

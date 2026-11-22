@@ -2,14 +2,17 @@ import { Button } from '@books/ui/components/button';
 import { Field, FieldDescription, FieldLabel } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
-import { createFileRoute } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 
 import EditionFields from '#/components/book-form/EditionFields';
 import FormField from '#/components/book-form/FormField';
+import TakenIsbnMessage from '#/components/book-form/TakenIsbnMessage';
 import WorkFields from '#/components/book-form/WorkFields';
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
+import TextLink from '#/components/TextLink';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
 import { checkPermissionFn } from '#/services/access/access.functions';
@@ -134,7 +137,21 @@ const IsbnLookup: FC<{
             && (message.error ? (
               <p className="text-destructive flex items-center gap-2 text-base/6">
                 <Icon icon="alert-circle" aria-hidden className="size-5 shrink-0" />
-                {message.text}
+                <span>
+                  {message.text}
+                  {lookup.status === 'exists' && (
+                    <>
+                      {' '}
+                      <TextLink
+                        to="/books/$bookId"
+                        params={{ bookId: lookup.bookId }}
+                        className="underline"
+                      >
+                        {m.book_view()}
+                      </TextLink>
+                    </>
+                  )}
+                </span>
               </p>
             ) : (
               <p className="text-muted-foreground flex items-center gap-2 text-base/6">
@@ -150,7 +167,11 @@ const IsbnLookup: FC<{
   );
 };
 
-const Created: FC<{ title: string; onAddAnother: () => void }> = ({ title, onAddAnother }) => {
+const Created: FC<{ bookId: string; title: string; onAddAnother: () => void }> = ({
+  bookId,
+  title,
+  onAddAnother,
+}) => {
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => heading.current?.focus(), []);
@@ -165,21 +186,33 @@ const Created: FC<{ title: string; onAddAnother: () => void }> = ({ title, onAdd
         <Icon icon="circle-check" aria-hidden className="text-forest size-6 shrink-0" />
         {m.book_created({ title })}
       </h2>
-      <Button onClick={onAddAnother}>
-        <Icon icon="plus" aria-hidden data-icon="inline-start" />
-        {m.book_add_another()}
-      </Button>
+      <div className="flex flex-wrap gap-3">
+        <Button onClick={onAddAnother}>
+          <Icon icon="plus" aria-hidden data-icon="inline-start" />
+          {m.book_add_another()}
+        </Button>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link to="/books/$bookId" params={{ bookId }} />}
+        >
+          {m.book_view()}
+        </Button>
+      </div>
     </section>
   );
 };
 
+type SavedBook = { bookId: string; title: string };
+
 function NewBookPage() {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<BookForm>(emptyBookForm);
   // Fields are checked once the form has been sent, then again as they change.
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState<'idle' | 'saving' | 'failed'>('idle');
-  const [taken, setTaken] = useState<string | null>(null);
-  const [created, setCreated] = useState<string | null>(null);
+  const [taken, setTaken] = useState<SavedBook | null>(null);
+  const [created, setCreated] = useState<SavedBook | null>(null);
   // Remounts the ISBN lookup, clearing its message, when a new book is started.
   const [formKey, setFormKey] = useState(0);
   // What the last lookup filled in, to empty it if another book is looked up.
@@ -204,13 +237,14 @@ function NewBookPage() {
       const result = await createBookFn({ data: form });
 
       if (result.error === 'isbn-taken') {
-        setTaken(result.title);
+        setTaken({ bookId: result.bookId, title: result.title });
         setStatus('idle');
 
         return;
       }
 
-      setCreated(result.title);
+      setCreated({ bookId: result.bookId, title: result.title });
+      queryClient.removeQueries({ queryKey: ['books'] });
       setStatus('idle');
     } catch {
       setStatus('failed');
@@ -236,7 +270,7 @@ function NewBookPage() {
       </header>
 
       {created ? (
-        <Created title={created} onAddAnother={startOver} />
+        <Created {...created} onAddAnother={startOver} />
       ) : (
         <>
           <IsbnLookup
@@ -314,7 +348,7 @@ function NewBookPage() {
 
             <div className="flex flex-wrap-reverse items-center justify-end gap-4">
               {errors.size > 0 && <ErrorMessage>{m.book_form_invalid()}</ErrorMessage>}
-              {taken !== null && <ErrorMessage>{m.book_isbn_taken({ title: taken })}</ErrorMessage>}
+              {taken && <TakenIsbnMessage {...taken} />}
               {status === 'failed' && <ErrorMessage>{m.book_create_failed()}</ErrorMessage>}
               <Button type="submit" disabled={status === 'saving'}>
                 <Icon icon="book-upload" aria-hidden data-icon="inline-start" />

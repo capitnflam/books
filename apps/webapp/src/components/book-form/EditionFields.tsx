@@ -2,11 +2,11 @@ import { FieldGroup } from '@books/ui/components/field';
 import { Input } from '@books/ui/components/input';
 import { NativeSelect, NativeSelectOption } from '@books/ui/components/native-select';
 
+import BookCover from '#/components/BookCover';
 import { m } from '#/paraglide/messages';
 import { EDITION_FORMATS } from '#/services/catalog/catalog';
 import { formatLabel } from '#/services/catalog/labels';
 
-import CoverPreview from './CoverPreview';
 import FormField from './FormField';
 import LanguageSelect from './LanguageSelect';
 
@@ -158,7 +158,11 @@ const EditionFields: FC<EditionFieldsProps> = ({ form, errors, title, onChange }
           />
         )}
       </FormField>
-      <CoverPreview url={form.coverImageUrl} title={title} />
+      <BookCover
+        url={form.coverImageUrl}
+        alt={title ? m.book_cover_alt({ title }) : ''}
+        className="h-48 w-auto self-start"
+      />
     </FieldGroup>
   );
 };
