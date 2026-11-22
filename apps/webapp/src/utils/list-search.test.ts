@@ -10,7 +10,11 @@ describe('parseListSearch', () => {
   it('leaves out an empty or malformed query, so plain links need no search', () => {
     expect(parseListSearch({})).toEqual({ q: undefined });
     expect(parseListSearch({ q: '   ' })).toEqual({ q: undefined });
-    expect(parseListSearch({ q: 42 })).toEqual({ q: undefined });
+    expect(parseListSearch({ q: ['Ada'] })).toEqual({ q: undefined });
+  });
+
+  it('keeps a query of digits, which the router reads as a number', () => {
+    expect(parseListSearch({ q: 9_780_261_102_217 })).toEqual({ q: '9780261102217' });
   });
 
   it('shortens a very long query to one the server accepts', () => {
