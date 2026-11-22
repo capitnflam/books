@@ -3,7 +3,7 @@ import { expect, fn } from 'storybook/test';
 import { iconNameList } from '#/components/icon';
 import { IconButton } from '#/components/icon-button';
 
-import { buttonVariants, iconButtonSizes } from './components/button-options';
+import { buttonVariantNames, iconButtonSizes } from './components/button-options';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -17,7 +17,7 @@ const meta: Meta<typeof IconButton> = {
   args: { onClick: fn(), variant: 'default', size: 'default', icon: 'book', label: 'Book' },
   argTypes: {
     variant: {
-      options: buttonVariants,
+      options: buttonVariantNames,
       control: {
         type: 'radio',
       },
@@ -69,7 +69,7 @@ export const AllIconButtons: Story = {
             <th className="border p-1">
               <span className="sr-only">Size</span>
             </th>
-            {buttonVariants.map((variant) => (
+            {buttonVariantNames.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
               </th>
@@ -82,7 +82,7 @@ export const AllIconButtons: Story = {
               <th scope="row" className="border p-1">
                 {size}
               </th>
-              {buttonVariants.map((variant) => (
+              {buttonVariantNames.map((variant) => (
                 <td key={variant} className="border p-1">
                   <IconButton variant={variant} size={size} icon="book" label="Book" />
                 </td>
@@ -96,7 +96,7 @@ export const AllIconButtons: Story = {
   play: async ({ canvas }) => {
     const buttons = canvas.getAllByRole('button', { name: 'Book' });
 
-    await expect(buttons).toHaveLength(buttonVariants.length * iconButtonSizes.length);
+    await expect(buttons).toHaveLength(buttonVariantNames.length * iconButtonSizes.length);
 
     // Every size must render a square button.
     for (const button of buttons) {

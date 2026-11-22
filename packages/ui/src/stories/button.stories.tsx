@@ -3,7 +3,7 @@ import { expect, fn } from 'storybook/test';
 import { Button } from '#/components/button';
 import { Icon } from '#/components/icon';
 
-import { buttonIconSizes, buttonTextSizes, buttonVariants } from './components/button-options';
+import { buttonIconSizes, buttonTextSizes, buttonVariantNames } from './components/button-options';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -17,7 +17,7 @@ const meta: Meta<typeof Button> = {
   args: { onClick: fn(), variant: 'default', size: 'default', children: 'Button' },
   argTypes: {
     variant: {
-      options: buttonVariants,
+      options: buttonVariantNames,
       control: {
         type: 'radio',
       },
@@ -86,7 +86,7 @@ export const AllTextButtons: Story = {
             <th className="border p-1">
               <span className="sr-only">Size</span>
             </th>
-            {buttonVariants.map((variant) => (
+            {buttonVariantNames.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
               </th>
@@ -99,7 +99,7 @@ export const AllTextButtons: Story = {
               <th scope="row" className="border p-1">
                 {size}
               </th>
-              {buttonVariants.map((variant) => (
+              {buttonVariantNames.map((variant) => (
                 <td key={variant} className="border p-1">
                   <Button variant={variant} size={size}>
                     Button
@@ -114,7 +114,7 @@ export const AllTextButtons: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getAllByRole('button')).toHaveLength(
-      buttonVariants.length * buttonTextSizes.length,
+      buttonVariantNames.length * buttonTextSizes.length,
     );
   },
 };
@@ -129,7 +129,7 @@ export const AllIconButtons: Story = {
             <th className="border p-1">
               <span className="sr-only">Size</span>
             </th>
-            {buttonVariants.map((variant) => (
+            {buttonVariantNames.map((variant) => (
               <th key={variant} className="border p-1">
                 {variant}
               </th>
@@ -142,7 +142,7 @@ export const AllIconButtons: Story = {
               <th scope="row" className="border p-1">
                 {size}
               </th>
-              {buttonVariants.map((variant) => (
+              {buttonVariantNames.map((variant) => (
                 <td key={variant} className="border p-1">
                   <Button variant={variant} size={size} aria-label="Book">
                     <Icon icon="book" aria-hidden />
@@ -157,7 +157,7 @@ export const AllIconButtons: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getAllByRole('button', { name: 'Book' })).toHaveLength(
-      buttonVariants.length * buttonIconSizes.length,
+      buttonVariantNames.length * buttonIconSizes.length,
     );
   },
 };
