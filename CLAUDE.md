@@ -59,11 +59,11 @@ Every component you add with shadcn, or update from upstream, gets the theme bef
 
 ### Forms
 
-`webapp` forms use [TanStack Form](https://tanstack.com/form) through `useAppForm` (`apps/webapp/src/hooks/use-app-form.ts`), not `useState` per field or `FormData`. Forms written before it move over when they are changed.
+`webapp` forms use [TanStack Form](https://tanstack.com/form) through `useAppForm` (`apps/webapp/src/hooks/use-app-form.ts`), not `useState` per field or `FormData`. Only the component sample (`/sample`) keeps its own state.
 
 - Generic fields (`TextField`, `TextareaField`…) live in `apps/webapp/src/components/form/` and are registered in `use-app-form.ts`. A field of one feature reads its value with `useFieldContext` inside `form.AppField` and isn't registered.
 - Fields several forms share are a group made with `withFieldGroup` (see `components/book-form/`).
-- Validate with the schema the server function uses: `checkedOnSubmit` (`utils/form-validation.ts`) checks when the form is sent, then as it changes. Validators only mark fields; each field writes its own message, so it follows the page's language.
+- Validate with the schema the server function uses: `checkedOnSubmit` (`utils/form-validation.ts`) checks when the form is sent, then as it changes; `refusedFields(schema)` finds the errors of a form without lists. Validators only mark fields; each field writes its own message, so it follows the page's language.
 - Don't use `mode="array"` on a list that is also replaced as a whole (`setFieldValue`): the field doesn't notice.
 
 ### Translations
