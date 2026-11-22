@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { parseUserListSearch } from '#/services/user-management/user-management';
+import { parseListSearch } from '#/utils/list-search';
 
 export const FLAG_KEY_MAX_LENGTH = 64;
 export const FLAG_DESCRIPTION_MAX_LENGTH = 500;
@@ -68,7 +68,7 @@ export const flagCandidatesSchema = z.object({
 
 /** Reads the flag page's search param from the URL: the name to find users by. */
 export function parseFlagDetailsSearch(search: Record<string, unknown>): { find?: string } {
-  return { find: parseUserListSearch({ q: search.find }).q };
+  return { find: parseListSearch({ q: search.find }).q };
 }
 
 /** `ids` in batches the bulk server functions accept. */

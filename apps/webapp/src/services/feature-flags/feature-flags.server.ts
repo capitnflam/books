@@ -1,8 +1,8 @@
 import { db, orm, schema } from '@books/database';
 
 import { requirePermissionServer } from '#/services/access/access.server';
-import { USERS_PAGE_SIZE, escapeLike } from '#/services/user-management/user-management';
 import { loadAccountsServer } from '#/services/user-management/user-management.server';
+import { PAGE_SIZE, escapeLike } from '#/utils/list-search';
 
 /** Every flag, sorted by key, with how many users it is granted to. */
 export async function listFeatureFlagsServer() {
@@ -77,8 +77,8 @@ export async function listFlagHoldersServer({ flagId, page }: { flagId: string; 
         orm.desc(schema.userFeatureFlags.createdAt),
         orm.asc(schema.userFeatureFlags.userId),
       ],
-      limit: USERS_PAGE_SIZE,
-      offset: (page - 1) * USERS_PAGE_SIZE,
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
     }),
     db.select({ total: orm.count() }).from(schema.userFeatureFlags).where(granted),
   ]);
@@ -142,8 +142,8 @@ export async function listFlagCandidatesServer({
         orm.sql`lower(${schema.users.displayName}) asc nulls last`,
         orm.asc(schema.users.createdAt),
       )
-      .limit(USERS_PAGE_SIZE)
-      .offset((page - 1) * USERS_PAGE_SIZE),
+      .limit(PAGE_SIZE)
+      .offset((page - 1) * PAGE_SIZE),
     db.select({ total: orm.count() }).from(schema.users).where(candidates),
   ]);
 

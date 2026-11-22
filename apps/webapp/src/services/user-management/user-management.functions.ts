@@ -1,10 +1,11 @@
 import { createServerFn } from '@tanstack/react-start';
 
+import { listSearchSchema } from '#/utils/list-search';
+
 import {
   userBlockedSchema,
   userDisplayNameSchema,
   userIdSchema,
-  userListSearchSchema,
   userRoleSchema,
 } from './user-management';
 import {
@@ -19,7 +20,7 @@ import {
 // Each handler checks the caller's permission itself: the route guards do not cover these.
 
 export const listUsersFn = createServerFn({ method: 'GET' })
-  .validator(userListSearchSchema)
+  .validator(listSearchSchema)
   .handler(async ({ data }) => listUsersServer(data));
 
 export const getUserDetailsFn = createServerFn({ method: 'GET' })

@@ -28,8 +28,8 @@ import {
   revokeFeatureFlagFn,
   updateFeatureFlagFn,
 } from '#/services/feature-flags/feature-flags.functions';
-import { nextPage } from '#/services/user-management/user-management';
 import { formatDate } from '#/utils/dates';
+import { nextPage } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';

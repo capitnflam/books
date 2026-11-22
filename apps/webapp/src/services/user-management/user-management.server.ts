@@ -4,10 +4,11 @@ import { clerkClient } from '@clerk/tanstack-react-start/server';
 import { getServerEnv } from '#/config/env';
 import { requirePermissionServer } from '#/services/access/access.server';
 import { sortPermissions } from '#/services/profile/permissions';
+import { PAGE_SIZE, escapeLike } from '#/utils/list-search';
 
-import { USERS_PAGE_SIZE, accountStatus, escapeLike } from './user-management';
+import { accountStatus } from './user-management';
 
-import type { UserListSearch } from './user-management';
+import type { ListSearch } from '#/utils/list-search';
 import type { SelectUser } from '@books/database';
 
 const getClerk = () => clerkClient({ secretKey: getServerEnv().CLERK_SECRET_KEY });
@@ -67,7 +68,7 @@ export async function loadAccountsServer(authenticationIds: string[]) {
 }
 
 /** One page of users, sorted by name, with their roles and their Clerk account. */
-export async function listUsersServer({ q, page = 1 }: UserListSearch) {
+export async function listUsersServer({ q, page = 1 }: ListSearch) {
   await requirePermissionServer('users:read');
 
   const where = q ? orm.ilike(schema.users.displayName, `%${escapeLike(q)}%`) : undefined;
@@ -80,8 +81,8 @@ export async function listUsersServer({ q, page = 1 }: UserListSearch) {
         orm.sql`lower(${schema.users.displayName}) asc nulls last`,
         orm.asc(schema.users.createdAt),
       ],
-      limit: USERS_PAGE_SIZE,
-      offset: (page - 1) * USERS_PAGE_SIZE,
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
     }),
     db.select({ total: orm.count() }).from(schema.users).where(where),
   ]);
