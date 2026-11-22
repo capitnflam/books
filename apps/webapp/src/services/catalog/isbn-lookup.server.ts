@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { CONTRIBUTORS_MAX } from './catalog';
 import { genresFromSubjects } from './genres';
 import { fromBnf } from './isbn-bnf.server';
+import { fromNdl } from './isbn-ndl.server';
 import {
   cleanName,
   cleanSubjects,
@@ -314,9 +315,12 @@ export function mergeDrafts(drafts: readonly BookDraft[]): BookDraft {
 /** ISBNs of the French-language group (France, Belgium, Quebec…) and, in `979`, of France. */
 const isFrench = ({ isbn13 }: Isbns) => /^(?:9782|97910)/u.test(isbn13);
 
+/** ISBNs of the Japanese group. */
+const isJapanese = ({ isbn13 }: Isbns) => isbn13.startsWith('9784');
+
 /**
- * Finds a book by ISBN in the open catalogues: first the national library of France when the
- * ISBN is French, then Open Library, then Google Books (when an API key is configured:
+ * Finds a book by ISBN in the open catalogues: first the national library of France or Japan when
+ * the ISBN is one of theirs, then Open Library, then Google Books (when an API key is configured:
  * it refuses anonymous requests) for the fields the others lack.
  */
 export async function lookupIsbnOnline(
@@ -325,6 +329,7 @@ export async function lookupIsbnOnline(
 ): Promise<LookupOutcome> {
   const sources = [
     ...(isFrench(isbns) ? [fromBnf(isbns)] : []),
+    ...(isJapanese(isbns) ? [fromNdl(isbns)] : []),
     fromOpenLibrary(isbns),
     ...(googleBooksApiKey ? [fromGoogleBooks(isbns, googleBooksApiKey)] : []),
   ];

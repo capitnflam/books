@@ -238,6 +238,7 @@ describe('lookupIsbnOnline with the national libraries', () => {
   it.each([
     ['9782871294146', 'catalogue.bnf.fr'],
     ['9791032710838', 'catalogue.bnf.fr'],
+    ['9784088725093', 'ndlsearch.ndl.go.jp'],
   ])('asks the library of %s', async (isbn13, host) => {
     await lookupIsbnOnline({ isbn13, isbn10: null });
 

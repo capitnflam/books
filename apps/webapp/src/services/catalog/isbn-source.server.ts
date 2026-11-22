@@ -14,13 +14,13 @@ const SUBJECTS_MAX = 8;
 export class SourceUnavailableError extends Error {}
 
 /** The answer at `url`, or null when it does not exist (404); throws when the source is down. */
-async function get(url: string, accept: string): Promise<Response | null> {
+async function get(url: string, accept: string, timeout: number): Promise<Response | null> {
   let response: Response;
 
   try {
     response = await fetch(url, {
       headers: { Accept: accept, 'User-Agent': USER_AGENT },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeout),
     });
   } catch (error) {
     throw new SourceUnavailableError(`Could not reach ${new URL(url).host}`, { cause: error });
@@ -39,7 +39,7 @@ async function get(url: string, accept: string): Promise<Response | null> {
 
 /** The JSON at `url`, or null when it does not exist (404); throws when the source is down. */
 export async function getJson(url: string): Promise<unknown> {
-  const response = await get(url, 'application/json');
+  const response = await get(url, 'application/json', TIMEOUT_MS);
 
   return response ? response.json() : null;
 }
@@ -58,8 +58,8 @@ const xmlParser = new XMLParser({
 });
 
 /** The XML at `url`, or null when it does not exist (404); throws when the source is down. */
-export async function getXml(url: string): Promise<unknown> {
-  const response = await get(url, 'application/xml, text/xml');
+export async function getXml(url: string, timeout = TIMEOUT_MS): Promise<unknown> {
+  const response = await get(url, 'application/xml, text/xml', timeout);
 
   return response ? xmlParser.parse(await response.text()) : null;
 }
