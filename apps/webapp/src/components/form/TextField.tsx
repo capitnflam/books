@@ -7,7 +7,10 @@ import type { FormFieldTexts } from './FormField';
 import type { ComponentProps, FC } from 'react';
 
 type TextFieldProps = FormFieldTexts
-  & Pick<ComponentProps<typeof Input>, 'type' | 'inputMode' | 'spellCheck' | 'className'>;
+  & Pick<
+    ComponentProps<typeof Input>,
+    'type' | 'inputMode' | 'autoComplete' | 'spellCheck' | 'className'
+  >;
 
 /** A line of text in a form. */
 const TextField: FC<TextFieldProps> = ({ label, hint, error, ...inputProps }) => {

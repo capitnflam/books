@@ -1,33 +1,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@books/ui/components/avatar';
 import { Button } from '@books/ui/components/button';
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from '@books/ui/components/field';
+import { Field, FieldDescription, FieldLabel, FieldTitle } from '@books/ui/components/field';
 import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
 import { useClerk, useUser } from '@clerk/tanstack-react-start';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 
+import DisplayNameForm from '#/components/DisplayNameForm';
 import PageSection from '#/components/PageSection';
 import { themeOptions, useTheme } from '#/components/ThemeProvider';
 import { m } from '#/paraglide/messages';
 import { getLocale, localizeHref, locales, setLocale } from '#/paraglide/runtime';
 import { checkIsAuthenticatedFn } from '#/services/authentication/authentication.functions';
-import { DISPLAY_NAME_MAX_LENGTH, displayNameSchema } from '#/services/profile/profile';
 import { getProfileFn, updateDisplayNameFn } from '#/services/profile/profile.functions';
 import { formatDate } from '#/utils/dates';
 import { initialsOf, localeName } from '#/utils/names';
 import { permissionLabel } from '#/utils/permission-labels';
-
-import type { FC, FormEvent } from 'react';
 
 export const Route = createFileRoute('/_app/me')({
   beforeLoad: async ({ location }) => {
@@ -39,104 +27,6 @@ export const Route = createFileRoute('/_app/me')({
   head: () => ({ meta: [{ title: m.profile_title() }] }),
   component: ProfilePage,
 });
-
-type DisplayNameFormProps = { displayName: string; email: string };
-
-const DisplayNameForm: FC<DisplayNameFormProps> = ({ displayName, email }) => {
-  const router = useRouter();
-  const [value, setValue] = useState(displayName);
-  const [error, setError] = useState<string>();
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const parsed = displayNameSchema.safeParse({ displayName: value });
-
-    if (!parsed.success) {
-      setError(
-        value.trim()
-          ? m.profile_display_name_too_long({ max: DISPLAY_NAME_MAX_LENGTH })
-          : m.profile_display_name_required(),
-      );
-      setStatus('idle');
-
-      return;
-    }
-
-    setError(undefined);
-    setStatus('saving');
-
-    try {
-      await updateDisplayNameFn({ data: parsed.data });
-      setValue(parsed.data.displayName);
-      setStatus('saved');
-      // Reload the loaders, so the page title and the home greeting use the new name.
-      await router.invalidate();
-    } catch {
-      setStatus('failed');
-    }
-  };
-
-  return (
-    <form className="flex flex-col gap-6" onSubmit={(event) => void handleSubmit(event)} noValidate>
-      <FieldSet>
-        <FieldLegend>{m.profile_details_legend()}</FieldLegend>
-        <FieldDescription>{m.profile_details_description()}</FieldDescription>
-        <FieldGroup>
-          <Field data-invalid={error ? true : undefined}>
-            <FieldLabel htmlFor="profile-display-name">{m.profile_display_name_label()}</FieldLabel>
-            <Input
-              id="profile-display-name"
-              autoComplete="name"
-              className="max-w-sm"
-              aria-invalid={error ? true : undefined}
-              aria-describedby="profile-display-name-hint"
-              value={value}
-              onChange={(event) => {
-                setValue(event.target.value);
-                setStatus('idle');
-              }}
-            />
-            <FieldDescription id="profile-display-name-hint">
-              {m.profile_display_name_hint()}
-            </FieldDescription>
-            <FieldError>{error}</FieldError>
-          </Field>
-          {email && (
-            <Field>
-              <FieldLabel htmlFor="profile-email">{m.profile_email_label()}</FieldLabel>
-              <Input
-                id="profile-email"
-                type="email"
-                className="max-w-sm"
-                aria-describedby="profile-email-hint"
-                value={email}
-                disabled
-                readOnly
-              />
-              <FieldDescription id="profile-email-hint">{m.profile_email_hint()}</FieldDescription>
-            </Field>
-          )}
-        </FieldGroup>
-      </FieldSet>
-      <div className="flex flex-wrap-reverse items-center justify-end gap-4">
-        <p role="status" className="text-forest text-ui flex items-center gap-2 empty:hidden">
-          {status === 'saved' && (
-            <>
-              <Icon icon="circle-check" aria-hidden className="size-5" />
-              {m.profile_saved()}
-            </>
-          )}
-        </p>
-        {status === 'failed' && <FieldError>{m.profile_save_failed()}</FieldError>}
-        <Button type="submit" disabled={status === 'saving'}>
-          <Icon icon="device-floppy" aria-hidden data-icon="inline-start" />
-          {m.profile_save()}
-        </Button>
-      </div>
-    </form>
-  );
-};
 
 function ProfilePage() {
   const { profile } = Route.useLoaderData();
@@ -186,7 +76,32 @@ function ProfilePage() {
         </Button>
       </header>
 
-      <DisplayNameForm displayName={user.displayName ?? fullName ?? ''} email={email} />
+      <DisplayNameForm
+        displayName={user.displayName ?? fullName ?? ''}
+        legend={m.profile_details_legend()}
+        description={m.profile_details_description()}
+        hint={m.profile_display_name_hint()}
+        autoComplete="name"
+        savedMessage={m.profile_saved()}
+        failedMessage={m.profile_save_failed()}
+        onSave={async (displayName) => updateDisplayNameFn({ data: { displayName } })}
+      >
+        {email && (
+          <Field>
+            <FieldLabel htmlFor="profile-email">{m.profile_email_label()}</FieldLabel>
+            <Input
+              id="profile-email"
+              type="email"
+              className="max-w-sm"
+              aria-describedby="profile-email-hint"
+              value={email}
+              disabled
+              readOnly
+            />
+            <FieldDescription id="profile-email-hint">{m.profile_email_hint()}</FieldDescription>
+          </Field>
+        )}
+      </DisplayNameForm>
 
       <PageSection
         id="profile-reading-room"
