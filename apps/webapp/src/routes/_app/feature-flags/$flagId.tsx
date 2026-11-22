@@ -16,7 +16,6 @@ import { m } from '#/paraglide/messages';
 import {
   FLAG_DESCRIPTION_MAX_LENGTH,
   flagIdSchema,
-  inBulkBatches,
   parseFlagDetailsSearch,
   updateFeatureFlagSchema,
 } from '#/services/feature-flags/feature-flags';
@@ -32,6 +31,7 @@ import {
 import { formatDate } from '#/utils/dates';
 import { checkedOnSubmit, refusedFields } from '#/utils/form-validation';
 import { nextPage } from '#/utils/list-search';
+import { inBulkBatches } from '#/utils/selection';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';

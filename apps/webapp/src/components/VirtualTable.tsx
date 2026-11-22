@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 
 import ErrorMessage from '#/components/ErrorMessage';
 import { m } from '#/paraglide/messages';
-import { selectionState } from '#/services/feature-flags/feature-flags';
+import { selectionState } from '#/utils/selection';
 
 import type { ReactNode } from 'react';
 
