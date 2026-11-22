@@ -217,6 +217,7 @@
   "book_isbn_heading": "Rechercher par ISBN",
   "book_isbn_label": "ISBN",
   "book_isbn_hint": "10 ou 13 chiffres ; les tirets et les espaces sont acceptés.",
+  "book_isbn_sources": "Les informations viennent d’Open Library, de Google Books, de la Bibliothèque nationale de France (Licence Ouverte) et de l’API NDL Search.",
   "book_isbn_lookup": "Rechercher",
   "book_isbn_looking_up": "Recherche de l’ISBN…",
   "book_isbn_found": "Informations trouvées et remplies. Vérifiez-les et complétez-les avant d’ajouter le livre.",

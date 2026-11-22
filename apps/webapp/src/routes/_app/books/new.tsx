@@ -412,6 +412,7 @@ const IsbnLookup: FC<{
             </Button>
           </div>
           <FieldDescription id="book-isbn-hint">{m.book_isbn_hint()}</FieldDescription>
+          <FieldDescription>{m.book_isbn_sources()}</FieldDescription>
         </Field>
         <div id="book-isbn-status" role="status" className="mt-3 empty:hidden">
           {message

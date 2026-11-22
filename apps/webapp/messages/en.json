@@ -217,6 +217,7 @@
   "book_isbn_heading": "Find by ISBN",
   "book_isbn_label": "ISBN",
   "book_isbn_hint": "10 or 13 digits; hyphens and spaces are fine.",
+  "book_isbn_sources": "Details come from Open Library, Google Books, the Bibliothèque nationale de France (Licence Ouverte) and the NDL Search API.",
   "book_isbn_lookup": "Look up",
   "book_isbn_looking_up": "Looking up the ISBN…",
   "book_isbn_found": "Details found and filled in. Check them, and add anything missing, before adding the book.",
