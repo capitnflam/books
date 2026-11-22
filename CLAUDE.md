@@ -39,6 +39,7 @@ shadcn copies component source into `packages/ui/src/components/`; the repo owns
 - A component that combines others behind a new API (like `IconButton` over `Button`) goes in its own file with its own story. It builds on the base component and never copies its classes.
 - To pull an upstream shadcn fix into a component that already exists, generate it somewhere temporary, compare, and copy over what you want. Never re-run `add` with overwrite on a component that has been customized.
 - Keep edits to copied components small and leave the rest of the file as it is, so later comparisons with upstream stay readable.
+- Label a `Checkbox` with `<FieldLabel htmlFor={id}>` and give the checkbox that `id`. Base UI moves the `id` to its hidden input, then points the visible control's `aria-labelledby` at that input's label, so don't add your own `aria-labelledby` or label `id`.
 
 ### Ex Libris theme
 
@@ -144,5 +145,5 @@ Every commit message must follow [Conventional Commits](https://www.conventional
   - a new or changed `ui` component with its story;
   - an update to this file when the PR changes tooling, scripts or conventions.
 - Inside a PR, split the work into meaningful commits that a reviewer can read one at a time, even though the PR is squashed on merge. Each commit is one logical step (e.g. a dependency bump, a refactor it needs, then the feature, then its translations) with its own Conventional Commit message, and leaves the code in a working state. Don't lump unrelated changes into one commit or leave fix-up commits like `fix lint` or `address review`: fold those into the commit they correct (`git commit --fixup` then `git rebase --autosquash`) before asking for review. Once a review has started, add new commits instead of rewriting the ones already reviewed.
-- The PR description says what changed, why, and anything a reviewer should check.
+- The PR description says what changed, why, and anything a reviewer should check: fill in the template in `.github/pull_request_template.md` and delete the checklist items that don't apply.
 - Merge only when CI is green, the branch is up to date with `master`, and all review threads are resolved (all enforced by the ruleset). Never bypass a failing check.
