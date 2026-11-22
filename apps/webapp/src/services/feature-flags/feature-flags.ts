@@ -1,12 +1,10 @@
 import { z } from 'zod';
 
 import { parseListSearch } from '#/utils/list-search';
+import { BULK_MAX } from '#/utils/selection';
 
 export const FLAG_KEY_MAX_LENGTH = 64;
 export const FLAG_DESCRIPTION_MAX_LENGTH = 500;
-
-/** Users granted or revoked in one call; a bigger selection goes in several. */
-const BULK_MAX_USERS = 100;
 
 /** Uppercase words joined by underscores, like `BOOK_SEARCH`: what code checks. */
 const FLAG_KEY_PATTERN = /^[A-Z0-9]+(?:_[A-Z0-9]+)*$/u;
@@ -51,7 +49,7 @@ export const updateFeatureFlagSchema = z.object({
 /** Users to grant a flag to, or take it from. */
 export const flagUsersSchema = z.object({
   flagId: z.uuid(),
-  userIds: z.array(z.uuid()).min(1).max(BULK_MAX_USERS),
+  userIds: z.array(z.uuid()).min(1).max(BULK_MAX),
 });
 
 const pageSchema = z.number().int().min(1);
@@ -69,29 +67,4 @@ export const flagCandidatesSchema = z.object({
 /** Reads the flag page's search param from the URL: the name to find users by. */
 export function parseFlagDetailsSearch(search: Record<string, unknown>): { find?: string } {
   return { find: parseListSearch({ q: search.find }).q };
-}
-
-/** `ids` in batches the bulk server functions accept. */
-export function inBulkBatches(ids: readonly string[]): string[][] {
-  const batches: string[][] = [];
-
-  for (let start = 0; start < ids.length; start += BULK_MAX_USERS) {
-    batches.push(ids.slice(start, start + BULK_MAX_USERS));
-  }
-
-  return batches;
-}
-
-/**
- * Whether every item of `visible` is in `selected` (`true`), some are (`'some'`) or none
- * (`false`): the state of a "select all" checkbox over a list.
- */
-export function selectionState(selected: ReadonlySet<string>, visible: readonly string[]) {
-  const count = visible.filter((id) => selected.has(id)).length;
-
-  if (count === 0) {
-    return false;
-  }
-
-  return count === visible.length ? true : 'some';
 }

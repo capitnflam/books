@@ -2,7 +2,7 @@
 
 A web app for a shared catalogue of books.
 
-- **Catalogue**: browse and search books, and see their editions, authors, series, genres and subjects.
+- **Catalogue**: browse and search books, and see their editions, authors, series, genres and subjects. Those who look after it edit and delete its books and editions, and delete its authors, series, publishers and subjects from the catalogue index.
 - **Adding books**: fill in a book from its ISBN, looked up in Open Library, the national libraries of France (BnF) and Japan (NDL) for their own ISBNs, and Google Books when an API key is set.
 - **Administration**: manage users and their roles, and grant feature flags to users. What a user can see and do depends on the permissions of their role.
 - **Languages and themes**: English, German and French; light, dark or the device's preference.

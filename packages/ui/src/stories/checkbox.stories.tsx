@@ -56,6 +56,7 @@ export const Disabled: Story = {
     const checkbox = canvas.getByRole('checkbox');
 
     await expect(checkbox).toHaveAttribute('aria-disabled', 'true');
+    await expect(checkbox).toHaveStyle({ opacity: '0.5' });
     await userEvent.click(checkbox);
     await expect(args.onCheckedChange).not.toHaveBeenCalled();
   },

@@ -1,7 +1,7 @@
 import { PAGE_SIZE } from '#/utils/list-search';
 
 import type { BookDetails, EditionDetails } from '#/services/catalog/book-details';
-import type { listBooksFn } from '#/services/catalog/catalog.functions';
+import type { listBooksFn, listIndexFn } from '#/services/catalog/catalog.functions';
 import type {
   getFeatureFlagFn,
   listFeatureFlagsFn,
@@ -107,6 +107,15 @@ export const bookDetails = (
     ...book,
   },
   can: { edit: canEdit },
+});
+
+type IndexEntry = Answer<typeof listIndexFn>['entries'][number];
+
+export const indexEntry = (entry: Partial<IndexEntry> = {}): IndexEntry => ({
+  id: uuid(30),
+  name: 'J. R. R. Tolkien',
+  bookCount: 2,
+  ...entry,
 });
 
 type ListedFlag = Answer<typeof listFeatureFlagsFn>[number];

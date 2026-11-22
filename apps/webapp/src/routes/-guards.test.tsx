@@ -14,6 +14,7 @@ const restrictedPages: [path: string, permission: Permission][] = [
   ['/books/new', 'catalog:manage'],
   [`/books/${uuid(1)}/edit`, 'catalog:manage'],
   [`/books/${uuid(1)}/editions/${uuid(10)}/edit`, 'catalog:manage'],
+  ['/catalog-index', 'catalog:manage'],
   ['/users', 'users:read'],
   [`/users/${uuid(71)}`, 'users:read'],
   ['/feature-flags', 'feature-flags:manage'],

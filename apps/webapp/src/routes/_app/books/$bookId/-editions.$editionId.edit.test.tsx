@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getBookFn, updateEditionFn } from '#/services/catalog/catalog.functions';
+import { deleteEditionFn, getBookFn, updateEditionFn } from '#/services/catalog/catalog.functions';
 import { bookDetails, credit, edition, uuid } from '#/testing/fixtures';
 import { renderPage } from '#/testing/render-page';
 import { signIn } from '#/testing/session';
@@ -143,6 +143,63 @@ describe('saving', () => {
       .element(page.getByRole('alert'))
       .toHaveTextContent('The changes could not be saved. Try again in a moment.');
     await expect.element(page.getByRole('textbox', { name: 'Pages' })).toHaveValue('320');
+  });
+});
+
+describe('deleting', () => {
+  it('goes back to the book once confirmed', async () => {
+    vi.mocked(deleteEditionFn).mockImplementation(async () => {
+      vi.mocked(getBookFn).mockResolvedValue(bookDetails({ editions: [] }, { canEdit: true }));
+    });
+    const page = await renderPage(path);
+
+    await expect
+      .element(page.getByText('The book and its other editions stay.', { exact: false }))
+      .toBeVisible();
+    await page.getByRole('button', { name: 'Delete edition' }).click();
+    await expect
+      .element(page.getByText('Delete this edition of “The Hobbit” for good?'))
+      .toBeVisible();
+    expect(deleteEditionFn).not.toHaveBeenCalled();
+    await page.getByRole('button', { name: 'Yes, delete the edition' }).click();
+
+    await expect.element(page.getByText('No edition of this book is recorded.')).toBeVisible();
+    expect(page.currentUrl()).toBe(bookPath);
+    expect(deleteEditionFn).toHaveBeenCalledExactlyOnceWith({ data: { editionId: uuid(10) } });
+  });
+
+  it('warns that the only edition leaves the book without any', async () => {
+    vi.mocked(getBookFn).mockResolvedValue(
+      bookDetails({ editions: [edition()] }, { canEdit: true }),
+    );
+    const page = await renderPage(path);
+
+    await expect
+      .element(page.getByText('This is the book’s only edition', { exact: false }))
+      .toBeVisible();
+  });
+
+  it('keeps the edition when not confirmed', async () => {
+    const page = await renderPage(path);
+
+    await page.getByRole('button', { name: 'Delete edition' }).click();
+    await page.getByRole('button', { name: 'Keep the edition' }).click();
+
+    await expect.element(page.getByRole('button', { name: 'Delete edition' })).toBeVisible();
+    expect(deleteEditionFn).not.toHaveBeenCalled();
+  });
+
+  it('says so when it fails', async () => {
+    vi.mocked(deleteEditionFn).mockRejectedValue(new Error('The server is down.'));
+    const page = await renderPage(path);
+
+    await page.getByRole('button', { name: 'Delete edition' }).click();
+    await page.getByRole('button', { name: 'Yes, delete the edition' }).click();
+
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('The edition could not be deleted. Try again in a moment.');
+    expect(page.currentUrl()).toBe(path);
   });
 });
 

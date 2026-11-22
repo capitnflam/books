@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppBooksRouteImport } from './routes/_app/books'
+import { Route as AppCatalogIndexRouteImport } from './routes/_app/catalog-index'
 import { Route as AppFeatureFlagsRouteImport } from './routes/_app/feature-flags'
 import { Route as AppForbiddenRouteImport } from './routes/_app/forbidden'
 import { Route as AppMeRouteImport } from './routes/_app/me'
@@ -41,6 +42,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppBooksRoute = AppBooksRouteImport.update({
   id: '/books',
   path: '/books',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCatalogIndexRoute = AppCatalogIndexRouteImport.update({
+  id: '/catalog-index',
+  path: '/catalog-index',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFeatureFlagsRoute = AppFeatureFlagsRouteImport.update({
@@ -128,6 +134,7 @@ const AppBooksBookIdEditionsEditionIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/books': typeof AppBooksRouteWithChildren
+  '/catalog-index': typeof AppCatalogIndexRoute
   '/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRoutesByTo {
+  '/catalog-index': typeof AppCatalogIndexRoute
   '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
   '/sample': typeof AppSampleRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/books': typeof AppBooksRouteWithChildren
+  '/_app/catalog-index': typeof AppCatalogIndexRoute
   '/_app/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/_app/forbidden': typeof AppForbiddenRoute
   '/_app/me': typeof AppMeRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/books'
+    | '/catalog-index'
     | '/feature-flags'
     | '/forbidden'
     | '/me'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/books/$bookId/editions/$editionId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/catalog-index'
     | '/forbidden'
     | '/me'
     | '/sample'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/books'
+    | '/_app/catalog-index'
     | '/_app/feature-flags'
     | '/_app/forbidden'
     | '/_app/me'
@@ -272,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/books'
       fullPath: '/books'
       preLoaderRoute: typeof AppBooksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/catalog-index': {
+      id: '/_app/catalog-index'
+      path: '/catalog-index'
+      fullPath: '/catalog-index'
+      preLoaderRoute: typeof AppCatalogIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/feature-flags': {
@@ -440,6 +459,7 @@ const AppUsersRouteWithChildren = AppUsersRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppBooksRoute: typeof AppBooksRouteWithChildren
+  AppCatalogIndexRoute: typeof AppCatalogIndexRoute
   AppFeatureFlagsRoute: typeof AppFeatureFlagsRouteWithChildren
   AppForbiddenRoute: typeof AppForbiddenRoute
   AppMeRoute: typeof AppMeRoute
@@ -450,6 +470,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppBooksRoute: AppBooksRouteWithChildren,
+  AppCatalogIndexRoute: AppCatalogIndexRoute,
   AppFeatureFlagsRoute: AppFeatureFlagsRouteWithChildren,
   AppForbiddenRoute: AppForbiddenRoute,
   AppMeRoute: AppMeRoute,

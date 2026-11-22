@@ -32,16 +32,19 @@ describe('the navigation', () => {
     expect(navLinks(page)).toEqual(['Home', 'Catalogue', 'Component sample']);
   });
 
-  it.each<[Permission, string]>([
-    ['catalog:manage', 'Add a book'],
-    ['users:read', 'Users'],
-    ['feature-flags:manage', 'Feature flags'],
-  ])('also shows the page %s opens', async (permission, name) => {
+  it.each<[Permission, string[]]>([
+    ['catalog:manage', ['Add a book', 'Catalogue index']],
+    ['users:read', ['Users']],
+    ['feature-flags:manage', ['Feature flags']],
+  ])('also shows the pages %s opens', async (permission, names) => {
     signIn([permission]);
     const page = await renderPage('/sample');
 
-    await expect.element(navigation(page).getByRole('link', { name })).toBeVisible();
-    expect(navLinks(page)).toHaveLength(4);
+    for (const name of names) {
+      await expect.element(navigation(page).getByRole('link', { name })).toBeVisible();
+    }
+
+    expect(navLinks(page)).toHaveLength(3 + names.length);
   });
 
   it('marks the closest page as the active one', async () => {
