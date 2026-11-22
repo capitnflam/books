@@ -381,5 +381,20 @@
   "book_save": "Änderungen speichern",
   "book_cancel": "Abbrechen",
   "book_save_failed": "Die Änderungen konnten nicht gespeichert werden. Versuchen Sie es gleich noch einmal.",
-  "book_gone": "Dies ist nicht mehr im Katalog."
+  "book_gone": "Dies ist nicht mehr im Katalog.",
+  "book_delete_heading": "Buch löschen",
+  "book_delete_description": "Entfernt das Buch und alle seine Ausgaben für alle Leser aus dem Katalog. Seine Autoren, Reihen, Verlage und Themen bleiben. Das lässt sich nicht rückgängig machen.",
+  "book_delete": "Buch löschen",
+  "book_delete_confirm": "„{title}“ und seine Ausgaben ({count}) endgültig löschen?",
+  "book_delete_confirm_button": "Ja, Buch löschen",
+  "book_delete_cancel": "Buch behalten",
+  "book_delete_failed": "Das Buch konnte nicht gelöscht werden. Versuchen Sie es gleich noch einmal.",
+  "book_edition_delete_heading": "Ausgabe löschen",
+  "book_edition_delete_description": "Entfernt diese Ausgabe für alle Leser aus dem Katalog. Das Buch und seine anderen Ausgaben bleiben. Das lässt sich nicht rückgängig machen.",
+  "book_edition_delete_description_only": "Dies ist die einzige Ausgabe des Buches: Es bleibt ohne Ausgabe im Katalog. Um es auch zu entfernen, löschen Sie stattdessen das Buch. Das lässt sich nicht rückgängig machen.",
+  "book_edition_delete": "Ausgabe löschen",
+  "book_edition_delete_confirm": "Diese Ausgabe von „{title}“ endgültig löschen?",
+  "book_edition_delete_confirm_button": "Ja, Ausgabe löschen",
+  "book_edition_delete_cancel": "Ausgabe behalten",
+  "book_edition_delete_failed": "Die Ausgabe konnte nicht gelöscht werden. Versuchen Sie es gleich noch einmal."
 }

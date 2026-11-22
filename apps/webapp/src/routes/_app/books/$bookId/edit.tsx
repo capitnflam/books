@@ -6,7 +6,9 @@ import EditFormActions from '#/components/book-form/EditFormActions';
 import SeriesFields from '#/components/book-form/SeriesFields';
 import WorkFields from '#/components/book-form/WorkFields';
 import BookNotFound from '#/components/BookNotFound';
+import DeleteSection from '#/components/DeleteSection';
 import { useAppForm } from '#/hooks/use-app-form';
+import { useDeleteFromCatalog } from '#/hooks/use-delete-from-catalog';
 import { useSaveBook } from '#/hooks/use-save-book';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
@@ -18,7 +20,7 @@ import {
   workFormErrors,
   workFormOf,
 } from '#/services/catalog/catalog';
-import { updateBookFn } from '#/services/catalog/catalog.functions';
+import { deleteBookFn, updateBookFn } from '#/services/catalog/catalog.functions';
 import { checkedOnSubmit } from '#/utils/form-validation';
 
 export const Route = createFileRoute('/_app/books/$bookId/edit')({
@@ -42,6 +44,7 @@ const workFields = createFieldMap(emptyWorkValues());
 function EditBookPage() {
   const { book } = Route.useLoaderData();
   const { problem, save } = useSaveBook(book.id);
+  const deletion = useDeleteFromCatalog({ to: '/books' });
   const form = useAppForm({
     defaultValues: workFormOf(book),
     ...checkedOnSubmit(workFormErrors),
@@ -82,6 +85,19 @@ function EditBookPage() {
           <EditFormActions bookId={book.id} problem={problem} />
         </form.AppForm>
       </form>
+
+      <DeleteSection
+        id="book-delete"
+        title={m.book_delete_heading()}
+        description={m.book_delete_description()}
+        label={m.book_delete()}
+        question={m.book_delete_confirm({ title: book.title, count: book.editions.length })}
+        confirmLabel={m.book_delete_confirm_button()}
+        cancelLabel={m.book_delete_cancel()}
+        error={deletion.failed && m.book_delete_failed()}
+        pending={deletion.pending}
+        onDelete={async () => deletion.run(async () => deleteBookFn({ data: { bookId: book.id } }))}
+      />
     </div>
   );
 }

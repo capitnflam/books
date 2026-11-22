@@ -445,7 +445,7 @@ const editionFormSchema = z.object({
 
 export const bookIdSchema = z.object({ bookId: z.uuid() });
 
-const editionIdSchema = z.object({ editionId: z.uuid() });
+export const editionIdSchema = z.object({ editionId: z.uuid() });
 
 export const updateBookSchema = workFormSchema.extend(bookIdSchema.shape);
 

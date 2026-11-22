@@ -516,3 +516,52 @@ export async function updateEditionServer({ editionId, ...edition }: UpdateEditi
     throw error;
   }
 }
+
+/**
+ * Deletes a book with its editions, credits and places in series (`on delete cascade`). The
+ * authors, series, publishers and subjects stay. Nothing to do when it is already gone.
+ */
+export async function deleteBookServer({ bookId }: { bookId: string }) {
+  await requirePermissionServer('catalog:manage');
+
+  await db.delete(schema.books).where(orm.eq(schema.books.id, bookId));
+}
+
+/**
+ * Deletes one edition of a book, with its credits; the book stays, even without any edition.
+ * Nothing to do when it is already gone.
+ */
+export async function deleteEditionServer({ editionId }: { editionId: string }) {
+  await requirePermissionServer('catalog:manage');
+
+  await db.transaction(async (tx) => {
+    const [owner] = await tx
+      .select({ bookId: schema.editions.bookId })
+      .from(schema.editions)
+      .where(orm.eq(schema.editions.id, editionId));
+    const book = owner ? await lockBook(tx, owner.bookId) : null;
+
+    if (!book) {
+      return;
+    }
+
+    await tx.delete(schema.editions).where(orm.eq(schema.editions.id, editionId));
+
+    const editions = book.editions.filter(({ id }) => id !== editionId);
+
+    // The language of the title may now be another edition's. When no edition left says it, the
+    // book stays filed where it is: the title didn't change language.
+    if (!editions.some(({ title, language }) => title === null && language !== null)) {
+      return;
+    }
+
+    const sortTitleAfter = refiledTitle(book, { ...book, editions });
+
+    if (sortTitleAfter !== book.sortTitle) {
+      await tx
+        .update(schema.books)
+        .set({ sortTitle: sortTitleAfter })
+        .where(orm.eq(schema.books.id, book.id));
+    }
+  });
+}

@@ -7,7 +7,9 @@ import ContributorsFields from '#/components/book-form/ContributorsFields';
 import EditFormActions from '#/components/book-form/EditFormActions';
 import EditionFields from '#/components/book-form/EditionFields';
 import BookNotFound from '#/components/BookNotFound';
+import DeleteSection from '#/components/DeleteSection';
 import { useAppForm } from '#/hooks/use-app-form';
+import { useDeleteFromCatalog } from '#/hooks/use-delete-from-catalog';
 import { useSaveBook } from '#/hooks/use-save-book';
 import { m } from '#/paraglide/messages';
 import { localizeHref } from '#/paraglide/runtime';
@@ -20,7 +22,7 @@ import {
   editionFormOf,
   emptyEditionValues,
 } from '#/services/catalog/catalog';
-import { updateEditionFn } from '#/services/catalog/catalog.functions';
+import { deleteEditionFn, updateEditionFn } from '#/services/catalog/catalog.functions';
 import { checkedOnSubmit } from '#/utils/form-validation';
 
 export const Route = createFileRoute('/_app/books/$bookId/editions/$editionId/edit')({
@@ -53,6 +55,7 @@ const editionFields = createFieldMap(emptyEditionValues());
 function EditEditionPage() {
   const { book, edition } = Route.useLoaderData();
   const { problem, save } = useSaveBook(book.id);
+  const deletion = useDeleteFromCatalog({ to: '/books/$bookId', params: { bookId: book.id } });
   const form = useAppForm({
     defaultValues: editionFormOf(edition),
     ...checkedOnSubmit(editionFormErrors),
@@ -128,6 +131,25 @@ function EditEditionPage() {
           <EditFormActions bookId={book.id} problem={problem} />
         </form.AppForm>
       </form>
+
+      <DeleteSection
+        id="edition-delete"
+        title={m.book_edition_delete_heading()}
+        description={
+          book.editions.length === 1
+            ? m.book_edition_delete_description_only()
+            : m.book_edition_delete_description()
+        }
+        label={m.book_edition_delete()}
+        question={m.book_edition_delete_confirm({ title: edition.title ?? book.title })}
+        confirmLabel={m.book_edition_delete_confirm_button()}
+        cancelLabel={m.book_edition_delete_cancel()}
+        error={deletion.failed && m.book_edition_delete_failed()}
+        pending={deletion.pending}
+        onDelete={async () =>
+          deletion.run(async () => deleteEditionFn({ data: { editionId: edition.id } }))
+        }
+      />
     </div>
   );
 }

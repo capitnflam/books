@@ -1,6 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
+
+import { useLeaveChangedCatalog } from './use-leave-changed-catalog';
 
 type SaveResult =
   | { error: null }
@@ -12,9 +12,7 @@ export type SaveProblem = Exclude<SaveResult, { error: null }> | { error: 'faile
 
 /** Saves a book or one of its editions, then goes back to the book's page. */
 export function useSaveBook(bookId: string) {
-  const router = useRouter();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const leave = useLeaveChangedCatalog();
   const [problem, setProblem] = useState<SaveProblem | null>(null);
 
   const save = async (action: () => Promise<SaveResult>) => {
@@ -29,10 +27,7 @@ export function useSaveBook(bookId: string) {
         return;
       }
 
-      // Nothing loaded before the change may show again, not even while it reloads.
-      router.clearCache();
-      queryClient.removeQueries({ queryKey: ['books'] });
-      await navigate({ to: '/books/$bookId', params: { bookId } });
+      await leave({ to: '/books/$bookId', params: { bookId } });
     } catch {
       setProblem({ error: 'failed' });
     }

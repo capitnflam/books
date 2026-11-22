@@ -381,5 +381,20 @@
   "book_save": "Save the changes",
   "book_cancel": "Cancel",
   "book_save_failed": "The changes could not be saved. Try again in a moment.",
-  "book_gone": "This is no longer in the catalogue."
+  "book_gone": "This is no longer in the catalogue.",
+  "book_delete_heading": "Delete the book",
+  "book_delete_description": "Removes the book and all its editions from the catalogue, for every reader. Its authors, series, publishers and subjects stay. This cannot be undone.",
+  "book_delete": "Delete book",
+  "book_delete_confirm": "Delete “{title}” and its editions ({count}) for good?",
+  "book_delete_confirm_button": "Yes, delete the book",
+  "book_delete_cancel": "Keep the book",
+  "book_delete_failed": "The book could not be deleted. Try again in a moment.",
+  "book_edition_delete_heading": "Delete the edition",
+  "book_edition_delete_description": "Removes this edition from the catalogue, for every reader. The book and its other editions stay. This cannot be undone.",
+  "book_edition_delete_description_only": "This is the book’s only edition: the book stays in the catalogue without any. To remove it too, delete the book instead. This cannot be undone.",
+  "book_edition_delete": "Delete edition",
+  "book_edition_delete_confirm": "Delete this edition of “{title}” for good?",
+  "book_edition_delete_confirm_button": "Yes, delete the edition",
+  "book_edition_delete_cancel": "Keep the edition",
+  "book_edition_delete_failed": "The edition could not be deleted. Try again in a moment."
 }

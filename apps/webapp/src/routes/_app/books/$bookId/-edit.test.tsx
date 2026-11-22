@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getBookFn, updateBookFn } from '#/services/catalog/catalog.functions';
+import {
+  deleteBookFn,
+  getBookFn,
+  listBooksFn,
+  updateBookFn,
+} from '#/services/catalog/catalog.functions';
 import { bookDetails, uuid } from '#/testing/fixtures';
 import { renderPage } from '#/testing/render-page';
 import { signIn } from '#/testing/session';
@@ -194,6 +199,50 @@ describe('saving', () => {
     await expect
       .element(page.getByRole('textbox', { name: 'Title' }))
       .toHaveValue('The Hobbit, revised');
+    expect(page.currentUrl()).toBe(`${bookPath}/edit`);
+  });
+});
+
+describe('deleting', () => {
+  it('goes to the catalogue once confirmed', async () => {
+    vi.mocked(deleteBookFn).mockImplementation(async () => {
+      vi.mocked(getBookFn).mockResolvedValue(null);
+    });
+    vi.mocked(listBooksFn).mockResolvedValue({ total: 0, books: [] });
+    const page = await renderPage(`${bookPath}/edit`);
+
+    await page.getByRole('button', { name: 'Delete book' }).click();
+    await expect
+      .element(page.getByText('Delete “The Hobbit” and its editions (1) for good?'))
+      .toBeVisible();
+    expect(deleteBookFn).not.toHaveBeenCalled();
+    await page.getByRole('button', { name: 'Yes, delete the book' }).click();
+
+    await expect.element(page.getByRole('heading', { level: 1 })).toHaveTextContent('Catalogue');
+    expect(page.currentUrl()).toBe('/books');
+    expect(deleteBookFn).toHaveBeenCalledExactlyOnceWith({ data: { bookId: uuid(1) } });
+  });
+
+  it('keeps the book when not confirmed', async () => {
+    const page = await renderPage(`${bookPath}/edit`);
+
+    await page.getByRole('button', { name: 'Delete book' }).click();
+    await page.getByRole('button', { name: 'Keep the book' }).click();
+
+    await expect.element(page.getByRole('button', { name: 'Delete book' })).toBeVisible();
+    expect(deleteBookFn).not.toHaveBeenCalled();
+  });
+
+  it('says so when it fails', async () => {
+    vi.mocked(deleteBookFn).mockRejectedValue(new Error('The server is down.'));
+    const page = await renderPage(`${bookPath}/edit`);
+
+    await page.getByRole('button', { name: 'Delete book' }).click();
+    await page.getByRole('button', { name: 'Yes, delete the book' }).click();
+
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('The book could not be deleted. Try again in a moment.');
     expect(page.currentUrl()).toBe(`${bookPath}/edit`);
   });
 });

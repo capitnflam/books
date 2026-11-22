@@ -10,6 +10,8 @@ import {
 } from './catalog';
 import {
   createBookServer,
+  deleteBookServer,
+  deleteEditionServer,
   lookupIsbnServer,
   updateBookServer,
   updateEditionServer,
@@ -574,5 +576,71 @@ describe('editing an edition', () => {
 
     await expect(updateEditionServer(edition({}))).rejects.toThrow(/catalog:manage/u);
     expect(mocks.updates).toEqual([]);
+  });
+});
+
+describe('deleting a book', () => {
+  it('deletes the work; what depends on it goes by cascade', async () => {
+    await deleteBookServer({ bookId: BOOK_ID });
+
+    expect(mocks.deletes).toEqual([schema.books]);
+  });
+
+  it('needs the catalog:manage permission', async () => {
+    mocks.permissions = ['collection:manage'];
+
+    await expect(deleteBookServer({ bookId: BOOK_ID })).rejects.toThrow(/catalog:manage/u);
+    expect(mocks.deletes).toEqual([]);
+  });
+});
+
+describe('deleting an edition', () => {
+  const other = { id: 'other', title: null, language: 'de', contributors: [] };
+
+  beforeEach(() => {
+    mocks.selects = [[{ bookId: BOOK_ID }], [{ id: BOOK_ID }]];
+    mocks.savedBook = savedBook();
+  });
+
+  it('leaves the book, filed where it was, even without any edition', async () => {
+    mocks.savedBook = {
+      ...savedBook(),
+      title: 'Die Farben der Magie',
+      sortTitle: 'Farben der Magie, Die',
+      editions: [{ ...savedBook().editions[0], language: 'de' }],
+    };
+
+    await deleteEditionServer({ editionId: EDITION_ID });
+
+    expect(mocks.deletes).toEqual([schema.editions]);
+    expect(mocks.updates).toEqual([]);
+  });
+
+  it('files the book again when another edition now says the language of its title', async () => {
+    mocks.savedBook = {
+      ...savedBook(),
+      title: 'Die Farben der Magie',
+      sortTitle: 'Die Farben der Magie',
+      editions: [...savedBook().editions, other],
+    };
+
+    await deleteEditionServer({ editionId: EDITION_ID });
+
+    expect(updatesOf(schema.books)).toEqual([{ sortTitle: 'Farben der Magie, Die' }]);
+  });
+
+  it('does nothing when the edition is already gone', async () => {
+    mocks.selects = [[]];
+
+    await deleteEditionServer({ editionId: EDITION_ID });
+
+    expect(mocks.deletes).toEqual([]);
+  });
+
+  it('needs the catalog:manage permission', async () => {
+    mocks.permissions = ['collection:manage'];
+
+    await expect(deleteEditionServer({ editionId: EDITION_ID })).rejects.toThrow(/catalog:manage/u);
+    expect(mocks.deletes).toEqual([]);
   });
 });

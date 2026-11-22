@@ -381,5 +381,20 @@
   "book_save": "Enregistrer les modifications",
   "book_cancel": "Annuler",
   "book_save_failed": "Les modifications n’ont pas pu être enregistrées. Réessayez dans un instant.",
-  "book_gone": "Ceci n’est plus au catalogue."
+  "book_gone": "Ceci n’est plus au catalogue.",
+  "book_delete_heading": "Supprimer le livre",
+  "book_delete_description": "Retire le livre et toutes ses éditions du catalogue, pour tous les lecteurs. Ses auteurs, séries, éditeurs et sujets restent. Cette action est définitive.",
+  "book_delete": "Supprimer le livre",
+  "book_delete_confirm": "Supprimer définitivement « {title} » et ses éditions ({count}) ?",
+  "book_delete_confirm_button": "Oui, supprimer le livre",
+  "book_delete_cancel": "Garder le livre",
+  "book_delete_failed": "Le livre n’a pas pu être supprimé. Réessayez dans un instant.",
+  "book_edition_delete_heading": "Supprimer l’édition",
+  "book_edition_delete_description": "Retire cette édition du catalogue, pour tous les lecteurs. Le livre et ses autres éditions restent. Cette action est définitive.",
+  "book_edition_delete_description_only": "C’est la seule édition du livre : il reste au catalogue sans édition. Pour le retirer aussi, supprimez plutôt le livre. Cette action est définitive.",
+  "book_edition_delete": "Supprimer l’édition",
+  "book_edition_delete_confirm": "Supprimer définitivement cette édition de « {title} » ?",
+  "book_edition_delete_confirm_button": "Oui, supprimer l’édition",
+  "book_edition_delete_cancel": "Garder l’édition",
+  "book_edition_delete_failed": "L’édition n’a pas pu être supprimée. Réessayez dans un instant."
 }
