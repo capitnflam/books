@@ -2,9 +2,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@books/ui/components/avatar
 import { Button } from '@books/ui/components/button';
 import { Icon } from '@books/ui/components/icon';
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
 
 import BackLink from '#/components/BackLink';
+import DeleteSection from '#/components/DeleteSection';
 import DisplayNameForm from '#/components/DisplayNameForm';
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
@@ -156,14 +156,17 @@ type AccountSectionProps = { details: UserDetails; name: string };
 const AccountSection: FC<AccountSectionProps> = ({ details, name }) => {
   const navigate = useNavigate();
   const { pending, failed, run } = useServerAction();
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { user, account } = details;
   const blocked = account?.blocked ?? false;
 
   const handleDelete = async () => {
-    if (await run(() => deleteUserFn({ data: { userId: user.id } }))) {
+    const deleted = await run(() => deleteUserFn({ data: { userId: user.id } }));
+
+    if (deleted) {
       await navigate({ to: '/users' });
     }
+
+    return deleted;
   };
 
   return (
@@ -191,49 +194,18 @@ const AccountSection: FC<AccountSectionProps> = ({ details, name }) => {
             </Button>
           </div>
         )}
-        <div className="border-destructive flex flex-col gap-4 rounded-md border px-5 py-4">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-destructive flex items-center gap-2">
-              <Icon icon="alert-triangle" aria-hidden className="size-5 shrink-0" />
-              {m.user_delete_heading()}
-            </h3>
-            <p className="text-muted-foreground text-base/6">{m.user_delete_description()}</p>
-          </div>
-          {confirmingDelete ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-base/6 font-semibold" id="user-delete-confirm">
-                {m.user_delete_confirm({ name })}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant="destructive"
-                  aria-describedby="user-delete-confirm"
-                  disabled={pending}
-                  onClick={() => void handleDelete()}
-                >
-                  <Icon icon="trash" aria-hidden data-icon="inline-start" />
-                  {m.user_delete_confirm_button()}
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={pending}
-                  onClick={() => setConfirmingDelete(false)}
-                >
-                  {m.user_delete_cancel()}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              variant="destructive"
-              className="self-start"
-              onClick={() => setConfirmingDelete(true)}
-            >
-              <Icon icon="trash" aria-hidden data-icon="inline-start" />
-              {m.user_delete()}
-            </Button>
-          )}
-        </div>
+        <DeleteSection
+          id="user-delete"
+          title={m.user_delete_heading()}
+          level={3}
+          description={m.user_delete_description()}
+          label={m.user_delete()}
+          question={m.user_delete_confirm({ name })}
+          confirmLabel={m.user_delete_confirm_button()}
+          cancelLabel={m.user_delete_cancel()}
+          pending={pending}
+          onDelete={handleDelete}
+        />
       </div>
     </PageSection>
   );

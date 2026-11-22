@@ -5,6 +5,7 @@ import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import BackLink from '#/components/BackLink';
+import DeleteSection from '#/components/DeleteSection';
 import ErrorMessage from '#/components/ErrorMessage';
 import ListSearchForm from '#/components/ListSearchForm';
 import PageSection from '#/components/PageSection';
@@ -318,57 +319,33 @@ const GrantSection: FC<{ flag: Flag }> = ({ flag }) => {
   );
 };
 
-const DeleteSection: FC<{ flag: Flag }> = ({ flag }) => {
+const DeleteFlagSection: FC<{ flag: Flag }> = ({ flag }) => {
   const navigate = useNavigate();
   const { pending, failed, run } = useServerAction();
-  const [confirming, setConfirming] = useState(false);
 
   const handleDelete = async () => {
-    if (await run(() => deleteFeatureFlagFn({ data: { flagId: flag.id } }))) {
+    const deleted = await run(() => deleteFeatureFlagFn({ data: { flagId: flag.id } }));
+
+    if (deleted) {
       await navigate({ to: '/feature-flags' });
     }
+
+    return deleted;
   };
 
   return (
-    <section
-      aria-labelledby="flag-delete"
-      className="border-destructive flex flex-col gap-4 rounded-md border px-5 py-4"
-    >
-      <div className="flex flex-col gap-1">
-        <h2 id="flag-delete" className="text-heading-3 text-destructive flex items-center gap-2">
-          <Icon icon="alert-triangle" aria-hidden className="size-5 shrink-0" />
-          {m.flag_delete_heading()}
-        </h2>
-        <p className="text-muted-foreground text-base/6">{m.flag_delete_description()}</p>
-      </div>
-      {failed && <ErrorMessage>{m.user_action_failed()}</ErrorMessage>}
-      {confirming ? (
-        <div className="flex flex-col gap-3">
-          <p className="text-base/6 font-semibold break-all" id="flag-delete-confirm">
-            {m.flag_delete_confirm({ key: flag.key })}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="destructive"
-              aria-describedby="flag-delete-confirm"
-              disabled={pending}
-              onClick={() => void handleDelete()}
-            >
-              <Icon icon="trash" aria-hidden data-icon="inline-start" />
-              {m.flag_delete_confirm_button()}
-            </Button>
-            <Button variant="ghost" disabled={pending} onClick={() => setConfirming(false)}>
-              {m.flag_delete_cancel()}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button variant="destructive" className="self-start" onClick={() => setConfirming(true)}>
-          <Icon icon="trash" aria-hidden data-icon="inline-start" />
-          {m.flag_delete()}
-        </Button>
-      )}
-    </section>
+    <DeleteSection
+      id="flag-delete"
+      title={m.flag_delete_heading()}
+      description={m.flag_delete_description()}
+      label={m.flag_delete()}
+      question={m.flag_delete_confirm({ key: flag.key })}
+      confirmLabel={m.flag_delete_confirm_button()}
+      cancelLabel={m.flag_delete_cancel()}
+      error={failed && m.user_action_failed()}
+      pending={pending}
+      onDelete={handleDelete}
+    />
   );
 };
 
@@ -406,7 +383,7 @@ function FlagPage() {
       <HoldersSection key={`holders:${flag.id}`} flag={flag} />
       {/* Keyed by the search, so a selection never covers users the search no longer shows. */}
       <GrantSection key={`grant:${flag.id}:${find ?? ''}`} flag={flag} />
-      <DeleteSection flag={flag} />
+      <DeleteFlagSection flag={flag} />
     </div>
   );
 }
