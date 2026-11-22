@@ -52,6 +52,20 @@ class ForbiddenError extends Error {
 }
 
 /**
+ * Guards a server function open to every signed-in user, whatever their permissions: returns
+ * the user and their permissions, and throws when nobody is signed in.
+ */
+export async function requireViewerServer() {
+  const viewer = await getViewerServer();
+
+  if (!viewer) {
+    throw new Error('Not signed in.');
+  }
+
+  return viewer;
+}
+
+/**
  * Guards a server function: returns the signed-in user and their permissions when they hold
  * `permission`, and throws otherwise. Every server function reading or changing other users'
  * data calls it, since route guards do not protect server functions.

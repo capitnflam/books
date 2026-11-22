@@ -4,9 +4,10 @@ import { Icon } from '@books/ui/components/icon';
 import { Input } from '@books/ui/components/input';
 import { Label } from '@books/ui/components/label';
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
-import { Link, createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import BackLink from '#/components/BackLink';
 import ErrorMessage from '#/components/ErrorMessage';
 import PageSection from '#/components/PageSection';
 import UserCell from '#/components/UserCell';
@@ -28,8 +29,8 @@ import {
   revokeFeatureFlagFn,
   updateFeatureFlagFn,
 } from '#/services/feature-flags/feature-flags.functions';
-import { nextPage } from '#/services/user-management/user-management';
 import { formatDate } from '#/utils/dates';
+import { nextPage } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
@@ -123,16 +124,6 @@ function loadedRows<Row>(
     loadMore: () => void fetchNextPage(),
   };
 }
-
-const BackLink: FC = () => (
-  <Link
-    to="/feature-flags"
-    className="text-link focus-visible:ring-ring focus-visible:ring-offset-background flex items-center gap-1.5 self-start rounded-sm text-base/6 underline-offset-3 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
-  >
-    <Icon icon="arrow-left" aria-hidden className="size-4.5" />
-    {m.flag_back()}
-  </Link>
-);
 
 const SettingsSection: FC<{ flag: Flag }> = ({ flag }) => {
   const { pending, failed, run } = useServerAction();
@@ -406,7 +397,7 @@ const DeleteSection: FC<{ flag: Flag }> = ({ flag }) => {
 function FlagNotFound() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-6 px-4 py-16">
-      <BackLink />
+      <BackLink to="/feature-flags">{m.flag_back()}</BackLink>
       <h1>{m.flag_not_found_title()}</h1>
       <p className="text-muted-foreground">{m.flag_not_found_description()}</p>
     </div>
@@ -420,7 +411,7 @@ function FlagPage() {
   return (
     <div className="container mx-auto flex max-w-4xl flex-col gap-12 px-4 py-16">
       <div className="flex flex-col gap-6">
-        <BackLink />
+        <BackLink to="/feature-flags">{m.flag_back()}</BackLink>
         <header className="flex flex-col gap-2">
           <p className="text-overline text-muted-foreground uppercase">{m.flag_overline()}</p>
           <h1 className="break-all">{flag.key}</h1>

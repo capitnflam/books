@@ -8,9 +8,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import UserCell from '#/components/UserCell';
 import { VirtualTable } from '#/components/VirtualTable';
 import { m } from '#/paraglide/messages';
-import { nextPage, parseUserListSearch } from '#/services/user-management/user-management';
 import { listUsersFn } from '#/services/user-management/user-management.functions';
 import { formatDate } from '#/utils/dates';
+import { nextPage, parseListSearch } from '#/utils/list-search';
 
 import type { VirtualTableColumn } from '#/components/VirtualTable';
 import type { IconName } from '@books/ui/components/icon';
@@ -26,7 +26,7 @@ const usersQuery = (q: string | undefined) =>
   });
 
 export const Route = createFileRoute('/_app/users/')({
-  validateSearch: parseUserListSearch,
+  validateSearch: parseListSearch,
   loaderDeps: ({ search }) => search,
   // The first page renders on the server; the rest load in the browser as the list scrolls.
   loader: async ({ context, deps }) => {

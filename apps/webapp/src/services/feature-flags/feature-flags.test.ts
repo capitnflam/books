@@ -61,7 +61,7 @@ describe('parseFlagDetailsSearch', () => {
   it('keeps a trimmed name to find and drops an empty or malformed one', () => {
     expect(parseFlagDetailsSearch({ find: ' ada ' })).toEqual({ find: 'ada' });
     expect(parseFlagDetailsSearch({ find: '' })).toEqual({ find: undefined });
-    expect(parseFlagDetailsSearch({ find: 3 })).toEqual({ find: undefined });
+    expect(parseFlagDetailsSearch({ find: ['ada'] })).toEqual({ find: undefined });
   });
 });
 

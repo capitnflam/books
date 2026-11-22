@@ -20,6 +20,15 @@ const EDITION_ROLES: ReadonlySet<ContributorRole> = new Set(['translator', 'narr
 
 export const isEditionRole = (role: ContributorRole) => EDITION_ROLES.has(role);
 
+/** Credits offered when editing a work. */
+export const WORK_CREDIT_ROLES = CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role));
+
+/** Credits offered when editing an edition: an illustrator can be one edition's too. */
+export const EDITION_CREDIT_ROLES = [
+  ...CONTRIBUTOR_ROLES.filter((role) => isEditionRole(role)),
+  ...CONTRIBUTOR_ROLES.filter((role) => !isEditionRole(role) && role !== 'author'),
+];
+
 export const EDITION_FORMATS = [
   'hardcover',
   'paperback',
@@ -62,6 +71,7 @@ const NAME_MAX_LENGTH = 200;
 const SUBJECT_MAX_LENGTH = 100;
 const SUBJECTS_MAX = 20;
 export const CONTRIBUTORS_MAX = 20;
+export const SERIES_MAX = 10;
 
 export type ContributorForm = { name: string; role: ContributorRole };
 
@@ -91,31 +101,77 @@ export type BookForm = {
   coverImageUrl: string;
 };
 
-export const emptyContributor = (): ContributorForm => ({ name: '', role: 'author' });
+/** The fields about the work that the add and edit forms share. */
+export type WorkValues = Pick<
+  BookForm,
+  | 'title'
+  | 'subtitle'
+  | 'contributors'
+  | 'description'
+  | 'originalLanguage'
+  | 'firstPublishedYear'
+  | 'genres'
+  | 'subjects'
+>;
 
-export function emptyBookForm(): BookForm {
-  return {
-    isbn: '',
-    title: '',
-    subtitle: '',
-    contributors: [emptyContributor()],
-    description: '',
-    originalLanguage: '',
-    firstPublishedYear: '',
-    series: '',
-    seriesPosition: '',
-    genres: [],
-    subjects: '',
-    editionStatement: '',
-    publisher: '',
-    published: '',
-    language: '',
-    format: '',
-    pageCount: '',
-    durationMinutes: '',
-    coverImageUrl: '',
-  };
-}
+/** The fields about one edition that the add and edit forms share. */
+export type EditionValues = Pick<
+  BookForm,
+  | 'editionStatement'
+  | 'publisher'
+  | 'published'
+  | 'language'
+  | 'format'
+  | 'pageCount'
+  | 'durationMinutes'
+  | 'coverImageUrl'
+>;
+
+export const emptyContributor = (role: ContributorRole = 'author'): ContributorForm => ({
+  name: '',
+  role,
+});
+
+export type SeriesForm = { name: string; position: string };
+
+export const emptySeries = (): SeriesForm => ({ name: '', position: '' });
+
+/** What the edit-book form holds. A book can be in several series, though it is added to one. */
+export type WorkForm = WorkValues & { series: SeriesForm[] };
+
+/** What the edit-edition form holds; its title and subtitle only when they differ from the book's. */
+export type EditionForm = EditionValues
+  & Pick<BookForm, 'isbn' | 'title' | 'subtitle' | 'contributors'>;
+
+export const emptyWorkValues = (): WorkValues => ({
+  title: '',
+  subtitle: '',
+  contributors: [emptyContributor()],
+  description: '',
+  originalLanguage: '',
+  firstPublishedYear: '',
+  genres: [],
+  subjects: '',
+});
+
+export const emptyEditionValues = (): EditionValues => ({
+  editionStatement: '',
+  publisher: '',
+  published: '',
+  language: '',
+  format: '',
+  pageCount: '',
+  durationMinutes: '',
+  coverImageUrl: '',
+});
+
+export const emptyBookForm = (): BookForm => ({
+  isbn: '',
+  ...emptyWorkValues(),
+  series: '',
+  seriesPosition: '',
+  ...emptyEditionValues(),
+});
 
 /** What an ISBN lookup found to prefill the form with; fields it found nothing for are left out. */
 export type BookDraft = Partial<Omit<BookForm, 'isbn'>>;
@@ -284,70 +340,82 @@ function dropHiddenLength(value: unknown): unknown {
 /** Next year at the latest: books are announced before they come out. Read on every check. */
 const isNotTooLate = (year: number | null) => year === null || year <= new Date().getFullYear() + 1;
 
+const contributors = z
+  .array(
+    z.object({
+      name: trimmed(NAME_MAX_LENGTH),
+      role: z.enum(CONTRIBUTOR_ROLES),
+    }),
+  )
+  .max(CONTRIBUTORS_MAX)
+  // A row left empty is no credit.
+  .transform((rows) => rows.filter(({ name }) => name));
+
+const seriesPosition = z
+  .string()
+  .trim()
+  .regex(/^(?:\d{1,4}(?:[.,]\d{1,2})?)?$/u)
+  .transform((value) => (value ? Number(value.replace(',', '.')) : null));
+
+const workShape = {
+  title: trimmed(BOOK_TITLE_MAX_LENGTH).min(1),
+  subtitle: optionalText(BOOK_TITLE_MAX_LENGTH),
+  contributors,
+  description: optionalText(BOOK_DESCRIPTION_MAX_LENGTH),
+  originalLanguage: optionalLanguage,
+  firstPublishedYear: optionalInteger(-3000, 9999).refine(isNotTooLate),
+  genres: z
+    .array(z.enum(GENRES))
+    .min(1)
+    .transform((genres) => [...new Set(genres)]),
+  subjects: z
+    .string()
+    .transform((value) => {
+      const seen = new Set<string>();
+
+      return value
+        .split(',')
+        .map((subject) => subject.trim().replaceAll(/\s+/gu, ' '))
+        .filter((subject) => {
+          const key = subject.toLowerCase();
+          const isNew = subject !== '' && !seen.has(key);
+
+          seen.add(key);
+
+          return isNew;
+        });
+    })
+    .pipe(z.array(z.string().max(SUBJECT_MAX_LENGTH)).max(SUBJECTS_MAX)),
+};
+
+const editionShape = {
+  isbn: z
+    .string()
+    .trim()
+    .refine((value) => !value || parseIsbn(value) !== null)
+    .transform((value) => (value ? parseIsbn(value) : null)),
+  editionStatement: optionalText(NAME_MAX_LENGTH),
+  publisher: optionalText(NAME_MAX_LENGTH),
+  published,
+  language: optionalLanguage,
+  format: z.union([z.enum(EDITION_FORMATS), z.literal('').transform(() => null)]),
+  pageCount: optionalInteger(1, 100_000),
+  durationMinutes: optionalInteger(1, 100_000),
+  coverImageUrl: z.union([
+    z.literal('').transform(() => null),
+    z.url({ protocol: /^https?$/u }).max(2000),
+  ]),
+};
+
 const bookSchema = z
   .object({
-    isbn: z
-      .string()
-      .trim()
-      .refine((value) => !value || parseIsbn(value) !== null)
-      .transform((value) => (value ? parseIsbn(value) : null)),
-    title: trimmed(BOOK_TITLE_MAX_LENGTH).min(1),
-    subtitle: optionalText(BOOK_TITLE_MAX_LENGTH),
-    contributors: z
-      .array(
-        z.object({
-          name: trimmed(NAME_MAX_LENGTH),
-          role: z.enum(CONTRIBUTOR_ROLES),
-        }),
-      )
-      .max(CONTRIBUTORS_MAX)
-      // A row left empty is no credit.
-      .transform((rows) => rows.filter(({ name }) => name)),
-    description: optionalText(BOOK_DESCRIPTION_MAX_LENGTH),
-    originalLanguage: optionalLanguage,
-    firstPublishedYear: optionalInteger(-3000, 9999).refine(isNotTooLate),
+    ...workShape,
     series: optionalText(NAME_MAX_LENGTH),
-    seriesPosition: z
-      .string()
-      .trim()
-      .regex(/^(?:\d{1,4}(?:[.,]\d{1,2})?)?$/u)
-      .transform((value) => (value ? Number(value.replace(',', '.')) : null)),
-    genres: z
-      .array(z.enum(GENRES))
-      .min(1)
-      .transform((genres) => [...new Set(genres)]),
-    subjects: z
-      .string()
-      .transform((value) => {
-        const seen = new Set<string>();
-
-        return value
-          .split(',')
-          .map((subject) => subject.trim().replaceAll(/\s+/gu, ' '))
-          .filter((subject) => {
-            const key = subject.toLowerCase();
-            const isNew = subject !== '' && !seen.has(key);
-
-            seen.add(key);
-
-            return isNew;
-          });
-      })
-      .pipe(z.array(z.string().max(SUBJECT_MAX_LENGTH)).max(SUBJECTS_MAX)),
-    editionStatement: optionalText(NAME_MAX_LENGTH),
-    publisher: optionalText(NAME_MAX_LENGTH),
-    published,
-    language: optionalLanguage,
-    format: z.union([z.enum(EDITION_FORMATS), z.literal('').transform(() => null)]),
-    pageCount: optionalInteger(1, 100_000),
-    durationMinutes: optionalInteger(1, 100_000),
-    coverImageUrl: z.union([
-      z.literal('').transform(() => null),
-      z.url({ protocol: /^https?$/u }).max(2000),
-    ]),
+    seriesPosition,
+    ...editionShape,
   })
   // A position means nothing without the series it is a position in.
-  .refine(({ series, seriesPosition }) => series !== null || seriesPosition === null, {
+  .refine(({ series, seriesPosition: position }) => series !== null || position === null, {
     path: ['seriesPosition'],
   });
 
@@ -356,24 +424,165 @@ export const createBookSchema = z.preprocess(dropHiddenLength, bookSchema);
 
 export type CreateBookInput = z.output<typeof createBookSchema>;
 
+const workFormSchema = z.object({
+  ...workShape,
+  series: z
+    .array(
+      z
+        .object({ name: trimmed(NAME_MAX_LENGTH), position: seriesPosition })
+        .refine(({ name, position }) => name !== '' || position === null, { path: ['name'] }),
+    )
+    .max(SERIES_MAX)
+    .transform((rows) => rows.filter(({ name }) => name)),
+});
+
+const editionFormSchema = z.object({
+  ...editionShape,
+  title: optionalText(BOOK_TITLE_MAX_LENGTH),
+  subtitle: optionalText(BOOK_TITLE_MAX_LENGTH),
+  contributors,
+});
+
+export const bookIdSchema = z.object({ bookId: z.uuid() });
+
+const editionIdSchema = z.object({ editionId: z.uuid() });
+
+export const updateBookSchema = workFormSchema.extend(bookIdSchema.shape);
+
+export type UpdateBookInput = z.output<typeof updateBookSchema>;
+
+export const updateEditionSchema = z.preprocess(
+  dropHiddenLength,
+  editionFormSchema.extend(editionIdSchema.shape),
+);
+
+export type UpdateEditionInput = z.output<typeof updateEditionSchema>;
+
 /**
  * Where the form shows an error at `path`: on the field, even for an item inside a list (a
- * subject too long is `subjects`), except a contributor's own row (`contributors.0.name`).
+ * subject too long is `subjects`), except a row's own field (`contributors[0].name`).
  */
 function errorField(path: readonly PropertyKey[]): string {
-  return path[0] === 'contributors' && path.length >= 3
-    ? path.slice(0, 3).join('.')
+  return (path[0] === 'contributors' || path[0] === 'series') && path.length >= 3
+    ? `${String(path[0])}[${String(path[1])}].${String(path[2])}`
     : String(path[0]);
 }
 
-/**
- * The fields of `form` that the server would refuse, as the form's field names (`title`,
- * `subjects`) or contributor rows (`contributors.0.name`), so it can mark them before sending.
- */
-export function bookFormErrors(form: BookForm): Set<string> {
-  const result = createBookSchema.safeParse(form);
+const fieldErrors = (schema: z.ZodType, form: unknown): Set<string> => {
+  const result = schema.safeParse(form);
 
   return new Set(result.success ? [] : result.error.issues.map(({ path }) => errorField(path)));
+};
+
+/**
+ * The fields of `form` that the server would refuse, as the form's field names (`title`,
+ * `subjects`) or rows (`contributors[0].name`), so it can mark them before sending.
+ */
+export const bookFormErrors = (form: BookForm) => fieldErrors(createBookSchema, form);
+
+/** The same for the edit-book form. */
+export const workFormErrors = (form: WorkForm) => fieldErrors(workFormSchema, form);
+
+/** The same for the edit-edition form. */
+export const editionFormErrors = (form: EditionForm) =>
+  fieldErrors(z.preprocess(dropHiddenLength, editionFormSchema), form);
+
+type SavedCredit = { role: ContributorRole; author: { name: string } };
+
+const creditRows = (credits: readonly SavedCredit[], role: ContributorRole | undefined) =>
+  credits.length > 0
+    ? credits.map((credit) => ({ name: credit.author.name, role: credit.role }))
+    : [emptyContributor(role)];
+
+/** A saved book, as the edit-book form shows it. */
+export function workFormOf(book: {
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  originalLanguage: string | null;
+  firstPublishedYear: number | null;
+  contributors: readonly SavedCredit[];
+  series: readonly { position: number | null; series: { name: string } }[];
+  genres: readonly Genre[];
+  subjects: readonly { name: string }[];
+}): WorkForm {
+  return {
+    title: book.title,
+    subtitle: book.subtitle ?? '',
+    contributors: creditRows(book.contributors, WORK_CREDIT_ROLES[0]),
+    description: book.description ?? '',
+    originalLanguage: book.originalLanguage ?? '',
+    firstPublishedYear: book.firstPublishedYear?.toString() ?? '',
+    series:
+      book.series.length > 0
+        ? book.series.map(({ position, series }) => ({
+            name: series.name,
+            position: position?.toString() ?? '',
+          }))
+        : [emptySeries()],
+    genres: [...book.genres],
+    subjects: book.subjects.map(({ name }) => name).join(', '),
+  };
+}
+
+/** A saved edition, as the edit-edition form shows it. */
+export function editionFormOf(edition: {
+  title: string | null;
+  subtitle: string | null;
+  editionStatement: string | null;
+  publisher: { name: string } | null;
+  publishedYear: number | null;
+  publishedOn: string | null;
+  isbn13: string | null;
+  isbn10: string | null;
+  language: string | null;
+  format: EditionFormat | null;
+  pageCount: number | null;
+  durationMinutes: number | null;
+  coverImageUrl: string | null;
+  contributors: readonly SavedCredit[];
+}): EditionForm {
+  return {
+    isbn: edition.isbn13 ?? edition.isbn10 ?? '',
+    title: edition.title ?? '',
+    subtitle: edition.subtitle ?? '',
+    contributors: creditRows(edition.contributors, EDITION_CREDIT_ROLES[0]),
+    editionStatement: edition.editionStatement ?? '',
+    publisher: edition.publisher?.name ?? '',
+    published: edition.publishedOn ?? edition.publishedYear?.toString() ?? '',
+    language: edition.language ?? '',
+    format: edition.format ?? '',
+    pageCount: edition.pageCount?.toString() ?? '',
+    durationMinutes: edition.durationMinutes?.toString() ?? '',
+    coverImageUrl: edition.coverImageUrl ?? '',
+  };
+}
+
+type FiledTitle = { title: string; originalLanguage: string | null };
+type TitledEdition = { title: string | null; language: string | null };
+
+/**
+ * The language a book's title is in, so the one whose leading article is moved: that of the
+ * first edition printed under it, as when a book is added, or else the original language.
+ */
+const titleLanguage = ({ originalLanguage }: FiledTitle, editions: readonly TitledEdition[]) =>
+  editions.find(({ title, language }) => title === null && language !== null)?.language
+  ?? originalLanguage;
+
+/**
+ * Where a book is filed once it, or the language of its editions, changed. One that was filed
+ * elsewhere than `sortTitle` would file it stays there until its title changes.
+ */
+export function refiledTitle(
+  before: FiledTitle & { sortTitle: string; editions: readonly TitledEdition[] },
+  after: FiledTitle & { editions: readonly TitledEdition[] },
+): string {
+  const filedByHand =
+    before.sortTitle !== sortTitle(before.title, titleLanguage(before, before.editions));
+
+  return filedByHand && before.title === after.title
+    ? before.sortTitle
+    : sortTitle(after.title, titleLanguage(after, after.editions));
 }
 
 export const lookupIsbnSchema = z.object({ isbn: z.string().trim().min(1).max(32) });

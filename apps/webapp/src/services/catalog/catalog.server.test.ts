@@ -1,10 +1,21 @@
 import { schema } from '@books/database';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createBookSchema, emptyBookForm } from './catalog';
-import { createBookServer, lookupIsbnServer } from './catalog.server';
+import {
+  createBookSchema,
+  editionFormOf,
+  emptyBookForm,
+  updateBookSchema,
+  updateEditionSchema,
+} from './catalog';
+import {
+  createBookServer,
+  lookupIsbnServer,
+  updateBookServer,
+  updateEditionServer,
+} from './catalog.server';
 
-import type { BookForm } from './catalog';
+import type { BookForm, EditionForm, WorkForm } from './catalog';
 import type * as Database from '@books/database';
 
 const mocks = vi.hoisted(() => ({
@@ -12,6 +23,12 @@ const mocks = vi.hoisted(() => ({
   /** What each select returns, in the order the code runs them. */
   selects: [] as unknown[][],
   inserts: [] as { table: unknown; values: unknown }[],
+  updates: [] as { table: unknown; values: unknown }[],
+  deletes: [] as unknown[],
+  /** The book as it is before an edit. */
+  savedBook: null as unknown,
+  /** Makes the next update fail, as another save taking the ISBN does. */
+  updateError: null as unknown,
   lookupIsbnOnline: vi.fn(),
 }));
 
@@ -31,7 +48,15 @@ vi.mock('./isbn-lookup.server', () => ({ lookupIsbnOnline: mocks.lookupIsbnOnlin
 const query = vi.hoisted(() => (result: unknown, steps: Record<string, unknown> = {}) => {
   const promise: Record<string, unknown> = Object.assign(Promise.resolve(result), steps);
 
-  for (const step of ['from', 'innerJoin', 'where', 'orderBy', 'limit', 'onConflictDoNothing']) {
+  for (const step of [
+    'from',
+    'innerJoin',
+    'where',
+    'orderBy',
+    'limit',
+    'for',
+    'onConflictDoNothing',
+  ]) {
     promise[step] = () => promise;
   }
 
@@ -50,6 +75,23 @@ vi.mock('@books/database', async (importOriginal) => {
         return query(undefined, { returning: async () => [{ id }] });
       },
     }),
+    update: (table: unknown) => ({
+      set: (values: unknown) => ({
+        where: async () => {
+          if (mocks.updateError) {
+            throw mocks.updateError;
+          }
+
+          mocks.updates.push({ table, values });
+        },
+      }),
+    }),
+    delete: (table: unknown) => ({
+      where: async () => {
+        mocks.deletes.push(table);
+      },
+    }),
+    query: { books: { findFirst: async () => mocks.savedBook } },
     transaction: async (run: (tx: unknown) => Promise<unknown>) => run(db),
   };
 
@@ -71,6 +113,10 @@ beforeEach(() => {
   mocks.permissions = ['catalog:manage'];
   mocks.selects = [];
   mocks.inserts = [];
+  mocks.updates = [];
+  mocks.deletes = [];
+  mocks.savedBook = null;
+  mocks.updateError = null;
   mocks.lookupIsbnOnline.mockReset();
 });
 
@@ -249,5 +295,284 @@ describe('creating a book', () => {
 
     await expect(createBookServer(book({}))).rejects.toThrow(/catalog:manage/u);
     expect(mocks.inserts).toEqual([]);
+  });
+});
+
+const BOOK_ID = '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e01';
+const EDITION_ID = '0c0a6b1e-6f3e-4c1a-9b8e-2f1d7a3c5e02';
+
+const savedBook = () => ({
+  id: BOOK_ID,
+  title: 'The Colour of Magic',
+  sortTitle: 'Colour of Magic, The',
+  originalLanguage: 'en',
+  // Not the oldest author of that name in the catalogue.
+  contributors: [{ role: 'author', author: { id: 'homonym', name: 'Terry Pratchett' } }],
+  series: [
+    { position: 1, series: { id: 'discworld', name: 'Discworld' } },
+    { position: 2, series: { id: 'rincewind', name: 'Rincewind' } },
+  ],
+  editions: [
+    {
+      id: EDITION_ID,
+      title: null,
+      language: 'en',
+      contributors: [{ role: 'narrator', author: { id: 'planer', name: 'Nigel Planer' } }],
+    },
+  ],
+});
+
+const work = (changes: Partial<WorkForm>) =>
+  updateBookSchema.parse({
+    ...emptyBookForm(),
+    bookId: BOOK_ID,
+    title: 'The Colour of Magic',
+    contributors: [{ name: 'terry pratchett', role: 'author' }],
+    series: [
+      { name: 'Discworld', position: '1' },
+      { name: 'Rincewind', position: '2' },
+    ],
+    genres: ['fantasy'],
+    ...changes,
+  });
+
+const updatesOf = (table: unknown) =>
+  mocks.updates.filter((update) => update.table === table).map(({ values }) => values);
+
+describe('editing a book', () => {
+  beforeEach(() => {
+    mocks.selects = [[{ id: BOOK_ID }]];
+    mocks.savedBook = savedBook();
+  });
+
+  it('replaces the credits, series, genres and subjects, and touches no edition', async () => {
+    mocks.selects.push(
+      // The illustrator is new, and so is the subject.
+      [],
+      [],
+      [{ id: 'wizards', name: 'Wizards' }],
+    );
+
+    await expect(
+      updateBookServer(
+        work({
+          subtitle: 'A Discworld Novel',
+          contributors: [
+            { name: 'Terry Pratchett', role: 'author' },
+            { name: 'Josh Kirby', role: 'illustrator' },
+          ],
+          genres: ['fantasy', 'humour'],
+          subjects: 'Wizards',
+        }),
+      ),
+    ).resolves.toEqual({ error: null });
+
+    expect(updatesOf(schema.books)).toEqual([
+      expect.objectContaining({
+        title: 'The Colour of Magic',
+        subtitle: 'A Discworld Novel',
+        sortTitle: 'Colour of Magic, The',
+      }),
+    ]);
+    expect(mocks.deletes).toEqual([
+      schema.bookContributors,
+      schema.bookSeries,
+      schema.bookGenres,
+      schema.bookSubjects,
+    ]);
+    expect(insertsInto(schema.bookContributors)).toEqual([
+      [
+        { bookId: BOOK_ID, authorId: 'homonym', role: 'author', position: 0 },
+        { bookId: BOOK_ID, authorId: 'id-1', role: 'illustrator', position: 1 },
+      ],
+    ]);
+    expect(insertsInto(schema.bookSeries)).toEqual([
+      [
+        { bookId: BOOK_ID, seriesId: 'discworld', position: 1 },
+        { bookId: BOOK_ID, seriesId: 'rincewind', position: 2 },
+      ],
+    ]);
+    expect(insertsInto(schema.bookGenres)).toEqual([
+      [
+        { bookId: BOOK_ID, genre: 'fantasy' },
+        { bookId: BOOK_ID, genre: 'humour' },
+      ],
+    ]);
+    expect(insertsInto(schema.bookSubjects)).toEqual([[{ bookId: BOOK_ID, subjectId: 'wizards' }]]);
+    expect(updatesOf(schema.editions)).toEqual([]);
+    expect(insertsInto(schema.editionContributors)).toEqual([]);
+  });
+
+  it('keeps the credited author, whatever other authors have that name', async () => {
+    await updateBookServer(work({}));
+
+    expect(insertsInto(schema.authors)).toEqual([]);
+    expect(insertsInto(schema.bookContributors)).toEqual([
+      [{ bookId: BOOK_ID, authorId: 'homonym', role: 'author', position: 0 }],
+    ]);
+  });
+
+  it('keeps a translator the work credits on the work', async () => {
+    mocks.selects.push([{ id: 'translator' }]);
+
+    await updateBookServer(
+      work({ contributors: [{ name: 'Andreas Brandhorst', role: 'translator' }] }),
+    );
+
+    expect(insertsInto(schema.bookContributors)).toEqual([
+      [{ bookId: BOOK_ID, authorId: 'translator', role: 'translator', position: 0 }],
+    ]);
+  });
+
+  it('removes what was emptied, and keeps a series entered twice once', async () => {
+    await updateBookServer(
+      work({
+        contributors: [{ name: ' ', role: 'author' }],
+        series: [
+          { name: 'Discworld', position: '1' },
+          { name: 'DISCWORLD', position: '3' },
+        ],
+      }),
+    );
+
+    expect(mocks.deletes).toContain(schema.bookContributors);
+    expect(insertsInto(schema.bookContributors)).toEqual([]);
+    expect(insertsInto(schema.bookSeries)).toEqual([
+      [{ bookId: BOOK_ID, seriesId: 'discworld', position: 1 }],
+    ]);
+    expect(insertsInto(schema.bookSubjects)).toEqual([]);
+  });
+
+  it('says when the book is gone', async () => {
+    mocks.selects = [[]];
+
+    await expect(updateBookServer(work({}))).resolves.toEqual({ error: 'not-found' });
+    expect(mocks.updates).toEqual([]);
+    expect(mocks.deletes).toEqual([]);
+  });
+
+  it('needs the catalog:manage permission', async () => {
+    mocks.permissions = ['collection:manage'];
+
+    await expect(updateBookServer(work({}))).rejects.toThrow(/catalog:manage/u);
+    expect(mocks.updates).toEqual([]);
+  });
+});
+
+const edition = (changes: Partial<EditionForm>) =>
+  updateEditionSchema.parse({
+    ...editionFormOf({
+      title: null,
+      subtitle: null,
+      editionStatement: null,
+      publisher: null,
+      publishedYear: null,
+      publishedOn: null,
+      isbn13: null,
+      isbn10: null,
+      language: 'en',
+      format: null,
+      pageCount: null,
+      durationMinutes: null,
+      coverImageUrl: null,
+      contributors: [],
+    }),
+    editionId: EDITION_ID,
+    ...changes,
+  });
+
+describe('editing an edition', () => {
+  beforeEach(() => {
+    mocks.selects = [[{ bookId: BOOK_ID }], [{ id: BOOK_ID }]];
+    mocks.savedBook = savedBook();
+  });
+
+  it('saves the edition and its credits, and leaves the book alone', async () => {
+    mocks.selects = [
+      // No other edition has the ISBN.
+      [],
+      ...mocks.selects,
+      [{ id: 'corgi', name: 'Corgi' }],
+    ];
+
+    await expect(
+      updateEditionServer(
+        edition({
+          isbn: '0-552-12475-3',
+          publisher: 'corgi',
+          published: '1985-01-18',
+          format: 'audiobook',
+          pageCount: '288',
+          durationMinutes: '426',
+          contributors: [{ name: 'Nigel Planer', role: 'narrator' }],
+        }),
+      ),
+    ).resolves.toEqual({ error: null });
+
+    expect(updatesOf(schema.editions)).toEqual([
+      expect.objectContaining({
+        isbn10: '0552124753',
+        publisherId: 'corgi',
+        publishedYear: 1985,
+        publishedOn: '1985-01-18',
+        format: 'audiobook',
+        pageCount: null,
+        durationMinutes: 426,
+      }),
+    ]);
+    expect(updatesOf(schema.books)).toEqual([]);
+    expect(mocks.deletes).toEqual([schema.editionContributors]);
+    expect(insertsInto(schema.editionContributors)).toEqual([
+      [{ editionId: EDITION_ID, authorId: 'planer', role: 'narrator', position: 0 }],
+    ]);
+    expect(insertsInto(schema.bookContributors)).toEqual([]);
+  });
+
+  it('files the book again when the language of its title changes', async () => {
+    mocks.savedBook = {
+      ...savedBook(),
+      title: 'Die Farben der Magie',
+      sortTitle: 'Die Farben der Magie',
+    };
+
+    await updateEditionServer(edition({ language: 'de' }));
+
+    expect(updatesOf(schema.books)).toEqual([{ sortTitle: 'Farben der Magie, Die' }]);
+  });
+
+  it('refuses an ISBN another edition has', async () => {
+    mocks.selects = [[{ bookId: 'hobbit', title: 'The Hobbit' }]];
+
+    await expect(updateEditionServer(edition({ isbn: '9780261102217' }))).resolves.toEqual({
+      error: 'isbn-taken',
+      bookId: 'hobbit',
+      title: 'The Hobbit',
+    });
+    expect(mocks.updates).toEqual([]);
+  });
+
+  it('refuses an ISBN another edition takes meanwhile', async () => {
+    mocks.selects = [[], ...mocks.selects, [{ bookId: 'hobbit', title: 'The Hobbit' }]];
+    mocks.updateError = Object.assign(new Error('duplicate key'), { code: '23505' });
+
+    await expect(updateEditionServer(edition({ isbn: '9780261102217' }))).resolves.toEqual({
+      error: 'isbn-taken',
+      bookId: 'hobbit',
+      title: 'The Hobbit',
+    });
+  });
+
+  it('says when the edition is gone', async () => {
+    mocks.selects = [[]];
+
+    await expect(updateEditionServer(edition({}))).resolves.toEqual({ error: 'not-found' });
+    expect(mocks.updates).toEqual([]);
+  });
+
+  it('needs the catalog:manage permission', async () => {
+    mocks.permissions = ['collection:manage'];
+
+    await expect(updateEditionServer(edition({}))).rejects.toThrow(/catalog:manage/u);
+    expect(mocks.updates).toEqual([]);
   });
 });

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppBooksRouteImport } from './routes/_app/books'
 import { Route as AppFeatureFlagsRouteImport } from './routes/_app/feature-flags'
 import { Route as AppForbiddenRouteImport } from './routes/_app/forbidden'
 import { Route as AppMeRouteImport } from './routes/_app/me'
@@ -18,11 +19,15 @@ import { Route as AppSampleRouteImport } from './routes/_app/sample'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as AppBooksIndexRouteImport } from './routes/_app/books/index'
 import { Route as AppBooksNewRouteImport } from './routes/_app/books/new'
 import { Route as AppFeatureFlagsIndexRouteImport } from './routes/_app/feature-flags/index'
 import { Route as AppFeatureFlagsFlagIdRouteImport } from './routes/_app/feature-flags/$flagId'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
+import { Route as AppBooksBookIdIndexRouteImport } from './routes/_app/books/$bookId/index'
+import { Route as AppBooksBookIdEditRouteImport } from './routes/_app/books/$bookId/edit'
+import { Route as AppBooksBookIdEditionsEditionIdEditRouteImport } from './routes/_app/books/$bookId/editions.$editionId.edit'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -31,6 +36,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBooksRoute = AppBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFeatureFlagsRoute = AppFeatureFlagsRouteImport.update({
@@ -68,10 +78,15 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppBooksIndexRoute = AppBooksIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppBooksRoute,
+} as any)
 const AppBooksNewRoute = AppBooksNewRouteImport.update({
-  id: '/books/new',
-  path: '/books/new',
-  getParentRoute: () => AppRoute,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppBooksRoute,
 } as any)
 const AppFeatureFlagsIndexRoute = AppFeatureFlagsIndexRouteImport.update({
   id: '/',
@@ -93,9 +108,26 @@ const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
   path: '/$userId',
   getParentRoute: () => AppUsersRoute,
 } as any)
+const AppBooksBookIdIndexRoute = AppBooksBookIdIndexRouteImport.update({
+  id: '/$bookId/',
+  path: '/$bookId/',
+  getParentRoute: () => AppBooksRoute,
+} as any)
+const AppBooksBookIdEditRoute = AppBooksBookIdEditRouteImport.update({
+  id: '/$bookId/edit',
+  path: '/$bookId/edit',
+  getParentRoute: () => AppBooksRoute,
+} as any)
+const AppBooksBookIdEditionsEditionIdEditRoute =
+  AppBooksBookIdEditionsEditionIdEditRouteImport.update({
+    id: '/$bookId/editions/$editionId/edit',
+    path: '/$bookId/editions/$editionId/edit',
+    getParentRoute: () => AppBooksRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/books': typeof AppBooksRouteWithChildren
   '/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/forbidden': typeof AppForbiddenRoute
   '/me': typeof AppMeRoute
@@ -106,8 +138,12 @@ export interface FileRoutesByFullPath {
   '/books/new': typeof AppBooksNewRoute
   '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
+  '/books/': typeof AppBooksIndexRoute
   '/feature-flags/': typeof AppFeatureFlagsIndexRoute
   '/users/': typeof AppUsersIndexRoute
+  '/books/$bookId/edit': typeof AppBooksBookIdEditRoute
+  '/books/$bookId/': typeof AppBooksBookIdIndexRoute
+  '/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRoutesByTo {
   '/forbidden': typeof AppForbiddenRoute
@@ -119,12 +155,17 @@ export interface FileRoutesByTo {
   '/books/new': typeof AppBooksNewRoute
   '/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/users/$userId': typeof AppUsersUserIdRoute
+  '/books': typeof AppBooksIndexRoute
   '/feature-flags': typeof AppFeatureFlagsIndexRoute
   '/users': typeof AppUsersIndexRoute
+  '/books/$bookId/edit': typeof AppBooksBookIdEditRoute
+  '/books/$bookId': typeof AppBooksBookIdIndexRoute
+  '/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/books': typeof AppBooksRouteWithChildren
   '/_app/feature-flags': typeof AppFeatureFlagsRouteWithChildren
   '/_app/forbidden': typeof AppForbiddenRoute
   '/_app/me': typeof AppMeRoute
@@ -136,13 +177,18 @@ export interface FileRoutesById {
   '/_app/books/new': typeof AppBooksNewRoute
   '/_app/feature-flags/$flagId': typeof AppFeatureFlagsFlagIdRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
+  '/_app/books/': typeof AppBooksIndexRoute
   '/_app/feature-flags/': typeof AppFeatureFlagsIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/books/$bookId/edit': typeof AppBooksBookIdEditRoute
+  '/_app/books/$bookId/': typeof AppBooksBookIdIndexRoute
+  '/_app/books/$bookId/editions/$editionId/edit': typeof AppBooksBookIdEditionsEditionIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/books'
     | '/feature-flags'
     | '/forbidden'
     | '/me'
@@ -153,8 +199,12 @@ export interface FileRouteTypes {
     | '/books/new'
     | '/feature-flags/$flagId'
     | '/users/$userId'
+    | '/books/'
     | '/feature-flags/'
     | '/users/'
+    | '/books/$bookId/edit'
+    | '/books/$bookId/'
+    | '/books/$bookId/editions/$editionId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forbidden'
@@ -166,11 +216,16 @@ export interface FileRouteTypes {
     | '/books/new'
     | '/feature-flags/$flagId'
     | '/users/$userId'
+    | '/books'
     | '/feature-flags'
     | '/users'
+    | '/books/$bookId/edit'
+    | '/books/$bookId'
+    | '/books/$bookId/editions/$editionId/edit'
   id:
     | '__root__'
     | '/_app'
+    | '/_app/books'
     | '/_app/feature-flags'
     | '/_app/forbidden'
     | '/_app/me'
@@ -182,8 +237,12 @@ export interface FileRouteTypes {
     | '/_app/books/new'
     | '/_app/feature-flags/$flagId'
     | '/_app/users/$userId'
+    | '/_app/books/'
     | '/_app/feature-flags/'
     | '/_app/users/'
+    | '/_app/books/$bookId/edit'
+    | '/_app/books/$bookId/'
+    | '/_app/books/$bookId/editions/$editionId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/books': {
+      id: '/_app/books'
+      path: '/books'
+      fullPath: '/books'
+      preLoaderRoute: typeof AppBooksRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/feature-flags': {
@@ -257,12 +323,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/books/': {
+      id: '/_app/books/'
+      path: '/'
+      fullPath: '/books/'
+      preLoaderRoute: typeof AppBooksIndexRouteImport
+      parentRoute: typeof AppBooksRoute
+    }
     '/_app/books/new': {
       id: '/_app/books/new'
-      path: '/books/new'
+      path: '/new'
       fullPath: '/books/new'
       preLoaderRoute: typeof AppBooksNewRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppBooksRoute
     }
     '/_app/feature-flags/': {
       id: '/_app/feature-flags/'
@@ -292,8 +365,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersUserIdRouteImport
       parentRoute: typeof AppUsersRoute
     }
+    '/_app/books/$bookId/': {
+      id: '/_app/books/$bookId/'
+      path: '/$bookId'
+      fullPath: '/books/$bookId/'
+      preLoaderRoute: typeof AppBooksBookIdIndexRouteImport
+      parentRoute: typeof AppBooksRoute
+    }
+    '/_app/books/$bookId/edit': {
+      id: '/_app/books/$bookId/edit'
+      path: '/$bookId/edit'
+      fullPath: '/books/$bookId/edit'
+      preLoaderRoute: typeof AppBooksBookIdEditRouteImport
+      parentRoute: typeof AppBooksRoute
+    }
+    '/_app/books/$bookId/editions/$editionId/edit': {
+      id: '/_app/books/$bookId/editions/$editionId/edit'
+      path: '/$bookId/editions/$editionId/edit'
+      fullPath: '/books/$bookId/editions/$editionId/edit'
+      preLoaderRoute: typeof AppBooksBookIdEditionsEditionIdEditRouteImport
+      parentRoute: typeof AppBooksRoute
+    }
   }
 }
+
+interface AppBooksRouteChildren {
+  AppBooksNewRoute: typeof AppBooksNewRoute
+  AppBooksIndexRoute: typeof AppBooksIndexRoute
+  AppBooksBookIdEditRoute: typeof AppBooksBookIdEditRoute
+  AppBooksBookIdIndexRoute: typeof AppBooksBookIdIndexRoute
+  AppBooksBookIdEditionsEditionIdEditRoute: typeof AppBooksBookIdEditionsEditionIdEditRoute
+}
+
+const AppBooksRouteChildren: AppBooksRouteChildren = {
+  AppBooksNewRoute: AppBooksNewRoute,
+  AppBooksIndexRoute: AppBooksIndexRoute,
+  AppBooksBookIdEditRoute: AppBooksBookIdEditRoute,
+  AppBooksBookIdIndexRoute: AppBooksBookIdIndexRoute,
+  AppBooksBookIdEditionsEditionIdEditRoute:
+    AppBooksBookIdEditionsEditionIdEditRoute,
+}
+
+const AppBooksRouteWithChildren = AppBooksRoute._addFileChildren(
+  AppBooksRouteChildren,
+)
 
 interface AppFeatureFlagsRouteChildren {
   AppFeatureFlagsFlagIdRoute: typeof AppFeatureFlagsFlagIdRoute
@@ -324,23 +439,23 @@ const AppUsersRouteWithChildren = AppUsersRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppBooksRoute: typeof AppBooksRouteWithChildren
   AppFeatureFlagsRoute: typeof AppFeatureFlagsRouteWithChildren
   AppForbiddenRoute: typeof AppForbiddenRoute
   AppMeRoute: typeof AppMeRoute
   AppSampleRoute: typeof AppSampleRoute
   AppUsersRoute: typeof AppUsersRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
-  AppBooksNewRoute: typeof AppBooksNewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBooksRoute: AppBooksRouteWithChildren,
   AppFeatureFlagsRoute: AppFeatureFlagsRouteWithChildren,
   AppForbiddenRoute: AppForbiddenRoute,
   AppMeRoute: AppMeRoute,
   AppSampleRoute: AppSampleRoute,
   AppUsersRoute: AppUsersRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
-  AppBooksNewRoute: AppBooksNewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

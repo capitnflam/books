@@ -1,9 +1,22 @@
 import { createServerFn } from '@tanstack/react-start';
 
 import { getServerEnv } from '#/config/env';
+import { listSearchSchema } from '#/utils/list-search';
 
-import { createBookSchema, lookupIsbnSchema } from './catalog';
-import { createBookServer, lookupIsbnServer } from './catalog.server';
+import {
+  bookIdSchema,
+  createBookSchema,
+  lookupIsbnSchema,
+  updateBookSchema,
+  updateEditionSchema,
+} from './catalog';
+import { getBookServer, listBooksServer } from './catalog-browse.server';
+import {
+  createBookServer,
+  lookupIsbnServer,
+  updateBookServer,
+  updateEditionServer,
+} from './catalog.server';
 
 // Each handler checks the caller's permission itself: the route guards do not cover these.
 
@@ -16,3 +29,19 @@ export const lookupIsbnFn = createServerFn({ method: 'GET' })
 export const createBookFn = createServerFn({ method: 'POST' })
   .validator(createBookSchema)
   .handler(async ({ data }) => createBookServer(data));
+
+export const updateBookFn = createServerFn({ method: 'POST' })
+  .validator(updateBookSchema)
+  .handler(async ({ data }) => updateBookServer(data));
+
+export const updateEditionFn = createServerFn({ method: 'POST' })
+  .validator(updateEditionSchema)
+  .handler(async ({ data }) => updateEditionServer(data));
+
+export const listBooksFn = createServerFn({ method: 'GET' })
+  .validator(listSearchSchema)
+  .handler(async ({ data }) => listBooksServer(data));
+
+export const getBookFn = createServerFn({ method: 'GET' })
+  .validator(bookIdSchema)
+  .handler(async ({ data }) => getBookServer(data.bookId));

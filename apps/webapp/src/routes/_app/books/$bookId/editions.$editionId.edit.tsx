@@ -1,0 +1,133 @@
+import { FieldGroup } from '@books/ui/components/field';
+import { createFieldMap } from '@tanstack/react-form';
+import { createFileRoute, notFound } from '@tanstack/react-router';
+
+import BackLink from '#/components/BackLink';
+import ContributorsFields from '#/components/book-form/ContributorsFields';
+import EditFormActions from '#/components/book-form/EditFormActions';
+import EditionFields from '#/components/book-form/EditionFields';
+import BookNotFound from '#/components/BookNotFound';
+import { useAppForm } from '#/hooks/use-app-form';
+import { useSaveBook } from '#/hooks/use-save-book';
+import { m } from '#/paraglide/messages';
+import { localizeHref } from '#/paraglide/runtime';
+import { checkPermissionFn } from '#/services/access/access.functions';
+import { loadBookDetails } from '#/services/catalog/book-details';
+import {
+  BOOK_TITLE_MAX_LENGTH,
+  EDITION_CREDIT_ROLES,
+  editionFormErrors,
+  editionFormOf,
+  emptyEditionValues,
+} from '#/services/catalog/catalog';
+import { updateEditionFn } from '#/services/catalog/catalog.functions';
+import { checkedOnSubmit } from '#/utils/form-validation';
+
+export const Route = createFileRoute('/_app/books/$bookId/editions/$editionId/edit')({
+  beforeLoad: async ({ location }) => {
+    // The server functions the page calls check the permission again on their own.
+    await checkPermissionFn({
+      data: { permission: 'catalog:manage', redirect_url: localizeHref(location.href) },
+    });
+  },
+  loader: async ({ params }) => {
+    const { book } = await loadBookDetails(params);
+    const edition = book.editions.find(({ id }) => id === params.editionId);
+
+    if (!edition) {
+      throw notFound();
+    }
+
+    return { book, edition };
+  },
+  // The form is filled in once, from this: never from what an earlier visit loaded.
+  gcTime: 0,
+  preloadGcTime: 0,
+  head: () => ({ meta: [{ title: m.book_edition_edit_title() }] }),
+  notFoundComponent: BookNotFound,
+  component: EditEditionPage,
+});
+
+const editionFields = createFieldMap(emptyEditionValues());
+
+function EditEditionPage() {
+  const { book, edition } = Route.useLoaderData();
+  const { problem, save } = useSaveBook(book.id);
+  const form = useAppForm({
+    defaultValues: editionFormOf(edition),
+    ...checkedOnSubmit(editionFormErrors),
+    onSubmit: async ({ value }) =>
+      save(async () => updateEditionFn({ data: { editionId: edition.id, ...value } })),
+  });
+
+  return (
+    <div className="container mx-auto flex max-w-3xl flex-col gap-12 px-4 py-16">
+      <div className="flex flex-col gap-6">
+        <BackLink to="/books/$bookId" params={{ bookId: book.id }}>
+          {m.book_back_to({ title: book.title })}
+        </BackLink>
+        <header className="flex flex-col gap-2">
+          <p className="text-overline text-muted-foreground uppercase">{book.title}</p>
+          <h1>{m.book_edition_edit_title()}</h1>
+          <span aria-hidden className="bg-gilt h-0.5 w-16" />
+          <p className="text-muted-foreground mt-1">{m.book_edit_intro()}</p>
+        </header>
+      </div>
+
+      <form
+        className="flex flex-col gap-12"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
+        noValidate
+      >
+        <FieldGroup>
+          <form.AppField name="isbn">
+            {(field) => (
+              <field.TextField
+                inputMode="numeric"
+                spellCheck={false}
+                className="max-w-xs"
+                label={m.book_isbn_label()}
+                hint={m.book_isbn_hint()}
+                error={m.book_isbn_invalid()}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="title">
+            {(field) => (
+              <field.TextField
+                label={m.book_edition_title_label()}
+                hint={m.book_edition_title_hint()}
+                error={m.book_edition_title_error({ max: BOOK_TITLE_MAX_LENGTH })}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="subtitle">
+            {(field) => (
+              <field.TextField
+                label={m.book_edition_subtitle_label()}
+                error={m.book_subtitle_error({ max: BOOK_TITLE_MAX_LENGTH })}
+              />
+            )}
+          </form.AppField>
+          <ContributorsFields
+            form={form}
+            fields={{ contributors: 'contributors' }}
+            hint={m.book_edition_contributors_hint()}
+            roles={EDITION_CREDIT_ROLES}
+          />
+          <form.Subscribe selector={({ values }) => values.title}>
+            {(title) => (
+              <EditionFields form={form} fields={editionFields} title={title || book.title} />
+            )}
+          </form.Subscribe>
+        </FieldGroup>
+        <form.AppForm>
+          <EditFormActions bookId={book.id} problem={problem} />
+        </form.AppForm>
+      </form>
+    </div>
+  );
+}

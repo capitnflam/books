@@ -57,6 +57,15 @@ Every component you add with shadcn, or update from upstream, gets the theme bef
 - When an upstream update conflicts with themed classes, keep the theme's colours, sizes and type, and take upstream's structural or behavioural changes.
 - The component's story runs axe in light and dark, so contrast on its tokens must pass in both.
 
+### Forms
+
+`webapp` forms use [TanStack Form](https://tanstack.com/form) through `useAppForm` (`apps/webapp/src/hooks/use-app-form.ts`), not `useState` per field or `FormData`. Forms written before it move over when they are changed.
+
+- Generic fields (`TextField`, `TextareaField`…) live in `apps/webapp/src/components/form/` and are registered in `use-app-form.ts`. A field of one feature reads its value with `useFieldContext` inside `form.AppField` and isn't registered.
+- Fields several forms share are a group made with `withFieldGroup` (see `components/book-form/`).
+- Validate with the schema the server function uses: `checkedOnSubmit` (`utils/form-validation.ts`) checks when the form is sent, then as it changes. Validators only mark fields; each field writes its own message, so it follows the page's language.
+- Don't use `mode="array"` on a list that is also replaced as a whole (`setFieldValue`): the field doesn't notice.
+
 ### Translations
 
 `webapp` uses Paraglide: messages live in `apps/webapp/messages/`, with `en` as the base locale and `de` and `fr` as the others (`apps/webapp/project.inlang/settings.json`).
