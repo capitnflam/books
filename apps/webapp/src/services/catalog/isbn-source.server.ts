@@ -9,6 +9,8 @@ import type { BookDraft } from './catalog';
 const USER_AGENT = 'books-catalogue-isbn-lookup/1.0';
 const TIMEOUT_MS = 8000;
 const SUBJECTS_MAX = 8;
+/** Authors kept from a source that lists them apart from the other credits. */
+export const AUTHORS_MAX = 5;
 
 /** A source that can't be reached, or answers something else than expected. */
 export class SourceUnavailableError extends Error {}
@@ -157,6 +159,23 @@ export function cleanSubjects(subjects: readonly string[]): string[] {
       return keep;
     })
     .slice(0, SUBJECTS_MAX);
+}
+
+/**
+ * A description as plain text: no HTML tags (Google Books), no Markdown emphasis or links and
+ * none of the notes appended after a `----------` rule (Open Library).
+ */
+export function cleanDescription(value: string | undefined): string | undefined {
+  const description = value
+    ?.replaceAll('\r', '')
+    .replaceAll(/<br\s*\/?>|<\/p>/giu, '\n')
+    .replaceAll(/<[^>]+>/gu, '')
+    .split(/\n-{3,}/u)[0]
+    ?.replaceAll(/\[([^\]]+)\]\([^)]*\)/gu, '$1')
+    .replaceAll(/(\*{1,2}|_{2})(\S(?:.*?\S)?)\1/gu, '$2')
+    .trim();
+
+  return description || undefined;
 }
 
 /** A name as credited, without the stray spaces some records have. */
