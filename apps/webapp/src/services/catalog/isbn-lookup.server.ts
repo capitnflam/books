@@ -285,6 +285,31 @@ async function fromGoogleBooks({ isbn13 }: Isbns, apiKey: string): Promise<BookD
   });
 }
 
+/** Details that only make sense with the field they belong to. */
+const DETAILS = [
+  ['title', 'subtitle'],
+  ['series', 'seriesPosition'],
+] as const;
+
+/**
+ * One draft from what each source found: the first one wins each field and later ones fill the
+ * gaps. A subtitle or a position in the series comes only from a source that agrees on the title
+ * or series it goes with.
+ */
+export function mergeDrafts(drafts: readonly BookDraft[]): BookDraft {
+  const merged: BookDraft = Object.assign({}, ...drafts.toReversed());
+
+  for (const [field, detail] of DETAILS) {
+    const value = merged[field]?.toLowerCase();
+
+    merged[detail] = drafts.find(
+      (draft) => draft[detail] !== undefined && draft[field]?.toLowerCase() === value,
+    )?.[detail];
+  }
+
+  return compact(merged);
+}
+
 /**
  * Finds a book by ISBN in the open catalogues: Open Library first, then Google Books (when an
  * API key is configured: it refuses anonymous requests) for the fields Open Library lacks.
@@ -308,6 +333,5 @@ export async function lookupIsbnOnline(
       : { status: 'not-found' };
   }
 
-  // The first source wins each field; later ones only fill the gaps.
-  return { status: 'found', draft: Object.assign({}, ...drafts.toReversed()) as BookDraft };
+  return { status: 'found', draft: mergeDrafts(drafts) };
 }

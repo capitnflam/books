@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { formatFromText, lookupIsbnOnline, seriesFromText } from './isbn-lookup.server';
+import {
+  formatFromText,
+  lookupIsbnOnline,
+  mergeDrafts,
+  seriesFromText,
+} from './isbn-lookup.server';
 import { languageFromMarc, publishedFromText } from './isbn-source.server';
 
 const hobbit = { isbn13: '9780261102217', isbn10: '0261102214' };
@@ -191,6 +196,32 @@ describe('lookupIsbnOnline', () => {
     responses = { 'openlibrary.org/': new TypeError('fetch failed') };
 
     await expect(lookupIsbnOnline(hobbit)).resolves.toEqual({ status: 'unavailable' });
+  });
+});
+
+describe('mergeDrafts', () => {
+  it('lets the first source win each field', () => {
+    expect(
+      mergeDrafts([
+        { title: 'Celui qui part', pageCount: '64' },
+        { title: 'Les vieux fourneaux - tome 3', publisher: 'Dargaud' },
+      ]),
+    ).toEqual({ title: 'Celui qui part', pageCount: '64', publisher: 'Dargaud' });
+  });
+
+  it('takes a subtitle or a position only with the title or series it belongs to', () => {
+    expect(
+      mergeDrafts([
+        { title: 'Romance dawn', series: 'One piece' },
+        { title: 'One Piece', subtitle: 'Tome 1', series: 'Shonen', seriesPosition: '12' },
+        { title: 'Romance Dawn', subtitle: 'À l’aube', series: 'One Piece', seriesPosition: '1' },
+      ]),
+    ).toEqual({
+      title: 'Romance dawn',
+      subtitle: 'À l’aube',
+      series: 'One piece',
+      seriesPosition: '1',
+    });
   });
 });
 
